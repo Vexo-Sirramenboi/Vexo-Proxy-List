@@ -128,6 +128,12 @@ body{
   }
 }
 
+@keyframes pulse{
+  50%{
+    opacity:.55
+  }
+}
+
 .app{
   display:flex;
   min-height:100vh
@@ -166,8 +172,7 @@ body{
   color:var(--muted);
   padding:12px 13px;
   border-radius:12px;
-  text-align:left;
-  width:100%
+  text-align:left
 }
 
 .nav button:hover,
@@ -177,14 +182,16 @@ body{
   color:#fff
 }
 
-.nav button.admin-nav{
-  color:#c4b8ff
+.admin-nav{
+  display:none
 }
 
-.nav button.admin-nav:hover,
-.nav button.admin-nav.active{
-  background:rgba(124,92,255,.18);
-  border-color:rgba(124,92,255,.35)
+.admin-nav.show{
+  display:block
+}
+
+.admin-nav button{
+  color:#ffc857
 }
 
 .userbox{
@@ -228,6 +235,12 @@ body{
   border:1px solid rgba(67,230,164,.25);
   border-radius:99px;
   background:rgba(67,230,164,.06)
+}
+
+.admin-status{
+  color:#ffc857;
+  border-color:rgba(255,200,87,.25);
+  background:rgba(255,200,87,.06)
 }
 
 .panel{
@@ -287,13 +300,13 @@ body{
 
 .warning{
   color:#fff;
-  background:rgba(255,200,87,.10);
+  background:rgba(255,200,87,.12);
   border-color:rgba(255,200,87,.25)
 }
 
-.good{
+.success{
   color:#fff;
-  background:rgba(67,230,164,.10);
+  background:rgba(67,230,164,.12);
   border-color:rgba(67,230,164,.25)
 }
 
@@ -340,8 +353,7 @@ body{
 }
 
 .input:focus,
-.textarea:focus,
-.select:focus{
+.textarea:focus{
   border-color:rgba(124,92,255,.7)
 }
 
@@ -390,6 +402,21 @@ body{
   margin:3px 3px 0 0
 }
 
+.pending-tag{
+  color:#ffc857;
+  background:rgba(255,200,87,.08)
+}
+
+.approved-tag{
+  color:var(--good);
+  background:rgba(67,230,164,.08)
+}
+
+.rejected-tag{
+  color:var(--danger);
+  background:rgba(255,85,122,.08)
+}
+
 .cardurl{
   font-size:11px;
   color:#aab2d0;
@@ -397,6 +424,38 @@ body{
   overflow:hidden;
   text-overflow:ellipsis;
   margin:8px 0 12px
+}
+
+.admin-card{
+  border-color:rgba(255,200,87,.15)
+}
+
+.admin-card .admin-meta{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:10px
+}
+
+.notification{
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:rgba(255,255,255,.025);
+  margin-bottom:10px
+}
+
+.notification.unread{
+  border-color:rgba(255,200,87,.35);
+  background:rgba(255,200,87,.04)
+}
+
+.notification strong{
+  display:block;
+  margin-bottom:5px
+}
+
+.notification small{
+  color:var(--muted)
 }
 
 .modal{
@@ -488,84 +547,69 @@ body{
   justify-content:space-between;
   align-items:center;
   gap:15px;
-  margin-bottom:20px
+  margin-bottom:18px
 }
 
-.admin-badge{
-  display:inline-flex;
-  align-items:center;
-  gap:7px;
-  color:#cfc6ff;
-  background:rgba(124,92,255,.12);
-  border:1px solid rgba(124,92,255,.3);
-  padding:7px 11px;
-  border-radius:99px;
-  font-size:12px
-}
-
-.admin-card{
-  border:1px solid var(--line);
-  border-radius:17px;
-  padding:18px;
-  background:rgba(255,255,255,.025);
-  margin-bottom:12px
-}
-
-.admin-card:hover{
-  border-color:rgba(124,92,255,.3)
-}
-
-.admin-card-title{
-  display:flex;
-  justify-content:space-between;
-  gap:15px;
-  align-items:flex-start
-}
-
-.admin-meta{
-  color:var(--muted);
-  font-size:12px;
-  margin:7px 0
-}
-
-.admin-url{
-  color:#b8c0dd;
-  font-size:12px;
-  word-break:break-all;
-  margin:10px 0
-}
-
-.admin-actions{
+.admin-tabs{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
-  margin-top:13px
+  margin-bottom:18px
 }
 
-.section-title{
-  display:flex;
-  justify-content:space-between;
+.admin-tab{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+  padding:9px 13px;
+  border-radius:10px
+}
+
+.admin-tab.active{
+  color:#fff;
+  border-color:rgba(255,200,87,.35);
+  background:rgba(255,200,87,.08)
+}
+
+.admin-stat-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-bottom:18px
+}
+
+.admin-table{
+  width:100%;
+  border-collapse:collapse
+}
+
+.admin-table th,
+.admin-table td{
+  text-align:left;
+  padding:12px 10px;
+  border-bottom:1px solid var(--line);
+  font-size:13px
+}
+
+.admin-table th{
+  color:var(--muted);
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.06em
+}
+
+.notification-count{
+  display:inline-flex;
   align-items:center;
-  margin-bottom:15px
-}
-
-.section-title h2{
-  margin:0
-}
-
-.count-badge{
-  padding:5px 9px;
+  justify-content:center;
+  min-width:18px;
+  height:18px;
+  padding:0 5px;
+  margin-left:5px;
   border-radius:99px;
-  background:rgba(255,200,87,.10);
-  border:1px solid rgba(255,200,87,.2);
-  color:var(--warning);
-  font-size:11px
-}
-
-hr{
-  border:0;
-  border-top:1px solid var(--line);
-  margin:22px 0
+  font-size:9px;
+  background:var(--danger);
+  color:#fff
 }
 
 @media(max-width:850px){
@@ -595,6 +639,10 @@ hr{
   .stats{
     grid-template-columns:1fr 1fr
   }
+
+  .admin-stat-grid{
+    grid-template-columns:1fr
+  }
 }
 
 @media(max-width:520px){
@@ -611,9 +659,9 @@ hr{
     flex-direction:column
   }
 
-  .admin-header{
-    align-items:flex-start;
-    flex-direction:column
+  .admin-table{
+    display:block;
+    overflow-x:auto
   }
 }
 </style>
@@ -623,7 +671,6 @@ hr{
 
 <div id="scene"></div>
 <div id="grid"></div>
-
 <div class="orb o1"></div>
 <div class="orb o2"></div>
 <div class="orb o3"></div>
@@ -657,16 +704,18 @@ hr{
       ★ <span>Favorites</span>
     </button>
 
+    <!-- ADMIN ONLY -->
+    <div id="adminNav" class="admin-nav">
+
+      <button data-page="admin">
+        🛡 <span>Admin Center</span>
+        <span id="notificationBadge" class="notification-count hidden">0</span>
+      </button>
+
+    </div>
+
     <button data-page="settings">
       ⚙ <span>Settings</span>
-    </button>
-
-    <!-- ADMIN BUTTON -->
-    <button
-      id="adminNav"
-      class="admin-nav hidden"
-      data-page="admin">
-      🛡 <span>Admin Panel</span>
     </button>
 
   </div>
@@ -687,6 +736,7 @@ hr{
   <div class="top">
 
     <div>
+
       <h1 id="pageTitle">
         VEXO
       </h1>
@@ -694,9 +744,10 @@ hr{
       <div class="muted" id="pageSub">
         A futuristic community for useful links.
       </div>
+
     </div>
 
-    <div class="status">
+    <div class="status" id="statusPill">
       ● SUPABASE ONLINE
     </div>
 
@@ -710,7 +761,8 @@ hr{
     <div class="panel hero">
 
       <h2>
-        Discover the web.<br>
+        Discover the web.
+        <br>
         <span style="color:var(--accent2)">
           Build VEXO together.
         </span>
@@ -778,12 +830,14 @@ hr{
         <input
           class="input search"
           id="search"
-          placeholder="Search links, tags, categories...">
+          placeholder="Search links, tags, categories..."
+        >
 
         <select
           class="select"
           id="category"
-          style="width:180px">
+          style="width:180px"
+        >
 
           <option value="">
             All categories
@@ -817,7 +871,9 @@ hr{
 
     <div class="panel">
 
-      <h2>Your Favorites</h2>
+      <h2>
+        Your Favorites
+      </h2>
 
       <div
         class="grid"
@@ -842,8 +898,7 @@ hr{
       </h2>
 
       <p class="muted">
-        Sign in first. New links start as pending
-        until approved by an administrator.
+        Sign in first. New links start as pending until approved by a moderator.
       </p>
 
       <form
@@ -851,60 +906,87 @@ hr{
         class="form">
 
         <div>
-          <label>Title</label>
+
+          <label>
+            Title
+          </label>
 
           <input
             class="input"
             id="linkTitle"
             required
-            placeholder="Example Tool">
+            placeholder="Example Tool"
+          >
+
         </div>
 
+
         <div>
-          <label>URL</label>
+
+          <label>
+            URL
+          </label>
 
           <input
             class="input"
             id="linkURL"
             required
             type="url"
-            placeholder="https://example.com">
+            placeholder="https://example.com"
+          >
+
         </div>
+
 
         <div class="row">
 
           <div>
-            <label>Category</label>
+
+            <label>
+              Category
+            </label>
 
             <input
               class="input"
               id="linkCategory"
-              placeholder="Tools">
+              placeholder="Tools"
+            >
+
           </div>
 
+
           <div>
-            <label>Tags</label>
+
+            <label>
+              Tags
+            </label>
 
             <input
               class="input"
               id="linkTags"
-              placeholder="ai, web, coding">
+              placeholder="ai, web, coding"
+            >
+
           </div>
 
         </div>
 
+
         <div>
 
-          <label>Description</label>
+          <label>
+            Description
+          </label>
 
           <textarea
             class="textarea"
             id="linkDesc"
             rows="4"
-            placeholder="What makes this useful?">
-          </textarea>
+            placeholder="What makes this useful?"
+          ></textarea>
 
         </div>
+
 
         <button
           class="btn primary"
@@ -919,6 +1001,187 @@ hr{
   </section>
 
 
+  <!-- ======================================================
+       ADMIN CENTER
+       ====================================================== -->
+
+  <section
+    id="adminPage"
+    class="page hidden">
+
+    <div class="panel">
+
+      <div class="admin-header">
+
+        <div>
+
+          <h2 style="margin:0">
+            🛡 VEXO Admin Center
+          </h2>
+
+          <p
+            class="muted"
+            style="margin-bottom:0">
+            Moderation tools for VEXO administrators.
+          </p>
+
+        </div>
+
+        <div
+          class="status admin-status">
+          ● ADMIN ACCESS
+        </div>
+
+      </div>
+
+
+      <div class="admin-stat-grid">
+
+        <div class="stat">
+
+          <strong id="adminPendingCount">
+            0
+          </strong>
+
+          <span>
+            Pending submissions
+          </span>
+
+        </div>
+
+
+        <div class="stat">
+
+          <strong id="adminApprovedCount">
+            0
+          </strong>
+
+          <span>
+            Approved links
+          </span>
+
+        </div>
+
+
+        <div class="stat">
+
+          <strong id="adminUnreadCount">
+            0
+          </strong>
+
+          <span>
+            Unread notifications
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="admin-tabs">
+
+        <button
+          class="admin-tab active"
+          data-admin-tab="pending">
+          Pending
+        </button>
+
+        <button
+          class="admin-tab"
+          data-admin-tab="approved">
+          Approved
+        </button>
+
+        <button
+          class="admin-tab"
+          data-admin-tab="rejected">
+          Rejected
+        </button>
+
+        <button
+          class="admin-tab"
+          data-admin-tab="notifications">
+          Notifications
+        </button>
+
+      </div>
+
+
+      <!-- Pending -->
+
+      <div
+        id="adminPendingPanel"
+        class="admin-tab-panel">
+
+        <div
+          id="pendingGrid"
+          class="grid">
+        </div>
+
+      </div>
+
+
+      <!-- Approved -->
+
+      <div
+        id="adminApprovedPanel"
+        class="admin-tab-panel hidden">
+
+        <div
+          id="approvedAdminGrid"
+          class="grid">
+        </div>
+
+      </div>
+
+
+      <!-- Rejected -->
+
+      <div
+        id="adminRejectedPanel"
+        class="admin-tab-panel hidden">
+
+        <div
+          id="rejectedGrid"
+          class="grid">
+        </div>
+
+      </div>
+
+
+      <!-- Notifications -->
+
+      <div
+        id="adminNotificationsPanel"
+        class="admin-tab-panel hidden">
+
+        <div class="actions" style="margin-bottom:15px">
+
+          <button
+            class="btn success"
+            onclick="markAllNotificationsRead()">
+            Mark all as read
+          </button>
+
+          <button
+            class="btn"
+            onclick="loadAdminNotifications()">
+            Refresh
+          </button>
+
+        </div>
+
+        <div
+          id="notificationsList">
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
   <!-- SETTINGS -->
 
   <section
@@ -927,7 +1190,9 @@ hr{
 
     <div class="panel">
 
-      <h2>Settings</h2>
+      <h2>
+        Settings
+      </h2>
 
       <p class="muted">
         Choose the VEXO visual mode.
@@ -955,123 +1220,14 @@ hr{
 
       </div>
 
-      <hr>
+      <hr
+        style="border:0;border-top:1px solid var(--line);margin:22px 0">
 
       <button
         class="btn danger"
         id="logoutBtn">
         Sign out
       </button>
-
-    </div>
-
-  </section>
-
-
-  <!-- ADMIN PANEL -->
-
-  <section
-    id="adminPage"
-    class="page hidden">
-
-    <div class="panel">
-
-      <div class="admin-header">
-
-        <div>
-          <h2 style="margin:0">
-            VEXO Admin Center
-          </h2>
-
-          <p class="muted">
-            Manage community submissions and approved links.
-          </p>
-        </div>
-
-        <div class="admin-badge">
-          🛡 ADMIN ACCESS
-        </div>
-
-      </div>
-
-
-      <div class="stats">
-
-        <div class="stat">
-          <strong id="adminPendingCount">
-            0
-          </strong>
-          <span>Pending</span>
-        </div>
-
-        <div class="stat">
-          <strong id="adminApprovedCount">
-            0
-          </strong>
-          <span>Approved</span>
-        </div>
-
-        <div class="stat">
-          <strong id="adminUserCount">
-            —
-          </strong>
-          <span>Your role</span>
-        </div>
-
-        <div class="stat">
-          <strong>SECURE</strong>
-          <span>Admin verification</span>
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <!-- PENDING -->
-
-    <div class="panel">
-
-      <div class="section-title">
-
-        <h2>
-          Pending Submissions
-        </h2>
-
-        <span
-          class="count-badge"
-          id="pendingBadge">
-          0 pending
-        </span>
-
-      </div>
-
-      <div id="pendingList">
-      </div>
-
-    </div>
-
-
-    <!-- APPROVED -->
-
-    <div class="panel">
-
-      <div class="section-title">
-
-        <h2>
-          Approved Links
-        </h2>
-
-        <button
-          class="btn"
-          onclick="loadAdminPanel()">
-          ↻ Refresh
-        </button>
-
-      </div>
-
-      <div id="adminApprovedList">
-      </div>
 
     </div>
 
@@ -1122,9 +1278,11 @@ hr{
           class="input"
           id="username"
           maxlength="24"
-          placeholder="vexo_user">
+          placeholder="vexo_user"
+        >
 
       </div>
+
 
       <div>
 
@@ -1136,9 +1294,11 @@ hr{
           class="input"
           id="email"
           type="email"
-          required>
+          required
+        >
 
       </div>
+
 
       <div>
 
@@ -1151,9 +1311,11 @@ hr{
           id="password"
           type="password"
           minlength="6"
-          required>
+          required
+        >
 
       </div>
+
 
       <button
         class="btn primary"
@@ -1162,6 +1324,7 @@ hr{
       </button>
 
     </form>
+
 
     <p style="text-align:center">
 
@@ -1186,9 +1349,9 @@ hr{
 
 <script>
 
-/* =========================================================
+/* ============================================================
    SUPABASE
-========================================================= */
+   ============================================================ */
 
 const SUPABASE_URL =
   "https://jxxjvwemjvhrozuaihso.supabase.co";
@@ -1203,26 +1366,26 @@ const db =
   );
 
 
-/* =========================================================
+/* ============================================================
    STATE
-========================================================= */
+   ============================================================ */
 
 let user = null;
-
-let userRole = null;
-
 let isAdmin = false;
 
 let links = [];
+let adminLinks = [];
 
 let favorites = new Set();
+let adminNotifications = [];
 
 let authMode = "login";
+let currentAdminTab = "pending";
 
 
-/* =========================================================
+/* ============================================================
    HELPERS
-========================================================= */
+   ============================================================ */
 
 const $ = id =>
   document.getElementById(id);
@@ -1234,79 +1397,83 @@ function toast(msg){
 
   $("toast").classList.add("show");
 
-  setTimeout(() => {
-    $("toast").classList.remove("show");
-  },2600);
-
-}
-
-
-function esc(v=""){
-
-  return String(v).replace(
-    /[&<>"']/g,
-    m => ({
-      "&":"&amp;",
-      "<":"&lt;",
-      ">":"&gt;",
-      '"':"&quot;",
-      "'":"&#039;"
-    }[m])
+  setTimeout(
+    () =>
+      $("toast").classList.remove("show"),
+    2600
   );
 
 }
 
 
-/* =========================================================
-   PAGE NAVIGATION
-========================================================= */
+function esc(v = ""){
 
-async function showPage(name){
+  return String(v).replace(
+    /[&<>"']/g,
+    m =>
+      ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
+      }[m])
+  );
+
+}
+
+
+/* ============================================================
+   PAGE NAVIGATION
+   ============================================================ */
+
+function showPage(name){
 
   /*
-    Extra security check.
-
-    Even if somebody manually runs:
-    showPage("admin")
-
-    the page will not open unless the database
-    says their role is admin.
+    Extra security:
+    even if someone manually calls showPage("admin"),
+    the page cannot open unless isAdmin is true.
   */
 
-  if(name === "admin"){
+  if(name === "admin" && !isAdmin){
 
-    const allowed =
-      await verifyAdmin();
+    toast("Admin access required.");
 
-    if(!allowed){
+    showPage("home");
 
-      toast("Access denied. Admins only.");
-
-      name = "home";
-
-    }
-
+    return;
   }
 
 
   document
     .querySelectorAll(".page")
-    .forEach(x =>
-      x.classList.add("hidden")
+    .forEach(
+      x => x.classList.add("hidden")
     );
 
 
-  $(name + "Page")
-    .classList.remove("hidden");
+  const target =
+    $(name + "Page");
+
+  if(!target){
+
+    showPage("home");
+
+    return;
+  }
+
+
+  target.classList.remove("hidden");
 
 
   document
     .querySelectorAll(".nav button")
-    .forEach(b =>
-      b.classList.toggle(
-        "active",
-        b.dataset.page === name
-      )
+    .forEach(
+      b =>
+        b.classList.toggle(
+          "active",
+          b.dataset.page === name
+        )
     );
 
 
@@ -1332,14 +1499,14 @@ async function showPage(name){
       "Your saved community links."
     ],
 
+    admin:[
+      "Admin Center",
+      "Moderate VEXO community submissions."
+    ],
+
     settings:[
       "Settings",
       "Customize your VEXO experience."
-    ],
-
-    admin:[
-      "Admin Center",
-      "Manage VEXO community submissions."
     ]
 
   };
@@ -1356,127 +1523,41 @@ async function showPage(name){
     renderFavorites();
 
 
-  if(name === "admin")
-    await loadAdminPanel();
+  if(name === "admin"){
 
-}
+    if(!isAdmin){
 
-
-document
-  .querySelectorAll(".nav button")
-  .forEach(b => {
-
-    b.onclick = () =>
-      showPage(b.dataset.page);
-
-  });
-
-
-/* =========================================================
-   ADMIN ROLE CHECK
-========================================================= */
-
-/*
-  This reads:
-
-  public.user_roles
-
-  using:
-
-  user_id = currently signed-in user's ID
-
-  and checks:
-
-  role = "admin"
-*/
-
-async function verifyAdmin(){
-
-  if(!user)
-    return false;
-
-
-  const {data,error} =
-    await db
-      .from("user_roles")
-      .select("role")
-      .eq("user_id",user.id)
-      .maybeSingle();
-
-
-  if(error){
-
-    console.error(
-      "Admin role check failed:",
-      error
-    );
-
-    userRole = null;
-    isAdmin = false;
-
-    return false;
-
-  }
-
-
-  userRole =
-    data?.role || null;
-
-  isAdmin =
-    userRole === "admin";
-
-
-  return isAdmin;
-
-}
-
-
-/* =========================================================
-   ADMIN NAV
-========================================================= */
-
-function updateAdminUI(){
-
-  const adminButton =
-    $("adminNav");
-
-
-  if(isAdmin){
-
-    adminButton
-      .classList
-      .remove("hidden");
-
-  }else{
-
-    adminButton
-      .classList
-      .add("hidden");
-
-    /*
-      If a user loses admin access while
-      currently inside the panel, immediately
-      send them back home.
-    */
-
-    if(
-      !$("adminPage")
-        .classList
-        .contains("hidden")
-    ){
+      toast("You are not an administrator.");
 
       showPage("home");
 
+      return;
     }
+
+    loadAdminCenter();
 
   }
 
 }
 
 
-/* =========================================================
+/* ============================================================
+   NAV BUTTONS
+   ============================================================ */
+
+document
+  .querySelectorAll(".nav button")
+  .forEach(
+    b =>
+      b.onclick =
+        () =>
+          showPage(b.dataset.page)
+  );
+
+
+/* ============================================================
    AUTH
-========================================================= */
+   ============================================================ */
 
 function openAuth(){
 
@@ -1549,13 +1630,17 @@ $("authForm").onsubmit =
 
 
     const email =
-      $("email").value.trim();
+      $("email")
+        .value
+        .trim();
 
     const password =
       $("password").value;
 
     const username =
-      $("username").value.trim();
+      $("username")
+        .value
+        .trim();
 
 
     let res;
@@ -1583,8 +1668,11 @@ $("authForm").onsubmit =
 
       res =
         await db.auth.signInWithPassword({
+
           email,
+
           password
+
         });
 
     }
@@ -1592,10 +1680,11 @@ $("authForm").onsubmit =
 
     if(res.error){
 
-      toast(res.error.message);
+      toast(
+        res.error.message
+      );
 
       return;
-
     }
 
 
@@ -1624,17 +1713,11 @@ $("authForm").onsubmit =
   };
 
 
-/* =========================================================
-   LOGOUT
-========================================================= */
-
 $("logoutBtn").onclick =
   async () => {
 
     await db.auth.signOut();
 
-    user = null;
-    userRole = null;
     isAdmin = false;
 
     toast("Signed out.");
@@ -1646,9 +1729,58 @@ $("logoutBtn").onclick =
   };
 
 
-/* =========================================================
+/* ============================================================
+   CHECK ADMIN ROLE
+   ============================================================ */
+
+async function checkAdmin(){
+
+  if(!user){
+
+    isAdmin = false;
+
+    return false;
+  }
+
+
+  /*
+    This checks your existing public.user_roles table.
+
+    The database RLS should also enforce admin permissions.
+  */
+
+  const {data,error} =
+    await db
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+
+  if(error){
+
+    console.error(
+      "Admin check failed:",
+      error
+    );
+
+    isAdmin = false;
+
+    return false;
+  }
+
+
+  isAdmin = !!data;
+
+  return isAdmin;
+
+}
+
+
+/* ============================================================
    SESSION
-========================================================= */
+   ============================================================ */
 
 async function loadSession(){
 
@@ -1660,20 +1792,19 @@ async function loadSession(){
     data.session?.user || null;
 
 
+  await checkAdmin();
+
+
+  updateAdminUI();
+
+
   if(user){
-
-    /*
-      Load the user's role FIRST.
-    */
-
-    await verifyAdmin();
-
 
     const {data:p} =
       await db
         .from("profiles")
         .select("username")
-        .eq("id",user.id)
+        .eq("id", user.id)
         .maybeSingle();
 
 
@@ -1697,30 +1828,29 @@ async function loadSession(){
 
       ${
         isAdmin
-        ? `
-          <br>
-          <span style="
-            color:#bdb0ff;
-            font-size:11px;
-          ">
-            🛡 Administrator
-          </span>
-        `
-        : ""
+          ? `
+            <br>
+            <span
+              style="
+                color:#ffc857;
+                font-size:11px
+              ">
+              🛡 Administrator
+            </span>
+          `
+          : ""
       }
 
     `;
 
 
     $("statUsers").textContent =
-      isAdmin ? "ADMIN" : "YOU";
+      isAdmin
+        ? "ADMIN"
+        : "YOU";
 
 
   }else{
-
-    userRole = null;
-    isAdmin = false;
-
 
     $("userBox").innerHTML = `
 
@@ -1749,30 +1879,98 @@ async function loadSession(){
   }
 
 
-  updateAdminUI();
-
   await loadFavorites();
 
   await loadLinks();
 
+
+  if(isAdmin){
+
+    await loadAdminNotifications();
+
+    await loadAdminCenter();
+
+  }else{
+
+    $("statPending").textContent =
+      "—";
+
+  }
+
 }
 
 
-/* =========================================================
+/* ============================================================
+   ADMIN UI
+   ============================================================ */
+
+function updateAdminUI(){
+
+  const nav =
+    $("adminNav");
+
+
+  if(isAdmin){
+
+    nav.classList.add("show");
+
+    $("statusPill")
+      .textContent =
+      "● ADMIN ACCESS";
+
+    $("statusPill")
+      .classList
+      .add("admin-status");
+
+  }else{
+
+    nav.classList.remove("show");
+
+    $("statusPill")
+      .textContent =
+      "● SUPABASE ONLINE";
+
+    $("statusPill")
+      .classList
+      .remove("admin-status");
+
+
+    /*
+      If the user somehow was on admin page,
+      kick them back to home.
+    */
+
+    if(
+      !$("adminPage")
+        .classList
+        .contains("hidden")
+    ){
+
+      showPage("home");
+
+    }
+
+  }
+
+}
+
+
+/* ============================================================
    FAVORITES
-========================================================= */
+   ============================================================ */
 
 async function loadFavorites(){
 
   if(!user){
 
-    favorites = new Set();
+    favorites =
+      new Set();
 
-    $("statFav").textContent =
+    $("statFav")
+      .textContent =
       "0";
 
     return;
-
   }
 
 
@@ -1780,7 +1978,7 @@ async function loadFavorites(){
     await db
       .from("favorites")
       .select("link_id")
-      .eq("user_id",user.id);
+      .eq("user_id", user.id);
 
 
   if(error){
@@ -1788,7 +1986,6 @@ async function loadFavorites(){
     console.error(error);
 
     return;
-
   }
 
 
@@ -1799,15 +1996,79 @@ async function loadFavorites(){
     );
 
 
-  $("statFav").textContent =
+  $("statFav")
+    .textContent =
     favorites.size;
 
 }
 
 
-/* =========================================================
+async function toggleFavorite(id){
+
+  if(!user){
+
+    openAuth();
+
+    toast(
+      "Sign in to favorite links."
+    );
+
+    return;
+  }
+
+
+  if(favorites.has(id)){
+
+    await db
+      .from("favorites")
+      .delete()
+      .eq("link_id", id)
+      .eq("user_id", user.id);
+
+
+    favorites.delete(id);
+
+  }else{
+
+    const {error} =
+      await db
+        .from("favorites")
+        .insert({
+          link_id:id,
+          user_id:user.id
+        });
+
+
+    if(error){
+
+      toast(
+        error.message
+      );
+
+      return;
+    }
+
+
+    favorites.add(id);
+
+  }
+
+
+  $("statFav")
+    .textContent =
+    favorites.size;
+
+
+  renderLinks();
+
+  renderFavorites();
+
+}
+
+
+/* ============================================================
    LINKS
-========================================================= */
+   ============================================================ */
 
 async function loadLinks(){
 
@@ -1824,10 +2085,13 @@ async function loadLinks(){
 
   if(error){
 
-    toast(error.message);
+    console.error(error);
+
+    toast(
+      error.message
+    );
 
     return;
-
   }
 
 
@@ -1835,7 +2099,8 @@ async function loadLinks(){
     data || [];
 
 
-  $("statLinks").textContent =
+  $("statLinks")
+    .textContent =
     links.length;
 
 
@@ -1852,17 +2117,24 @@ function buildCategories(){
     [
       ...new Set(
         links.map(
-          x => x.category || "General"
+          x =>
+            x.category ||
+            "General"
         )
       )
-    ].sort();
+    ]
+    .sort();
 
 
   $("category").innerHTML =
     '<option value="">All categories</option>' +
+
     cats
       .map(
-        c => `<option>${esc(c)}</option>`
+        c =>
+          `<option value="${esc(c)}">
+            ${esc(c)}
+          </option>`
       )
       .join("");
 
@@ -1878,19 +2150,19 @@ function filteredLinks(){
 
 
   const cat =
-    $("category").value;
+    $("category")
+      .value;
 
 
   return links.filter(x =>
 
     (!cat ||
-      (x.category || "General") === cat)
+      (x.category || "General")
+      === cat)
 
     &&
 
-    (
-      !q ||
-
+    (!q ||
       [
         x.title,
         x.url,
@@ -1932,8 +2204,7 @@ function card(x){
       <div
         style="
           display:flex;
-          justify-content:space-between;
-        ">
+          justify-content:space-between">
 
         <span class="tag">
           ${esc(x.category || "General")}
@@ -1942,9 +2213,7 @@ function card(x){
         <button
           class="btn"
           onclick="toggleFavorite('${x.id}')">
-
           ${fav ? "★" : "☆"}
-
         </button>
 
       </div>
@@ -2012,7 +2281,9 @@ function renderLinks(){
 
   $("linksGrid").innerHTML =
     arr.length
+
       ? arr.map(card).join("")
+
       : `
         <div class="empty">
           No approved links match your search.
@@ -2032,7 +2303,9 @@ function renderFavorites(){
 
   $("favoritesGrid").innerHTML =
     arr.length
+
       ? arr.map(card).join("")
+
       : `
         <div class="empty">
           You have no favorites yet.
@@ -2045,14 +2318,13 @@ function renderFavorites(){
 $("search").oninput =
   renderLinks;
 
-
 $("category").onchange =
   renderLinks;
 
 
-/* =========================================================
-   OPEN LINK
-========================================================= */
+/* ============================================================
+   OPEN / VOTE
+   ============================================================ */
 
 async function openLink(id){
 
@@ -2076,81 +2348,13 @@ async function openLink(id){
   await db
     .from("links")
     .update({
-      views:(x.views || 0) + 1
+      views:
+        (x.views || 0) + 1
     })
-    .eq("id",id);
+    .eq("id", id);
 
 }
 
-
-/* =========================================================
-   FAVORITE
-========================================================= */
-
-async function toggleFavorite(id){
-
-  if(!user){
-
-    openAuth();
-
-    toast(
-      "Sign in to favorite links."
-    );
-
-    return;
-
-  }
-
-
-  if(favorites.has(id)){
-
-    await db
-      .from("favorites")
-      .delete()
-      .eq("link_id",id)
-      .eq("user_id",user.id);
-
-    favorites.delete(id);
-
-  }else{
-
-    const {error} =
-      await db
-        .from("favorites")
-        .insert({
-          link_id:id,
-          user_id:user.id
-        });
-
-
-    if(error){
-
-      toast(error.message);
-
-      return;
-
-    }
-
-
-    favorites.add(id);
-
-  }
-
-
-  $("statFav").textContent =
-    favorites.size;
-
-
-  renderLinks();
-
-  renderFavorites();
-
-}
-
-
-/* =========================================================
-   VOTING
-========================================================= */
 
 async function vote(id,value){
 
@@ -2163,7 +2367,6 @@ async function vote(id,value){
     );
 
     return;
-
   }
 
 
@@ -2205,14 +2408,16 @@ async function vote(id,value){
   }
 
 
-  toast("Vote saved.");
+  toast(
+    "Vote saved."
+  );
 
 }
 
 
-/* =========================================================
+/* ============================================================
    SUBMIT LINK
-========================================================= */
+   ============================================================ */
 
 $("linkForm").onsubmit =
   async e => {
@@ -2229,7 +2434,6 @@ $("linkForm").onsubmit =
       );
 
       return;
-
     }
 
 
@@ -2256,7 +2460,11 @@ $("linkForm").onsubmit =
       $("linkTags")
         .value
         .split(",")
-        .map(x => x.trim().toLowerCase())
+        .map(
+          x =>
+            x.trim()
+              .toLowerCase()
+        )
         .filter(Boolean);
 
 
@@ -2290,438 +2498,344 @@ $("linkForm").onsubmit =
 
     if(error){
 
-      toast(error.message);
+      toast(
+        error.message
+      );
 
       return;
-
     }
 
 
     e.target.reset();
 
 
+    /*
+      The database trigger now creates
+      one notification for EVERY admin.
+    */
+
     toast(
-      "Submitted! Your link is pending moderation."
+      "Submitted! All admins have been notified."
     );
 
 
     showPage("home");
-
-
-    if(isAdmin)
-      await loadAdminPanel();
 
   };
 
 
-/* =========================================================
-   ADMIN PANEL
-========================================================= */
+/* ============================================================
+   ADMIN CENTER
+   ============================================================ */
 
-async function loadAdminPanel(){
+async function loadAdminCenter(){
 
-  /*
-    NEVER trust only the UI.
-
-    Check the database role again.
-  */
-
-  const allowed =
-    await verifyAdmin();
-
-
-  if(!allowed){
-
-    toast(
-      "Access denied. Admins only."
-    );
-
-    showPage("home");
-
+  if(!isAdmin)
     return;
 
-  }
 
-
-  /*
-    Load pending submissions.
-  */
-
-  const {
-    data:pending,
-    error:pendingError
-  } =
+  const {data,error} =
     await db
       .from("links")
       .select("*")
-      .eq("status","pending")
       .order(
         "created_at",
         {ascending:false}
       );
 
 
-  if(pendingError){
+  if(error){
+
+    console.error(
+      "Admin links:",
+      error
+    );
 
     toast(
-      "Could not load pending submissions: " +
-      pendingError.message
+      "Could not load admin submissions."
     );
 
     return;
-
   }
 
 
-  /*
-    Load approved links.
-  */
-
-  const {
-    data:approved,
-    error:approvedError
-  } =
-    await db
-      .from("links")
-      .select("*")
-      .eq("status","approved")
-      .order(
-        "created_at",
-        {ascending:false}
-      );
+  adminLinks =
+    data || [];
 
 
-  if(approvedError){
-
-    toast(
-      "Could not load approved links: " +
-      approvedError.message
+  const pending =
+    adminLinks.filter(
+      x => x.status === "pending"
     );
 
-    return;
 
-  }
-
-
-  const pendingItems =
-    pending || [];
+  const approved =
+    adminLinks.filter(
+      x => x.status === "approved"
+    );
 
 
-  const approvedItems =
-    approved || [];
+  const rejected =
+    adminLinks.filter(
+      x => x.status === "rejected"
+    );
 
 
   $("adminPendingCount")
     .textContent =
-    pendingItems.length;
+    pending.length;
 
 
   $("adminApprovedCount")
     .textContent =
-    approvedItems.length;
+    approved.length;
 
-
-  $("adminUserCount")
-    .textContent =
-    "ADMIN";
-
-
-  $("pendingBadge")
-    .textContent =
-    `${pendingItems.length} pending`;
-
-
-  renderPending(
-    pendingItems
-  );
-
-
-  renderAdminApproved(
-    approvedItems
-  );
-
-
-  /*
-    Also update the dashboard pending
-    count for the admin.
-  */
 
   $("statPending")
     .textContent =
-    pendingItems.length;
+    pending.length;
+
+
+  renderAdminPending(pending);
+
+  renderAdminApproved(approved);
+
+  renderAdminRejected(rejected);
+
+
+  await loadAdminNotifications();
 
 }
 
 
-/* =========================================================
-   RENDER PENDING
-========================================================= */
+/* ============================================================
+   ADMIN CARD
+   ============================================================ */
 
-function renderPending(items){
+function adminCard(x){
 
-  if(!items.length){
+  let statusClass =
+    "pending-tag";
 
-    $("pendingList").innerHTML = `
+  if(x.status === "approved")
+    statusClass =
+      "approved-tag";
 
-      <div class="empty">
-        <div style="font-size:35px">
-          ✓
-        </div>
+  if(x.status === "rejected")
+    statusClass =
+      "rejected-tag";
 
-        <div style="margin-top:10px">
-          No pending submissions.
-        </div>
 
-        <div
-          class="muted"
-          style="margin-top:5px">
-          The moderation queue is clear.
-        </div>
+  const tags =
+    (x.tags || [])
+      .map(
+        t =>
+          `<span class="tag">
+            #${esc(t)}
+          </span>`
+      )
+      .join("");
+
+
+  return `
+
+    <article
+      class="card admin-card">
+
+      <div>
+
+        <span
+          class="tag ${statusClass}">
+          ${esc(x.status)}
+        </span>
+
+        <span class="tag">
+          ${esc(x.category || "General")}
+        </span>
+
       </div>
 
-    `;
 
-    return;
-
-  }
-
-
-  $("pendingList").innerHTML =
-    items
-      .map(x => `
-
-        <div class="admin-card">
-
-          <div class="admin-card-title">
-
-            <div>
-
-              <span class="tag">
-                ${esc(
-                  x.category ||
-                  "General"
-                )}
-              </span>
-
-              <h3
-                style="margin:10px 0 5px">
-
-                ${esc(x.title)}
-
-              </h3>
-
-            </div>
-
-            <span
-              class="count-badge">
-              PENDING
-            </span>
-
-          </div>
+      <h3>
+        ${esc(x.title)}
+      </h3>
 
 
-          <div class="admin-meta">
-
-            Submitted by:
-            ${esc(
-              x.user_id ||
-              "Unknown user"
-            )}
-
-          </div>
+      <p>
+        ${esc(
+          x.description ||
+          "No description"
+        )}
+      </p>
 
 
-          <div class="admin-url">
-
-            ${esc(x.url)}
-
-          </div>
+      <div class="cardurl">
+        ${esc(x.url)}
+      </div>
 
 
-          <p class="muted">
-
-            ${esc(
-              x.description ||
-              "No description provided."
-            )}
-
-          </p>
+      <div>
+        ${tags}
+      </div>
 
 
-          ${
-            (x.tags || []).length
-            ? `
-              <div>
-                ${(x.tags || [])
-                  .map(
-                    t =>
-                      `<span class="tag">
-                        #${esc(t)}
-                      </span>`
-                  )
-                  .join("")}
-              </div>
-            `
-            : ""
-          }
+      <div class="admin-meta">
+
+        Submitted:
+        ${formatDate(x.created_at)}
+
+        <br>
+
+        Submitter:
+        ${esc(
+          x.user_id ||
+          "Unknown"
+        )}
+
+      </div>
 
 
-          <div class="admin-actions">
+      <div
+        class="actions"
+        style="margin-top:14px">
 
+        <button
+          class="btn"
+          onclick="adminOpenLink('${x.id}')">
+          Open
+        </button>
+
+
+        ${
+          x.status !== "approved"
+
+          ? `
             <button
-              class="btn good"
-              onclick="approveLink('${x.id}')">
-
+              class="btn success"
+              onclick="setLinkStatus('${x.id}','approved')">
               ✓ Approve
-
             </button>
+          `
+
+          : ""
+        }
 
 
+        ${
+          x.status !== "rejected"
+
+          ? `
             <button
-              class="btn danger"
-              onclick="rejectLink('${x.id}')">
-
+              class="btn warning"
+              onclick="setLinkStatus('${x.id}','rejected')">
               ✕ Reject
-
             </button>
+          `
+
+          : ""
+        }
 
 
-            <button
-              class="btn"
-              onclick="previewAdminLink('${esc(x.url)}')">
+        <button
+          class="btn danger"
+          onclick="deleteLink('${x.id}')">
+          Delete
+        </button>
 
-              ↗ Open Link
-
-            </button>
-
-          </div>
-
-        </div>
-
-      `)
-      .join("");
-
-}
-
-
-/* =========================================================
-   RENDER APPROVED
-========================================================= */
-
-function renderAdminApproved(items){
-
-  if(!items.length){
-
-    $("adminApprovedList").innerHTML = `
-
-      <div class="empty">
-        No approved links yet.
       </div>
 
-    `;
+    </article>
 
-    return;
-
-  }
-
-
-  $("adminApprovedList").innerHTML =
-    items
-      .map(x => `
-
-        <div class="admin-card">
-
-          <div class="admin-card-title">
-
-            <div>
-
-              <span class="tag">
-                ${esc(
-                  x.category ||
-                  "General"
-                )}
-              </span>
-
-              <h3
-                style="margin:10px 0 5px">
-
-                ${esc(x.title)}
-
-              </h3>
-
-            </div>
-
-            <span
-              style="
-                color:var(--good);
-                font-size:11px;
-              ">
-
-              ● APPROVED
-
-            </span>
-
-          </div>
-
-
-          <div class="admin-url">
-
-            ${esc(x.url)}
-
-          </div>
-
-
-          <div class="admin-meta">
-
-            Views:
-            ${Number(x.views || 0)}
-
-          </div>
-
-
-          <div class="admin-actions">
-
-            <button
-              class="btn"
-              onclick="previewAdminLink('${esc(x.url)}')">
-
-              ↗ Open
-
-            </button>
-
-
-            <button
-              class="btn danger"
-              onclick="removeApprovedLink('${x.id}')">
-
-              🗑 Remove
-
-            </button>
-
-          </div>
-
-        </div>
-
-      `)
-      .join("");
+  `;
 
 }
 
 
-/* =========================================================
-   ADMIN APPROVE
-========================================================= */
+function renderAdminPending(arr){
 
-async function approveLink(id){
+  $("pendingGrid").innerHTML =
+    arr.length
 
-  if(!await verifyAdmin()){
+      ? arr.map(adminCard).join("")
+
+      : `
+        <div class="empty">
+          🎉 No pending submissions.
+        </div>
+      `;
+
+}
+
+
+function renderAdminApproved(arr){
+
+  $("approvedAdminGrid").innerHTML =
+    arr.length
+
+      ? arr.map(adminCard).join("")
+
+      : `
+        <div class="empty">
+          No approved links.
+        </div>
+      `;
+
+}
+
+
+function renderAdminRejected(arr){
+
+  $("rejectedGrid").innerHTML =
+    arr.length
+
+      ? arr.map(adminCard).join("")
+
+      : `
+        <div class="empty">
+          No rejected links.
+        </div>
+      `;
+
+}
+
+
+/* ============================================================
+   ADMIN LINK ACTIONS
+   ============================================================ */
+
+function adminOpenLink(id){
+
+  const x =
+    adminLinks.find(
+      a => a.id === id
+    );
+
+
+  if(!x)
+    return;
+
+
+  window.open(
+    x.url,
+    "_blank",
+    "noopener,noreferrer"
+  );
+
+}
+
+
+async function setLinkStatus(
+  id,
+  status
+){
+
+  if(!isAdmin){
 
     toast(
-      "Access denied. Admins only."
+      "Admin access required."
     );
 
     return;
-
   }
 
 
@@ -2729,7 +2843,7 @@ async function approveLink(id){
     await db
       .from("links")
       .update({
-        status:"approved"
+        status
       })
       .eq("id",id);
 
@@ -2737,109 +2851,46 @@ async function approveLink(id){
   if(error){
 
     toast(
-      "Approve failed: " +
       error.message
     );
 
     return;
-
   }
 
 
   toast(
-    "Link approved."
+    status === "approved"
+      ? "Link approved."
+      : "Link rejected."
   );
 
 
-  await loadAdminPanel();
+  await loadAdminCenter();
 
   await loadLinks();
 
 }
 
 
-/* =========================================================
-   ADMIN REJECT
-========================================================= */
+async function deleteLink(id){
 
-async function rejectLink(id){
-
-  if(!await verifyAdmin()){
+  if(!isAdmin){
 
     toast(
-      "Access denied. Admins only."
+      "Admin access required."
     );
 
     return;
-
   }
 
 
-  const confirmed =
+  const ok =
     confirm(
-      "Reject this submission?"
+      "Delete this link permanently?"
     );
 
 
-  if(!confirmed)
-    return;
-
-
-  const {error} =
-    await db
-      .from("links")
-      .update({
-        status:"rejected"
-      })
-      .eq("id",id);
-
-
-  if(error){
-
-    toast(
-      "Reject failed: " +
-      error.message
-    );
-
-    return;
-
-  }
-
-
-  toast(
-    "Submission rejected."
-  );
-
-
-  await loadAdminPanel();
-
-}
-
-
-/* =========================================================
-   ADMIN REMOVE APPROVED LINK
-========================================================= */
-
-async function removeApprovedLink(id){
-
-  if(!await verifyAdmin()){
-
-    toast(
-      "Access denied. Admins only."
-    );
-
-    return;
-
-  }
-
-
-  const confirmed =
-    confirm(
-      "Remove this approved link from VEXO?"
-    );
-
-
-  if(!confirmed)
+  if(!ok)
     return;
 
 
@@ -2853,160 +2904,453 @@ async function removeApprovedLink(id){
   if(error){
 
     toast(
-      "Remove failed: " +
       error.message
     );
 
     return;
-
   }
 
 
   toast(
-    "Link removed."
+    "Link deleted."
   );
 
 
-  await loadAdminPanel();
+  await loadAdminCenter();
 
   await loadLinks();
 
 }
 
 
-/* =========================================================
-   ADMIN LINK PREVIEW
-========================================================= */
+/* ============================================================
+   ADMIN TABS
+   ============================================================ */
 
-function previewAdminLink(url){
+document
+  .querySelectorAll(".admin-tab")
+  .forEach(
+    button => {
+
+      button.onclick =
+        async () => {
+
+          if(!isAdmin){
+
+            toast(
+              "Admin access required."
+            );
+
+            return;
+          }
+
+
+          currentAdminTab =
+            button.dataset.adminTab;
+
+
+          document
+            .querySelectorAll(".admin-tab")
+            .forEach(
+              x =>
+                x.classList.toggle(
+                  "active",
+                  x === button
+                )
+            );
+
+
+          document
+            .querySelectorAll(
+              ".admin-tab-panel"
+            )
+            .forEach(
+              x =>
+                x.classList.add(
+                  "hidden"
+                )
+            );
+
+
+          if(
+            currentAdminTab ===
+            "pending"
+          ){
+
+            $("adminPendingPanel")
+              .classList
+              .remove("hidden");
+
+          }
+
+
+          if(
+            currentAdminTab ===
+            "approved"
+          ){
+
+            $("adminApprovedPanel")
+              .classList
+              .remove("hidden");
+
+          }
+
+
+          if(
+            currentAdminTab ===
+            "rejected"
+          ){
+
+            $("adminRejectedPanel")
+              .classList
+              .remove("hidden");
+
+          }
+
+
+          if(
+            currentAdminTab ===
+            "notifications"
+          ){
+
+            $("adminNotificationsPanel")
+              .classList
+              .remove("hidden");
+
+            await loadAdminNotifications();
+
+          }
+
+        };
+
+    }
+  );
+
+
+/* ============================================================
+   ADMIN NOTIFICATIONS
+   ============================================================ */
+
+async function loadAdminNotifications(){
+
+  if(!isAdmin || !user)
+    return;
+
+
+  const {data,error} =
+    await db
+      .from("admin_notifications")
+      .select("*")
+      .eq("admin_id",user.id)
+      .order(
+        "created_at",
+        {ascending:false}
+      )
+      .limit(100);
+
+
+  if(error){
+
+    console.error(
+      "Notifications:",
+      error
+    );
+
+    return;
+  }
+
+
+  adminNotifications =
+    data || [];
+
+
+  const unread =
+    adminNotifications.filter(
+      x => !x.read
+    ).length;
+
+
+  $("adminUnreadCount")
+    .textContent =
+    unread;
+
+
+  const badge =
+    $("notificationBadge");
+
+
+  if(unread > 0){
+
+    badge.textContent =
+      unread > 99
+        ? "99+"
+        : unread;
+
+    badge.classList
+      .remove("hidden");
+
+  }else{
+
+    badge.classList
+      .add("hidden");
+
+  }
+
+
+  renderNotifications();
+
+}
+
+
+function renderNotifications(){
+
+  if(!adminNotifications.length){
+
+    $("notificationsList").innerHTML = `
+
+      <div class="empty">
+        No admin notifications.
+      </div>
+
+    `;
+
+    return;
+  }
+
+
+  $("notificationsList").innerHTML =
+    adminNotifications
+      .map(
+        n => `
+
+          <div
+            class="notification ${
+              n.read
+                ? ""
+                : "unread"
+            }">
+
+            <strong>
+              ${esc(n.title)}
+            </strong>
+
+            <div>
+              ${esc(n.message)}
+            </div>
+
+            <small>
+              ${formatDate(n.created_at)}
+            </small>
+
+            ${
+              !n.read
+
+              ? `
+                <div
+                  style="margin-top:9px">
+
+                  <button
+                    class="btn"
+                    onclick="markNotificationRead('${n.id}')">
+                    Mark as read
+                  </button>
+
+                </div>
+              `
+
+              : ""
+            }
+
+          </div>
+
+        `
+      )
+      .join("");
+
+}
+
+
+async function markNotificationRead(id){
+
+  if(!isAdmin)
+    return;
+
+
+  const {error} =
+    await db
+      .from("admin_notifications")
+      .update({
+        read:true
+      })
+      .eq("id",id)
+      .eq("admin_id",user.id);
+
+
+  if(error){
+
+    toast(
+      error.message
+    );
+
+    return;
+  }
+
+
+  await loadAdminNotifications();
+
+}
+
+
+async function markAllNotificationsRead(){
+
+  if(!isAdmin || !user)
+    return;
+
+
+  const {error} =
+    await db
+      .from("admin_notifications")
+      .update({
+        read:true
+      })
+      .eq("admin_id",user.id)
+      .eq("read",false);
+
+
+  if(error){
+
+    toast(
+      error.message
+    );
+
+    return;
+  }
+
+
+  toast(
+    "All notifications marked as read."
+  );
+
+
+  await loadAdminNotifications();
+
+}
+
+
+/* ============================================================
+   DATE
+   ============================================================ */
+
+function formatDate(value){
+
+  if(!value)
+    return "Unknown";
+
 
   try{
 
-    const safe =
-      new URL(url);
-
-
-    if(
-      safe.protocol !== "http:" &&
-      safe.protocol !== "https:"
-    ){
-
-      toast(
-        "Invalid link."
-      );
-
-      return;
-
-    }
-
-
-    window.open(
-      safe.href,
-      "_blank",
-      "noopener,noreferrer"
-    );
+    return new Date(value)
+      .toLocaleString();
 
   }catch{
 
-    toast(
-      "Invalid URL."
-    );
+    return value;
 
   }
 
 }
 
 
-/* =========================================================
+/* ============================================================
    BACKGROUND SETTINGS
-========================================================= */
+   ============================================================ */
 
 document
   .querySelectorAll("[data-bg]")
-  .forEach(b => {
+  .forEach(
+    b =>
+      b.onclick = () => {
 
-    b.onclick = () => {
-
-      const v =
-        b.dataset.bg;
-
-
-      localStorage.setItem(
-        "vexo-bg",
-        v
-      );
+        const v =
+          b.dataset.bg;
 
 
-      $("grid").style.display =
-        v === "plain"
-          ? "none"
-          : "block";
-
-
-      document
-        .querySelectorAll(".orb")
-        .forEach(o =>
-          o.style.display =
-            v === "plain"
-              ? "none"
-              : "block"
+        localStorage.setItem(
+          "vexo-bg",
+          v
         );
 
 
-      if(v === "stars"){
+        $("grid").style.display =
+          v === "plain"
+            ? "none"
+            : "block";
 
-        $("scene").style.background =
-          `
-          radial-gradient(
-            circle at 20% 20%,
-            rgba(124,92,255,.2),
-            transparent 25%
-          ),
-          radial-gradient(
-            circle at 80% 60%,
-            rgba(25,211,255,.14),
-            transparent 25%
-          ),
-          #03040a
-          `;
 
-        $("grid").style.opacity =
-          ".18";
+        document
+          .querySelectorAll(".orb")
+          .forEach(
+            o =>
+              o.style.display =
+                v === "plain"
+                  ? "none"
+                  : "block"
+          );
+
+
+        if(v === "stars"){
+
+          $("scene").style.background =
+            `
+            radial-gradient(
+              circle at 20% 20%,
+              rgba(124,92,255,.2),
+              transparent 25%
+            ),
+            radial-gradient(
+              circle at 80% 60%,
+              rgba(25,211,255,.14),
+              transparent 25%
+            ),
+            #03040a
+            `;
+
+          $("grid").style.opacity =
+            ".18";
+
+        }
+
+        else if(v === "grid"){
+
+          $("scene").style.background =
+            `
+            radial-gradient(
+              circle at 50% 20%,
+              rgba(124,92,255,.15),
+              transparent 35%
+            ),
+            linear-gradient(
+              120deg,
+              #050711,
+              #0a0d1c 55%,
+              #070914
+            )
+            `;
+
+          $("grid").style.opacity =
+            "1";
+
+        }
+
+        else{
+
+          $("scene").style.background =
+            "#070914";
+
+        }
 
       }
-
-      else if(v === "grid"){
-
-        $("scene").style.background =
-          `
-          radial-gradient(
-            circle at 50% 20%,
-            rgba(124,92,255,.15),
-            transparent 35%
-          ),
-          linear-gradient(
-            120deg,
-            #050711,
-            #0a0d1c 55%,
-            #070914
-          )
-          `;
-
-        $("grid").style.opacity =
-          "1";
-
-      }
-
-      else{
-
-        $("scene").style.background =
-          "#070914";
-
-      }
-
-    };
-
-  });
+  );
 
 
 const saved =
@@ -3022,13 +3366,12 @@ document
   ?.click();
 
 
-/* =========================================================
+/* ============================================================
    CUSTOM CURSOR
-========================================================= */
+   ============================================================ */
 
 let mx = 0;
 let my = 0;
-
 let cx = 0;
 let cy = 0;
 
@@ -3091,22 +3434,24 @@ document.addEventListener(
   "mouseover",
   e => {
 
+    const cursor =
+      document.querySelector(
+        ".cursor"
+      );
+
+
     if(
       e.target.closest(
         "button,a,input,textarea,select"
       )
     ){
 
-      document
-        .querySelector(".cursor")
-        .style.transform =
+      cursor.style.transform =
         "translate(-50%,-50%) scale(1.35)";
 
     }else{
 
-      document
-        .querySelector(".cursor")
-        .style.transform =
+      cursor.style.transform =
         "translate(-50%,-50%) scale(1)";
 
     }
@@ -3115,9 +3460,9 @@ document.addEventListener(
 );
 
 
-/* =========================================================
-   SUPABASE AUTH EVENTS
-========================================================= */
+/* ============================================================
+   AUTH STATE LISTENER
+   ============================================================ */
 
 db.auth.onAuthStateChange(
   (_event,_session) => {
@@ -3131,9 +3476,9 @@ db.auth.onAuthStateChange(
 );
 
 
-/* =========================================================
+/* ============================================================
    START
-========================================================= */
+   ============================================================ */
 
 loadSession();
 
