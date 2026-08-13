@@ -19,7 +19,6 @@
   --accent2:#19d3ff;
   --good:#43e6a4;
   --danger:#ff557a;
-  --warning:#ffc857;
   --shadow:0 20px 70px rgba(0,0,0,.35)
 }
 
@@ -128,10 +127,15 @@ body{
   }
 }
 
-@keyframes pulse{
-  50%{
-    opacity:.55
-  }
+button,
+input,
+textarea,
+select{
+  font:inherit
+}
+
+button{
+  cursor:none
 }
 
 .app{
@@ -182,16 +186,32 @@ body{
   color:#fff
 }
 
-.admin-nav{
+.adminNav{
   display:none
 }
 
-.admin-nav.show{
+.adminNav.visible{
   display:block
 }
 
-.admin-nav button{
-  color:#ffc857
+.adminNav button{
+  color:#fff;
+  border-color:rgba(124,92,255,.3);
+  background:rgba(124,92,255,.08)
+}
+
+.notificationBadge{
+  display:inline-flex;
+  min-width:18px;
+  height:18px;
+  padding:0 5px;
+  align-items:center;
+  justify-content:center;
+  border-radius:99px;
+  background:var(--danger);
+  color:#fff;
+  font-size:10px;
+  margin-left:5px
 }
 
 .userbox{
@@ -235,12 +255,6 @@ body{
   border:1px solid rgba(67,230,164,.25);
   border-radius:99px;
   background:rgba(67,230,164,.06)
-}
-
-.admin-status{
-  color:#ffc857;
-  border-color:rgba(255,200,87,.25);
-  background:rgba(255,200,87,.06)
 }
 
 .panel{
@@ -298,16 +312,10 @@ body{
   border-color:rgba(255,85,122,.25)
 }
 
-.warning{
-  color:#fff;
-  background:rgba(255,200,87,.12);
-  border-color:rgba(255,200,87,.25)
-}
-
-.success{
+.good{
   color:#fff;
   background:rgba(67,230,164,.12);
-  border-color:rgba(67,230,164,.25)
+  border-color:rgba(67,230,164,.3)
 }
 
 .stats{
@@ -402,21 +410,6 @@ body{
   margin:3px 3px 0 0
 }
 
-.pending-tag{
-  color:#ffc857;
-  background:rgba(255,200,87,.08)
-}
-
-.approved-tag{
-  color:var(--good);
-  background:rgba(67,230,164,.08)
-}
-
-.rejected-tag{
-  color:var(--danger);
-  background:rgba(255,85,122,.08)
-}
-
 .cardurl{
   font-size:11px;
   color:#aab2d0;
@@ -424,38 +417,6 @@ body{
   overflow:hidden;
   text-overflow:ellipsis;
   margin:8px 0 12px
-}
-
-.admin-card{
-  border-color:rgba(255,200,87,.15)
-}
-
-.admin-card .admin-meta{
-  font-size:11px;
-  color:var(--muted);
-  margin-top:10px
-}
-
-.notification{
-  padding:14px;
-  border:1px solid var(--line);
-  border-radius:14px;
-  background:rgba(255,255,255,.025);
-  margin-bottom:10px
-}
-
-.notification.unread{
-  border-color:rgba(255,200,87,.35);
-  background:rgba(255,200,87,.04)
-}
-
-.notification strong{
-  display:block;
-  margin-bottom:5px
-}
-
-.notification small{
-  color:var(--muted)
 }
 
 .modal{
@@ -542,77 +503,77 @@ body{
   grid-column:1/-1
 }
 
-.admin-header{
+.submitter{
+  margin-top:14px;
+  padding:12px;
+  border:1px solid rgba(25,211,255,.15);
+  background:rgba(25,211,255,.035);
+  border-radius:12px
+}
+
+.submitter strong{
+  display:block
+}
+
+.submitter small{
+  color:var(--muted)
+}
+
+.notification{
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  margin-bottom:9px;
+  background:rgba(255,255,255,.025)
+}
+
+.notification.unread{
+  border-color:rgba(124,92,255,.45);
+  background:rgba(124,92,255,.07)
+}
+
+.notification small{
+  color:var(--muted)
+}
+
+.adminHeader{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:15px;
-  margin-bottom:18px
-}
-
-.admin-tabs{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-bottom:18px
-}
-
-.admin-tab{
-  border:1px solid var(--line);
-  background:rgba(255,255,255,.04);
-  color:var(--muted);
-  padding:9px 13px;
-  border-radius:10px
-}
-
-.admin-tab.active{
-  color:#fff;
-  border-color:rgba(255,200,87,.35);
-  background:rgba(255,200,87,.08)
-}
-
-.admin-stat-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
   gap:12px;
-  margin-bottom:18px
+  margin-bottom:20px
 }
 
-.admin-table{
-  width:100%;
-  border-collapse:collapse
+.adminHeader h2{
+  margin:0
 }
 
-.admin-table th,
-.admin-table td{
-  text-align:left;
-  padding:12px 10px;
-  border-bottom:1px solid var(--line);
-  font-size:13px
-}
-
-.admin-table th{
-  color:var(--muted);
-  font-size:11px;
-  text-transform:uppercase;
-  letter-spacing:.06em
-}
-
-.notification-count{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:18px;
-  height:18px;
-  padding:0 5px;
-  margin-left:5px;
+.statusBadge{
+  display:inline-block;
+  padding:5px 9px;
   border-radius:99px;
-  font-size:9px;
-  background:var(--danger);
-  color:#fff
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.05em
+}
+
+.statusPending{
+  background:rgba(255,196,79,.1);
+  color:#ffd36e
+}
+
+.statusApproved{
+  background:rgba(67,230,164,.1);
+  color:var(--good)
+}
+
+.statusRejected{
+  background:rgba(255,85,122,.1);
+  color:var(--danger)
 }
 
 @media(max-width:850px){
+
   .side{
     width:72px
   }
@@ -640,12 +601,10 @@ body{
     grid-template-columns:1fr 1fr
   }
 
-  .admin-stat-grid{
-    grid-template-columns:1fr
-  }
 }
 
 @media(max-width:520px){
+
   .stats{
     grid-template-columns:1fr
   }
@@ -659,10 +618,6 @@ body{
     flex-direction:column
   }
 
-  .admin-table{
-    display:block;
-    overflow-x:auto
-  }
 }
 </style>
 </head>
@@ -671,12 +626,14 @@ body{
 
 <div id="scene"></div>
 <div id="grid"></div>
+
 <div class="orb o1"></div>
 <div class="orb o2"></div>
 <div class="orb o3"></div>
 
 <div class="cursor"></div>
 <div class="cursor-dot"></div>
+
 
 <div class="app">
 
@@ -705,11 +662,18 @@ body{
     </button>
 
     <!-- ADMIN ONLY -->
-    <div id="adminNav" class="admin-nav">
+    <div class="adminNav" id="adminNav">
 
       <button data-page="admin">
-        🛡 <span>Admin Center</span>
-        <span id="notificationBadge" class="notification-count hidden">0</span>
+
+        🛡️ <span>Admin Center</span>
+
+        <span
+          class="notificationBadge hidden"
+          id="notificationBadge">
+          0
+        </span>
+
       </button>
 
     </div>
@@ -720,12 +684,19 @@ body{
 
   </div>
 
+
   <div class="userbox" id="userBox">
+
     <small>Not signed in</small>
+
     <br>
-    <button class="btn primary" id="loginBtn">
+
+    <button
+      class="btn primary"
+      id="loginBtn">
       Sign in
     </button>
+
   </div>
 
 </aside>
@@ -741,13 +712,15 @@ body{
         VEXO
       </h1>
 
-      <div class="muted" id="pageSub">
+      <div
+        class="muted"
+        id="pageSub">
         A futuristic community for useful links.
       </div>
 
     </div>
 
-    <div class="status" id="statusPill">
+    <div class="status">
       ● SUPABASE ONLINE
     </div>
 
@@ -756,13 +729,15 @@ body{
 
   <!-- HOME -->
 
-  <section id="homePage" class="page">
+  <section
+    id="homePage"
+    class="page">
 
     <div class="panel hero">
 
       <h2>
-        Discover the web.
-        <br>
+        Discover the web.<br>
+
         <span style="color:var(--accent2)">
           Build VEXO together.
         </span>
@@ -810,8 +785,8 @@ body{
       </div>
 
       <div class="stat">
-        <strong id="statPending">—</strong>
-        <span>Pending submissions</span>
+        <strong id="statAdmin">—</strong>
+        <span>Admin access</span>
       </div>
 
     </div>
@@ -821,7 +796,9 @@ body{
 
   <!-- VAULT -->
 
-  <section id="vaultPage" class="page hidden">
+  <section
+    id="vaultPage"
+    class="page hidden">
 
     <div class="panel">
 
@@ -830,14 +807,12 @@ body{
         <input
           class="input search"
           id="search"
-          placeholder="Search links, tags, categories..."
-        >
+          placeholder="Search links, tags, categories...">
 
         <select
           class="select"
           id="category"
-          style="width:180px"
-        >
+          style="width:180px">
 
           <option value="">
             All categories
@@ -898,7 +873,8 @@ body{
       </h2>
 
       <p class="muted">
-        Sign in first. New links start as pending until approved by a moderator.
+        Sign in first. New links start as pending until approved
+        by an administrator.
       </p>
 
       <form
@@ -915,8 +891,7 @@ body{
             class="input"
             id="linkTitle"
             required
-            placeholder="Example Tool"
-          >
+            placeholder="Example Tool">
 
         </div>
 
@@ -932,8 +907,7 @@ body{
             id="linkURL"
             required
             type="url"
-            placeholder="https://example.com"
-          >
+            placeholder="https://example.com">
 
         </div>
 
@@ -949,8 +923,7 @@ body{
             <input
               class="input"
               id="linkCategory"
-              placeholder="Tools"
-            >
+              placeholder="Tools">
 
           </div>
 
@@ -964,8 +937,7 @@ body{
             <input
               class="input"
               id="linkTags"
-              placeholder="ai, web, coding"
-            >
+              placeholder="ai, web, coding">
 
           </div>
 
@@ -982,8 +954,8 @@ body{
             class="textarea"
             id="linkDesc"
             rows="4"
-            placeholder="What makes this useful?"
-          ></textarea>
+            placeholder="What makes this useful?">
+          </textarea>
 
         </div>
 
@@ -1001,9 +973,9 @@ body{
   </section>
 
 
-  <!-- ======================================================
+  <!-- =====================================================
        ADMIN CENTER
-       ====================================================== -->
+       ===================================================== -->
 
   <section
     id="adminPage"
@@ -1011,168 +983,62 @@ body{
 
     <div class="panel">
 
-      <div class="admin-header">
+      <div class="adminHeader">
 
         <div>
 
-          <h2 style="margin:0">
-            🛡 VEXO Admin Center
+          <h2>
+            🛡️ VEXO Admin Center
           </h2>
 
-          <p
-            class="muted"
-            style="margin-bottom:0">
-            Moderation tools for VEXO administrators.
+          <p class="muted">
+            Administrator moderation dashboard.
           </p>
 
         </div>
 
-        <div
-          class="status admin-status">
-          ● ADMIN ACCESS
-        </div>
-
-      </div>
-
-
-      <div class="admin-stat-grid">
-
-        <div class="stat">
-
-          <strong id="adminPendingCount">
-            0
-          </strong>
-
-          <span>
-            Pending submissions
-          </span>
-
-        </div>
-
-
-        <div class="stat">
-
-          <strong id="adminApprovedCount">
-            0
-          </strong>
-
-          <span>
-            Approved links
-          </span>
-
-        </div>
-
-
-        <div class="stat">
-
-          <strong id="adminUnreadCount">
-            0
-          </strong>
-
-          <span>
-            Unread notifications
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <div class="admin-tabs">
-
         <button
-          class="admin-tab active"
-          data-admin-tab="pending">
-          Pending
-        </button>
-
-        <button
-          class="admin-tab"
-          data-admin-tab="approved">
-          Approved
-        </button>
-
-        <button
-          class="admin-tab"
-          data-admin-tab="rejected">
-          Rejected
-        </button>
-
-        <button
-          class="admin-tab"
-          data-admin-tab="notifications">
-          Notifications
+          class="btn"
+          onclick="loadAdminData()">
+          ↻ Refresh
         </button>
 
       </div>
 
 
-      <!-- Pending -->
+      <!-- ADMIN NOTIFICATIONS -->
 
-      <div
-        id="adminPendingPanel"
-        class="admin-tab-panel">
+      <h3>
+        🔔 Admin Notifications
+      </h3>
 
-        <div
-          id="pendingGrid"
-          class="grid">
+      <div id="adminNotifications">
+        <div class="empty">
+          Loading notifications...
         </div>
-
       </div>
 
 
-      <!-- Approved -->
+      <hr
+        style="border:0;border-top:1px solid var(--line);margin:25px 0">
+
+
+      <!-- PENDING SUBMISSIONS -->
+
+      <h3>
+        📥 Link Submissions
+      </h3>
+
+      <p class="muted">
+        Every submission is shown here before it becomes public.
+      </p>
 
       <div
-        id="adminApprovedPanel"
-        class="admin-tab-panel hidden">
+        class="grid"
+        id="adminSubmissions">
 
-        <div
-          id="approvedAdminGrid"
-          class="grid">
-        </div>
-
-      </div>
-
-
-      <!-- Rejected -->
-
-      <div
-        id="adminRejectedPanel"
-        class="admin-tab-panel hidden">
-
-        <div
-          id="rejectedGrid"
-          class="grid">
-        </div>
-
-      </div>
-
-
-      <!-- Notifications -->
-
-      <div
-        id="adminNotificationsPanel"
-        class="admin-tab-panel hidden">
-
-        <div class="actions" style="margin-bottom:15px">
-
-          <button
-            class="btn success"
-            onclick="markAllNotificationsRead()">
-            Mark all as read
-          </button>
-
-          <button
-            class="btn"
-            onclick="loadAdminNotifications()">
-            Refresh
-          </button>
-
-        </div>
-
-        <div
-          id="notificationsList">
+        <div class="empty">
+          Loading submissions...
         </div>
 
       </div>
@@ -1238,7 +1104,7 @@ body{
 </div>
 
 
-<!-- AUTH MODAL -->
+<!-- AUTH -->
 
 <div
   class="modal"
@@ -1262,6 +1128,7 @@ body{
       Enter your VEXO account.
     </p>
 
+
     <form
       id="authForm"
       class="form">
@@ -1278,8 +1145,7 @@ body{
           class="input"
           id="username"
           maxlength="24"
-          placeholder="vexo_user"
-        >
+          placeholder="vexo_user">
 
       </div>
 
@@ -1294,8 +1160,7 @@ body{
           class="input"
           id="email"
           type="email"
-          required
-        >
+          required>
 
       </div>
 
@@ -1311,8 +1176,7 @@ body{
           id="password"
           type="password"
           minlength="6"
-          required
-        >
+          required>
 
       </div>
 
@@ -1349,9 +1213,9 @@ body{
 
 <script>
 
-/* ============================================================
+/* =========================================================
    SUPABASE
-   ============================================================ */
+   ========================================================= */
 
 const SUPABASE_URL =
   "https://jxxjvwemjvhrozuaihso.supabase.co";
@@ -1366,26 +1230,24 @@ const db =
   );
 
 
-/* ============================================================
+/* =========================================================
    STATE
-   ============================================================ */
+   ========================================================= */
 
 let user = null;
+
 let isAdmin = false;
 
 let links = [];
-let adminLinks = [];
 
 let favorites = new Set();
-let adminNotifications = [];
 
 let authMode = "login";
-let currentAdminTab = "pending";
 
 
-/* ============================================================
+/* =========================================================
    HELPERS
-   ============================================================ */
+   ========================================================= */
 
 const $ = id =>
   document.getElementById(id);
@@ -1398,11 +1260,9 @@ function toast(msg){
   $("toast").classList.add("show");
 
   setTimeout(
-    () =>
-      $("toast").classList.remove("show"),
+    () => $("toast").classList.remove("show"),
     2600
   );
-
 }
 
 
@@ -1410,36 +1270,40 @@ function esc(v = ""){
 
   return String(v).replace(
     /[&<>"']/g,
-    m =>
-      ({
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#039;"
-      }[m])
+    m => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[m])
   );
-
 }
 
 
-/* ============================================================
+function formatDate(date){
+
+  if(!date) return "";
+
+  return new Date(date).toLocaleString(
+    undefined,
+    {
+      dateStyle:"medium",
+      timeStyle:"short"
+    }
+  );
+}
+
+
+/* =========================================================
    PAGE NAVIGATION
-   ============================================================ */
+   ========================================================= */
 
 function showPage(name){
-
-  /*
-    Extra security:
-    even if someone manually calls showPage("admin"),
-    the page cannot open unless isAdmin is true.
-  */
 
   if(name === "admin" && !isAdmin){
 
     toast("Admin access required.");
-
-    showPage("home");
 
     return;
   }
@@ -1447,33 +1311,26 @@ function showPage(name){
 
   document
     .querySelectorAll(".page")
-    .forEach(
-      x => x.classList.add("hidden")
+    .forEach(x =>
+      x.classList.add("hidden")
     );
 
 
-  const target =
+  const page =
     $(name + "Page");
 
-  if(!target){
+  if(!page) return;
 
-    showPage("home");
-
-    return;
-  }
-
-
-  target.classList.remove("hidden");
+  page.classList.remove("hidden");
 
 
   document
     .querySelectorAll(".nav button")
-    .forEach(
-      b =>
-        b.classList.toggle(
-          "active",
-          b.dataset.page === name
-        )
+    .forEach(b =>
+      b.classList.toggle(
+        "active",
+        b.dataset.page === name
+      )
     );
 
 
@@ -1523,47 +1380,27 @@ function showPage(name){
     renderFavorites();
 
 
-  if(name === "admin"){
-
-    if(!isAdmin){
-
-      toast("You are not an administrator.");
-
-      showPage("home");
-
-      return;
-    }
-
-    loadAdminCenter();
-
-  }
-
+  if(name === "admin")
+    loadAdminData();
 }
 
 
-/* ============================================================
-   NAV BUTTONS
-   ============================================================ */
-
 document
   .querySelectorAll(".nav button")
-  .forEach(
-    b =>
-      b.onclick =
-        () =>
-          showPage(b.dataset.page)
+  .forEach(b =>
+    b.onclick = () =>
+      showPage(b.dataset.page)
   );
 
 
-/* ============================================================
-   AUTH
-   ============================================================ */
+/* =========================================================
+   AUTH MODAL
+   ========================================================= */
 
 function openAuth(){
 
   $("authModal")
-    .classList
-    .add("open");
+    .classList.add("open");
 
 }
 
@@ -1571,8 +1408,7 @@ function openAuth(){
 function closeAuth(){
 
   $("authModal")
-    .classList
-    .remove("open");
+    .classList.remove("open");
 
 }
 
@@ -1614,14 +1450,17 @@ $("switchAuth").onclick = () => {
 
 
   $("usernameWrap")
-    .classList
-    .toggle(
+    .classList.toggle(
       "hidden",
       authMode === "login"
     );
 
 };
 
+
+/* =========================================================
+   AUTH FORM
+   ========================================================= */
 
 $("authForm").onsubmit =
   async e => {
@@ -1630,17 +1469,13 @@ $("authForm").onsubmit =
 
 
     const email =
-      $("email")
-        .value
-        .trim();
+      $("email").value.trim();
 
     const password =
       $("password").value;
 
     const username =
-      $("username")
-        .value
-        .trim();
+      $("username").value.trim();
 
 
     let res;
@@ -1668,11 +1503,8 @@ $("authForm").onsubmit =
 
       res =
         await db.auth.signInWithPassword({
-
           email,
-
           password
-
         });
 
     }
@@ -1680,9 +1512,7 @@ $("authForm").onsubmit =
 
     if(res.error){
 
-      toast(
-        res.error.message
-      );
+      toast(res.error.message);
 
       return;
     }
@@ -1713,12 +1543,14 @@ $("authForm").onsubmit =
   };
 
 
+/* =========================================================
+   LOGOUT
+   ========================================================= */
+
 $("logoutBtn").onclick =
   async () => {
 
     await db.auth.signOut();
-
-    isAdmin = false;
 
     toast("Signed out.");
 
@@ -1729,62 +1561,15 @@ $("logoutBtn").onclick =
   };
 
 
-/* ============================================================
-   CHECK ADMIN ROLE
-   ============================================================ */
-
-async function checkAdmin(){
-
-  if(!user){
-
-    isAdmin = false;
-
-    return false;
-  }
-
-
-  /*
-    This checks your existing public.user_roles table.
-
-    The database RLS should also enforce admin permissions.
-  */
-
-  const {data,error} =
-    await db
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-
-
-  if(error){
-
-    console.error(
-      "Admin check failed:",
-      error
-    );
-
-    isAdmin = false;
-
-    return false;
-  }
-
-
-  isAdmin = !!data;
-
-  return isAdmin;
-
-}
-
-
-/* ============================================================
-   SESSION
-   ============================================================ */
+/* =========================================================
+   SESSION + ADMIN CHECK
+   ========================================================= */
 
 async function loadSession(){
 
-  const {data} =
+  const {
+    data
+  } =
     await db.auth.getSession();
 
 
@@ -1792,19 +1577,40 @@ async function loadSession(){
     data.session?.user || null;
 
 
-  await checkAdmin();
+  /*
+   * IMPORTANT:
+   * The database decides whether this account is admin.
+   */
 
-
-  updateAdminUI();
+  isAdmin = false;
 
 
   if(user){
 
-    const {data:p} =
+    const {
+      data:adminResult,
+      error:adminError
+    } =
+      await db.rpc("is_admin");
+
+
+    if(
+      !adminError &&
+      adminResult === true
+    ){
+
+      isAdmin = true;
+
+    }
+
+
+    const {
+      data:p
+    } =
       await db
         .from("profiles")
         .select("username")
-        .eq("id", user.id)
+        .eq("id",user.id)
         .maybeSingle();
 
 
@@ -1830,13 +1636,9 @@ async function loadSession(){
         isAdmin
           ? `
             <br>
-            <span
-              style="
-                color:#ffc857;
-                font-size:11px
-              ">
-              🛡 Administrator
-            </span>
+            <small style="color:var(--accent2)">
+              🛡️ Administrator
+            </small>
           `
           : ""
       }
@@ -1845,9 +1647,11 @@ async function loadSession(){
 
 
     $("statUsers").textContent =
-      isAdmin
-        ? "ADMIN"
-        : "YOU";
+      "YOU";
+
+
+    $("statAdmin").textContent =
+      isAdmin ? "YES" : "NO";
 
 
   }else{
@@ -1876,6 +1680,29 @@ async function loadSession(){
     $("statUsers").textContent =
       "—";
 
+
+    $("statAdmin").textContent =
+      "—";
+
+  }
+
+
+  /*
+   * Show Admin Center ONLY to admins.
+   */
+
+  $("adminNav")
+    .classList.toggle(
+      "visible",
+      isAdmin
+    );
+
+
+  if(!isAdmin){
+
+    $("notificationBadge")
+      .classList.add("hidden");
+
   }
 
 
@@ -1886,78 +1713,16 @@ async function loadSession(){
 
   if(isAdmin){
 
-    await loadAdminNotifications();
-
-    await loadAdminCenter();
-
-  }else{
-
-    $("statPending").textContent =
-      "—";
+    await updateNotificationBadge();
 
   }
 
 }
 
 
-/* ============================================================
-   ADMIN UI
-   ============================================================ */
-
-function updateAdminUI(){
-
-  const nav =
-    $("adminNav");
-
-
-  if(isAdmin){
-
-    nav.classList.add("show");
-
-    $("statusPill")
-      .textContent =
-      "● ADMIN ACCESS";
-
-    $("statusPill")
-      .classList
-      .add("admin-status");
-
-  }else{
-
-    nav.classList.remove("show");
-
-    $("statusPill")
-      .textContent =
-      "● SUPABASE ONLINE";
-
-    $("statusPill")
-      .classList
-      .remove("admin-status");
-
-
-    /*
-      If the user somehow was on admin page,
-      kick them back to home.
-    */
-
-    if(
-      !$("adminPage")
-        .classList
-        .contains("hidden")
-    ){
-
-      showPage("home");
-
-    }
-
-  }
-
-}
-
-
-/* ============================================================
+/* =========================================================
    FAVORITES
-   ============================================================ */
+   ========================================================= */
 
 async function loadFavorites(){
 
@@ -1966,19 +1731,22 @@ async function loadFavorites(){
     favorites =
       new Set();
 
-    $("statFav")
-      .textContent =
+    $("statFav").textContent =
       "0";
 
     return;
+
   }
 
 
-  const {data,error} =
+  const {
+    data,
+    error
+  } =
     await db
       .from("favorites")
       .select("link_id")
-      .eq("user_id", user.id);
+      .eq("user_id",user.id);
 
 
   if(error){
@@ -1986,6 +1754,7 @@ async function loadFavorites(){
     console.error(error);
 
     return;
+
   }
 
 
@@ -1996,8 +1765,7 @@ async function loadFavorites(){
     );
 
 
-  $("statFav")
-    .textContent =
+  $("statFav").textContent =
     favorites.size;
 
 }
@@ -2014,6 +1782,7 @@ async function toggleFavorite(id){
     );
 
     return;
+
   }
 
 
@@ -2022,15 +1791,16 @@ async function toggleFavorite(id){
     await db
       .from("favorites")
       .delete()
-      .eq("link_id", id)
-      .eq("user_id", user.id);
-
+      .eq("link_id",id)
+      .eq("user_id",user.id);
 
     favorites.delete(id);
 
   }else{
 
-    const {error} =
+    const {
+      error
+    } =
       await db
         .from("favorites")
         .insert({
@@ -2041,11 +1811,10 @@ async function toggleFavorite(id){
 
     if(error){
 
-      toast(
-        error.message
-      );
+      toast(error.message);
 
       return;
+
     }
 
 
@@ -2054,8 +1823,7 @@ async function toggleFavorite(id){
   }
 
 
-  $("statFav")
-    .textContent =
+  $("statFav").textContent =
     favorites.size;
 
 
@@ -2066,32 +1834,34 @@ async function toggleFavorite(id){
 }
 
 
-/* ============================================================
-   LINKS
-   ============================================================ */
+/* =========================================================
+   LOAD LINKS
+   ========================================================= */
 
 async function loadLinks(){
 
-  const {data,error} =
+  const {
+    data,
+    error
+  } =
     await db
       .from("links")
       .select("*")
       .eq("status","approved")
       .order(
         "created_at",
-        {ascending:false}
+        {
+          ascending:false
+        }
       );
 
 
   if(error){
 
-    console.error(error);
-
-    toast(
-      error.message
-    );
+    toast(error.message);
 
     return;
+
   }
 
 
@@ -2099,8 +1869,7 @@ async function loadLinks(){
     data || [];
 
 
-  $("statLinks")
-    .textContent =
+  $("statLinks").textContent =
     links.length;
 
 
@@ -2117,26 +1886,29 @@ function buildCategories(){
     [
       ...new Set(
         links.map(
-          x =>
-            x.category ||
-            "General"
+          x => x.category || "General"
         )
       )
-    ]
-    .sort();
+    ].sort();
 
 
   $("category").innerHTML =
-    '<option value="">All categories</option>' +
+    `
+      <option value="">
+        All categories
+      </option>
 
-    cats
-      .map(
-        c =>
-          `<option value="${esc(c)}">
-            ${esc(c)}
-          </option>`
-      )
-      .join("");
+      ${
+        cats
+          .map(
+            c =>
+              `<option value="${esc(c)}">
+                ${esc(c)}
+              </option>`
+          )
+          .join("")
+      }
+    `;
 
 }
 
@@ -2150,19 +1922,21 @@ function filteredLinks(){
 
 
   const cat =
-    $("category")
-      .value;
+    $("category").value;
 
 
   return links.filter(x =>
 
-    (!cat ||
-      (x.category || "General")
-      === cat)
+    (
+      !cat ||
+      (x.category || "General") === cat
+    )
 
     &&
 
-    (!q ||
+    (
+      !q ||
+
       [
         x.title,
         x.url,
@@ -2173,12 +1947,17 @@ function filteredLinks(){
       .join(" ")
       .toLowerCase()
       .includes(q)
+
     )
 
   );
 
 }
 
+
+/* =========================================================
+   PUBLIC LINK CARD
+   ========================================================= */
 
 function card(x){
 
@@ -2204,7 +1983,9 @@ function card(x){
       <div
         style="
           display:flex;
-          justify-content:space-between">
+          justify-content:space-between;
+          align-items:center
+        ">
 
         <span class="tag">
           ${esc(x.category || "General")}
@@ -2213,7 +1994,9 @@ function card(x){
         <button
           class="btn"
           onclick="toggleFavorite('${x.id}')">
+
           ${fav ? "★" : "☆"}
+
         </button>
 
       </div>
@@ -2318,13 +2101,14 @@ function renderFavorites(){
 $("search").oninput =
   renderLinks;
 
+
 $("category").onchange =
   renderLinks;
 
 
-/* ============================================================
-   OPEN / VOTE
-   ============================================================ */
+/* =========================================================
+   OPEN LINK
+   ========================================================= */
 
 async function openLink(id){
 
@@ -2334,8 +2118,7 @@ async function openLink(id){
     );
 
 
-  if(!x)
-    return;
+  if(!x) return;
 
 
   window.open(
@@ -2348,13 +2131,16 @@ async function openLink(id){
   await db
     .from("links")
     .update({
-      views:
-        (x.views || 0) + 1
+      views:(x.views || 0) + 1
     })
-    .eq("id", id);
+    .eq("id",id);
 
 }
 
+
+/* =========================================================
+   VOTING
+   ========================================================= */
 
 async function vote(id,value){
 
@@ -2367,10 +2153,13 @@ async function vote(id,value){
     );
 
     return;
+
   }
 
 
-  const {data:old} =
+  const {
+    data:old
+  } =
     await db
       .from("votes")
       .select("id,vote")
@@ -2408,16 +2197,14 @@ async function vote(id,value){
   }
 
 
-  toast(
-    "Vote saved."
-  );
+  toast("Vote saved.");
 
 }
 
 
-/* ============================================================
+/* =========================================================
    SUBMIT LINK
-   ============================================================ */
+   ========================================================= */
 
 $("linkForm").onsubmit =
   async e => {
@@ -2434,6 +2221,7 @@ $("linkForm").onsubmit =
       );
 
       return;
+
     }
 
 
@@ -2452,8 +2240,8 @@ $("linkForm").onsubmit =
     const category =
       $("linkCategory")
         .value
-        .trim() ||
-      "General";
+        .trim()
+        || "General";
 
 
     const tags =
@@ -2463,7 +2251,7 @@ $("linkForm").onsubmit =
         .map(
           x =>
             x.trim()
-              .toLowerCase()
+             .toLowerCase()
         )
         .filter(Boolean);
 
@@ -2474,7 +2262,18 @@ $("linkForm").onsubmit =
         .trim();
 
 
-    const {error} =
+    /*
+     * The database policy forces:
+     *
+     * user_id = current user
+     * status = pending
+     *
+     * So users cannot submit something directly as approved.
+     */
+
+    const {
+      error
+    } =
       await db
         .from("links")
         .insert({
@@ -2503,19 +2302,15 @@ $("linkForm").onsubmit =
       );
 
       return;
+
     }
 
 
     e.target.reset();
 
 
-    /*
-      The database trigger now creates
-      one notification for EVERY admin.
-    */
-
     toast(
-      "Submitted! All admins have been notified."
+      "Submitted! All administrators have been notified."
     );
 
 
@@ -2524,106 +2319,100 @@ $("linkForm").onsubmit =
   };
 
 
-/* ============================================================
+/* =========================================================
    ADMIN CENTER
-   ============================================================ */
+   ========================================================= */
 
-async function loadAdminCenter(){
+async function loadAdminData(){
 
-  if(!isAdmin)
-    return;
-
-
-  const {data,error} =
-    await db
-      .from("links")
-      .select("*")
-      .order(
-        "created_at",
-        {ascending:false}
-      );
-
-
-  if(error){
-
-    console.error(
-      "Admin links:",
-      error
-    );
+  if(!isAdmin){
 
     toast(
-      "Could not load admin submissions."
+      "Admin access required."
     );
 
     return;
+
   }
-
-
-  adminLinks =
-    data || [];
-
-
-  const pending =
-    adminLinks.filter(
-      x => x.status === "pending"
-    );
-
-
-  const approved =
-    adminLinks.filter(
-      x => x.status === "approved"
-    );
-
-
-  const rejected =
-    adminLinks.filter(
-      x => x.status === "rejected"
-    );
-
-
-  $("adminPendingCount")
-    .textContent =
-    pending.length;
-
-
-  $("adminApprovedCount")
-    .textContent =
-    approved.length;
-
-
-  $("statPending")
-    .textContent =
-    pending.length;
-
-
-  renderAdminPending(pending);
-
-  renderAdminApproved(approved);
-
-  renderAdminRejected(rejected);
 
 
   await loadAdminNotifications();
 
+  await loadAdminSubmissions();
+
 }
 
 
-/* ============================================================
-   ADMIN CARD
-   ============================================================ */
+/* =========================================================
+   ADMIN SUBMISSIONS
+   ========================================================= */
 
-function adminCard(x){
+async function loadAdminSubmissions(){
 
-  let statusClass =
-    "pending-tag";
+  const container =
+    $("adminSubmissions");
 
-  if(x.status === "approved")
-    statusClass =
-      "approved-tag";
 
-  if(x.status === "rejected")
-    statusClass =
-      "rejected-tag";
+  container.innerHTML = `
+    <div class="empty">
+      Loading submissions...
+    </div>
+  `;
+
+
+  const {
+    data,
+    error
+  } =
+    await db.rpc(
+      "get_admin_submissions"
+    );
+
+
+  if(error){
+
+    console.error(error);
+
+    container.innerHTML = `
+      <div class="empty">
+        ${esc(error.message)}
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  if(!data?.length){
+
+    container.innerHTML = `
+      <div class="empty">
+        No submissions yet.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    data.map(
+      x => adminSubmissionCard(x)
+    ).join("");
+
+}
+
+
+function adminSubmissionCard(x){
+
+  const statusClass =
+    x.status === "approved"
+      ? "statusApproved"
+      : x.status === "rejected"
+        ? "statusRejected"
+        : "statusPending";
 
 
   const tags =
@@ -2639,18 +2428,28 @@ function adminCard(x){
 
   return `
 
-    <article
-      class="card admin-card">
+    <article class="card">
 
-      <div>
-
-        <span
-          class="tag ${statusClass}">
-          ${esc(x.status)}
-        </span>
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          gap:10px;
+          align-items:center
+        ">
 
         <span class="tag">
-          ${esc(x.category || "General")}
+          ${esc(
+            x.category ||
+            "General"
+          )}
+        </span>
+
+        <span
+          class="statusBadge ${statusClass}">
+
+          ${esc(x.status)}
+
         </span>
 
       </div>
@@ -2679,70 +2478,108 @@ function adminCard(x){
       </div>
 
 
-      <div class="admin-meta">
+      <!-- WHO SUBMITTED IT -->
 
-        Submitted:
-        ${formatDate(x.created_at)}
+      <div class="submitter">
+
+        <small>
+          SUBMITTED BY
+        </small>
+
+        <strong>
+          ${esc(
+            x.submitter_username ||
+            "Unknown user"
+          )}
+        </strong>
+
+        <small>
+          ${esc(
+            x.submitter_email ||
+            "No email available"
+          )}
+        </small>
 
         <br>
 
-        Submitter:
-        ${esc(
-          x.user_id ||
-          "Unknown"
-        )}
+        <small>
+          ${esc(
+            formatDate(
+              x.created_at
+            )
+          )}
+        </small>
 
       </div>
 
 
-      <div
-        class="actions"
-        style="margin-top:14px">
+      ${
+        x.status === "pending"
 
-        <button
-          class="btn"
-          onclick="adminOpenLink('${x.id}')">
-          Open
-        </button>
+        ? `
 
+          <div
+            class="actions"
+            style="margin-top:14px">
 
-        ${
-          x.status !== "approved"
-
-          ? `
             <button
-              class="btn success"
-              onclick="setLinkStatus('${x.id}','approved')">
+              class="btn good"
+              onclick="
+                moderateLink(
+                  '${x.id}',
+                  'approved'
+                )
+              ">
               ✓ Approve
             </button>
-          `
 
-          : ""
-        }
-
-
-        ${
-          x.status !== "rejected"
-
-          ? `
             <button
-              class="btn warning"
-              onclick="setLinkStatus('${x.id}','rejected')">
+              class="btn danger"
+              onclick="
+                moderateLink(
+                  '${x.id}',
+                  'rejected'
+                )
+              ">
               ✕ Reject
             </button>
-          `
 
-          : ""
-        }
+          </div>
+
+        `
+
+        : ""
+
+      }
 
 
-        <button
-          class="btn danger"
-          onclick="deleteLink('${x.id}')">
-          Delete
-        </button>
+      ${
+        x.status === "approved"
 
-      </div>
+        ? `
+
+          <div
+            class="actions"
+            style="margin-top:14px">
+
+            <button
+              class="btn danger"
+              onclick="
+                moderateLink(
+                  '${x.id}',
+                  'rejected'
+                )
+              ">
+              Remove
+            </button>
+
+          </div>
+
+        `
+
+        : ""
+
+      }
 
     </article>
 
@@ -2751,80 +2588,11 @@ function adminCard(x){
 }
 
 
-function renderAdminPending(arr){
+/* =========================================================
+   ADMIN MODERATION
+   ========================================================= */
 
-  $("pendingGrid").innerHTML =
-    arr.length
-
-      ? arr.map(adminCard).join("")
-
-      : `
-        <div class="empty">
-          🎉 No pending submissions.
-        </div>
-      `;
-
-}
-
-
-function renderAdminApproved(arr){
-
-  $("approvedAdminGrid").innerHTML =
-    arr.length
-
-      ? arr.map(adminCard).join("")
-
-      : `
-        <div class="empty">
-          No approved links.
-        </div>
-      `;
-
-}
-
-
-function renderAdminRejected(arr){
-
-  $("rejectedGrid").innerHTML =
-    arr.length
-
-      ? arr.map(adminCard).join("")
-
-      : `
-        <div class="empty">
-          No rejected links.
-        </div>
-      `;
-
-}
-
-
-/* ============================================================
-   ADMIN LINK ACTIONS
-   ============================================================ */
-
-function adminOpenLink(id){
-
-  const x =
-    adminLinks.find(
-      a => a.id === id
-    );
-
-
-  if(!x)
-    return;
-
-
-  window.open(
-    x.url,
-    "_blank",
-    "noopener,noreferrer"
-  );
-
-}
-
-
-async function setLinkStatus(
+async function moderateLink(
   id,
   status
 ){
@@ -2836,16 +2604,20 @@ async function setLinkStatus(
     );
 
     return;
+
   }
 
 
-  const {error} =
-    await db
-      .from("links")
-      .update({
-        status
-      })
-      .eq("id",id);
+  const {
+    error
+  } =
+    await db.rpc(
+      "admin_set_link_status",
+      {
+        p_link_id:id,
+        p_status:status
+      }
+    );
 
 
   if(error){
@@ -2855,6 +2627,7 @@ async function setLinkStatus(
     );
 
     return;
+
   }
 
 
@@ -2865,325 +2638,187 @@ async function setLinkStatus(
   );
 
 
-  await loadAdminCenter();
+  await loadAdminData();
 
   await loadLinks();
 
 }
 
 
-async function deleteLink(id){
-
-  if(!isAdmin){
-
-    toast(
-      "Admin access required."
-    );
-
-    return;
-  }
-
-
-  const ok =
-    confirm(
-      "Delete this link permanently?"
-    );
-
-
-  if(!ok)
-    return;
-
-
-  const {error} =
-    await db
-      .from("links")
-      .delete()
-      .eq("id",id);
-
-
-  if(error){
-
-    toast(
-      error.message
-    );
-
-    return;
-  }
-
-
-  toast(
-    "Link deleted."
-  );
-
-
-  await loadAdminCenter();
-
-  await loadLinks();
-
-}
-
-
-/* ============================================================
-   ADMIN TABS
-   ============================================================ */
-
-document
-  .querySelectorAll(".admin-tab")
-  .forEach(
-    button => {
-
-      button.onclick =
-        async () => {
-
-          if(!isAdmin){
-
-            toast(
-              "Admin access required."
-            );
-
-            return;
-          }
-
-
-          currentAdminTab =
-            button.dataset.adminTab;
-
-
-          document
-            .querySelectorAll(".admin-tab")
-            .forEach(
-              x =>
-                x.classList.toggle(
-                  "active",
-                  x === button
-                )
-            );
-
-
-          document
-            .querySelectorAll(
-              ".admin-tab-panel"
-            )
-            .forEach(
-              x =>
-                x.classList.add(
-                  "hidden"
-                )
-            );
-
-
-          if(
-            currentAdminTab ===
-            "pending"
-          ){
-
-            $("adminPendingPanel")
-              .classList
-              .remove("hidden");
-
-          }
-
-
-          if(
-            currentAdminTab ===
-            "approved"
-          ){
-
-            $("adminApprovedPanel")
-              .classList
-              .remove("hidden");
-
-          }
-
-
-          if(
-            currentAdminTab ===
-            "rejected"
-          ){
-
-            $("adminRejectedPanel")
-              .classList
-              .remove("hidden");
-
-          }
-
-
-          if(
-            currentAdminTab ===
-            "notifications"
-          ){
-
-            $("adminNotificationsPanel")
-              .classList
-              .remove("hidden");
-
-            await loadAdminNotifications();
-
-          }
-
-        };
-
-    }
-  );
-
-
-/* ============================================================
+/* =========================================================
    ADMIN NOTIFICATIONS
-   ============================================================ */
+   ========================================================= */
 
 async function loadAdminNotifications(){
 
-  if(!isAdmin || !user)
+  if(!isAdmin)
     return;
 
 
-  const {data,error} =
+  const {
+    data,
+    error
+  } =
     await db
-      .from("admin_notifications")
+      .from("notifications")
       .select("*")
-      .eq("admin_id",user.id)
       .order(
         "created_at",
-        {ascending:false}
+        {
+          ascending:false
+        }
       )
-      .limit(100);
+      .limit(30);
 
 
   if(error){
 
-    console.error(
-      "Notifications:",
-      error
-    );
+    console.error(error);
+
+    $("adminNotifications").innerHTML = `
+      <div class="empty">
+        ${esc(error.message)}
+      </div>
+    `;
 
     return;
-  }
-
-
-  adminNotifications =
-    data || [];
-
-
-  const unread =
-    adminNotifications.filter(
-      x => !x.read
-    ).length;
-
-
-  $("adminUnreadCount")
-    .textContent =
-    unread;
-
-
-  const badge =
-    $("notificationBadge");
-
-
-  if(unread > 0){
-
-    badge.textContent =
-      unread > 99
-        ? "99+"
-        : unread;
-
-    badge.classList
-      .remove("hidden");
-
-  }else{
-
-    badge.classList
-      .add("hidden");
 
   }
 
 
-  renderNotifications();
+  if(!data?.length){
+
+    $("adminNotifications").innerHTML = `
+      <div class="empty">
+        No admin notifications yet.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  $("adminNotifications").innerHTML =
+    data.map(
+      n => `
+
+        <div
+          class="
+            notification
+            ${n.read_at ? "" : "unread"}
+          ">
+
+          <strong>
+            ${esc(n.title)}
+          </strong>
+
+          <p>
+            ${esc(n.message || "")}
+          </p>
+
+          <small>
+            ${esc(
+              formatDate(
+                n.created_at
+              )
+            )}
+          </small>
+
+          ${
+            !n.read_at
+              ? `
+
+                <br>
+
+                <button
+                  class="btn"
+                  style="margin-top:8px"
+                  onclick="
+                    markNotificationRead(
+                      '${n.id}'
+                    )
+                  ">
+                  Mark as read
+                </button>
+
+              `
+              : ""
+          }
+
+        </div>
+
+      `
+    )
+    .join("");
 
 }
 
 
-function renderNotifications(){
+/* =========================================================
+   NOTIFICATION BADGE
+   ========================================================= */
 
-  if(!adminNotifications.length){
+async function updateNotificationBadge(){
 
-    $("notificationsList").innerHTML = `
+  if(!isAdmin){
 
-      <div class="empty">
-        No admin notifications.
-      </div>
-
-    `;
+    $("notificationBadge")
+      .classList.add("hidden");
 
     return;
+
   }
 
 
-  $("notificationsList").innerHTML =
-    adminNotifications
-      .map(
-        n => `
+  const {
+    data,
+    error
+  } =
+    await db
+      .from("notifications")
+      .select("id")
+      .is("read_at",null);
 
-          <div
-            class="notification ${
-              n.read
-                ? ""
-                : "unread"
-            }">
 
-            <strong>
-              ${esc(n.title)}
-            </strong>
+  if(error){
 
-            <div>
-              ${esc(n.message)}
-            </div>
+    console.error(error);
 
-            <small>
-              ${formatDate(n.created_at)}
-            </small>
+    return;
 
-            ${
-              !n.read
+  }
 
-              ? `
-                <div
-                  style="margin-top:9px">
 
-                  <button
-                    class="btn"
-                    onclick="markNotificationRead('${n.id}')">
-                    Mark as read
-                  </button>
+  const count =
+    data?.length || 0;
 
-                </div>
-              `
 
-              : ""
-            }
+  $("notificationBadge")
+    .textContent = count;
 
-          </div>
 
-        `
-      )
-      .join("");
+  $("notificationBadge")
+    .classList.toggle(
+      "hidden",
+      count === 0
+    );
 
 }
 
 
 async function markNotificationRead(id){
 
-  if(!isAdmin)
-    return;
-
-
-  const {error} =
+  const {
+    error
+  } =
     await db
-      .from("admin_notifications")
+      .from("notifications")
       .update({
-        read:true
+        read_at:new Date().toISOString()
       })
       .eq("id",id)
-      .eq("admin_id",user.id);
+      .eq("user_id",user.id);
 
 
   if(error){
@@ -3193,77 +2828,20 @@ async function markNotificationRead(id){
     );
 
     return;
+
   }
 
 
   await loadAdminNotifications();
 
-}
-
-
-async function markAllNotificationsRead(){
-
-  if(!isAdmin || !user)
-    return;
-
-
-  const {error} =
-    await db
-      .from("admin_notifications")
-      .update({
-        read:true
-      })
-      .eq("admin_id",user.id)
-      .eq("read",false);
-
-
-  if(error){
-
-    toast(
-      error.message
-    );
-
-    return;
-  }
-
-
-  toast(
-    "All notifications marked as read."
-  );
-
-
-  await loadAdminNotifications();
+  await updateNotificationBadge();
 
 }
 
 
-/* ============================================================
-   DATE
-   ============================================================ */
-
-function formatDate(value){
-
-  if(!value)
-    return "Unknown";
-
-
-  try{
-
-    return new Date(value)
-      .toLocaleString();
-
-  }catch{
-
-    return value;
-
-  }
-
-}
-
-
-/* ============================================================
-   BACKGROUND SETTINGS
-   ============================================================ */
+/* =========================================================
+   SETTINGS / BACKGROUNDS
+   ========================================================= */
 
 document
   .querySelectorAll("[data-bg]")
@@ -3301,19 +2879,12 @@ document
         if(v === "stars"){
 
           $("scene").style.background =
-            `
-            radial-gradient(
-              circle at 20% 20%,
-              rgba(124,92,255,.2),
-              transparent 25%
-            ),
-            radial-gradient(
-              circle at 80% 60%,
-              rgba(25,211,255,.14),
-              transparent 25%
-            ),
-            #03040a
-            `;
+
+            "radial-gradient(circle at 20% 20%,rgba(124,92,255,.2),transparent 25%)," +
+
+            "radial-gradient(circle at 80% 60%,rgba(25,211,255,.14),transparent 25%)," +
+
+            "#03040a";
 
           $("grid").style.opacity =
             ".18";
@@ -3323,19 +2894,10 @@ document
         else if(v === "grid"){
 
           $("scene").style.background =
-            `
-            radial-gradient(
-              circle at 50% 20%,
-              rgba(124,92,255,.15),
-              transparent 35%
-            ),
-            linear-gradient(
-              120deg,
-              #050711,
-              #0a0d1c 55%,
-              #070914
-            )
-            `;
+
+            "radial-gradient(circle at 50% 20%,rgba(124,92,255,.15),transparent 35%)," +
+
+            "linear-gradient(120deg,#050711,#0a0d1c 55%,#070914)";
 
           $("grid").style.opacity =
             "1";
@@ -3366,9 +2928,9 @@ document
   ?.click();
 
 
-/* ============================================================
+/* =========================================================
    CUSTOM CURSOR
-   ============================================================ */
+   ========================================================= */
 
 let mx = 0;
 let my = 0;
@@ -3399,25 +2961,25 @@ function cursorLoop(){
   document
     .querySelector(".cursor")
     .style.left =
-    cx + "px";
+      cx + "px";
 
 
   document
     .querySelector(".cursor")
     .style.top =
-    cy + "px";
+      cy + "px";
 
 
   document
     .querySelector(".cursor-dot")
     .style.left =
-    mx + "px";
+      mx + "px";
 
 
   document
     .querySelector(".cursor-dot")
     .style.top =
-    my + "px";
+      my + "px";
 
 
   requestAnimationFrame(
@@ -3434,25 +2996,23 @@ document.addEventListener(
   "mouseover",
   e => {
 
-    const cursor =
-      document.querySelector(
-        ".cursor"
-      );
-
-
     if(
       e.target.closest(
         "button,a,input,textarea,select"
       )
     ){
 
-      cursor.style.transform =
-        "translate(-50%,-50%) scale(1.35)";
+      document
+        .querySelector(".cursor")
+        .style.transform =
+          "translate(-50%,-50%) scale(1.35)";
 
     }else{
 
-      cursor.style.transform =
-        "translate(-50%,-50%) scale(1)";
+      document
+        .querySelector(".cursor")
+        .style.transform =
+          "translate(-50%,-50%) scale(1)";
 
     }
 
@@ -3460,9 +3020,9 @@ document.addEventListener(
 );
 
 
-/* ============================================================
-   AUTH STATE LISTENER
-   ============================================================ */
+/* =========================================================
+   REALTIME AUTH
+   ========================================================= */
 
 db.auth.onAuthStateChange(
   (_event,_session) => {
@@ -3476,9 +3036,9 @@ db.auth.onAuthStateChange(
 );
 
 
-/* ============================================================
+/* =========================================================
    START
-   ============================================================ */
+   ========================================================= */
 
 loadSession();
 
