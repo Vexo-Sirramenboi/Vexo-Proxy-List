@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VEXO — Community Tools</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#070914;--panel:rgba(13,17,32,.76);--panel2:rgba(18,23,42,.92);--text:#eef2ff;--muted:#8d96b3;--line:rgba(255,255,255,.09);--accent:#7c5cff;--accent2:#19d3ff;--good:#43e6a4;--danger:#ff557a;--shadow:0 20px 70px rgba(0,0,0,.35)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);background:var(--bg);overflow-x:hidden}
+body{cursor:none}.cursor,.cursor-dot{position:fixed;pointer-events:none;z-index:99999;border-radius:50%;transform:translate(-50%,-50%);mix-blend-mode:screen}.cursor{width:30px;height:30px;border:1px solid rgba(124,92,255,.75);transition:width .15s,height .15s,border-color .15s}.cursor-dot{width:5px;height:5px;background:var(--accent2)}
+button,input,textarea,select{font:inherit}button{cursor:none}
+#scene{position:fixed;inset:0;z-index:-3;background:radial-gradient(circle at 50% 20%,rgba(124,92,255,.15),transparent 35%),linear-gradient(120deg,#050711,#0a0d1c 55%,#070914)}
+#grid{position:fixed;inset:-20%;z-index:-2;background-image:linear-gradient(rgba(124,92,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(25,211,255,.07) 1px,transparent 1px);background-size:55px 55px;transform:perspective(600px) rotateX(58deg) translateY(20%);animation:drift 18s linear infinite;mask-image:linear-gradient(transparent,#000 25%,#000 70%,transparent)}
+.orb{position:fixed;width:260px;height:260px;border-radius:50%;filter:blur(45px);opacity:.18;z-index:-1;animation:float 12s ease-in-out infinite}.o1{background:#7c5cff;left:8%;top:15%}.o2{background:#19d3ff;right:7%;top:42%;animation-delay:-4s}.o3{background:#ff3f9d;left:45%;bottom:-80px;animation-delay:-8s}
+@keyframes drift{to{transform:perspective(600px) rotateX(58deg) translateY(30%)}}@keyframes float{50%{transform:translate(40px,-35px) scale(1.15)}}@keyframes pulse{50%{opacity:.55}}
+.app{display:flex;min-height:100vh}.side{width:250px;position:fixed;inset:0 auto 0 0;padding:22px 16px;background:rgba(6,8,18,.72);backdrop-filter:blur(22px);border-right:1px solid var(--line);z-index:20}.brand{font-size:25px;font-weight:900;letter-spacing:.18em;padding:8px 10px 28px}.brand b{color:var(--accent2)}.nav{display:grid;gap:7px}.nav button{border:1px solid transparent;background:transparent;color:var(--muted);padding:12px 13px;border-radius:12px;text-align:left}.nav button:hover,.nav button.active{background:rgba(124,92,255,.12);border-color:rgba(124,92,255,.22);color:#fff}.userbox{position:absolute;bottom:18px;left:16px;right:16px;padding:13px;border:1px solid var(--line);background:var(--panel);border-radius:15px}.userbox small{color:var(--muted)}.main{margin-left:250px;width:calc(100% - 250px);padding:28px 34px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:30px}.top h1{margin:0;font-size:30px}.status{font-size:12px;color:var(--good);padding:8px 11px;border:1px solid rgba(67,230,164,.25);border-radius:99px;background:rgba(67,230,164,.06)}
+.panel{background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(20px);border-radius:20px;padding:22px;margin-bottom:20px}.hero{padding:30px}.hero h2{font-size:clamp(30px,5vw,58px);line-height:1;margin:0 0 14px}.hero p,.muted{color:var(--muted)}.actions{display:flex;flex-wrap:wrap;gap:9px}.btn{border:1px solid var(--line);background:rgba(255,255,255,.045);color:#fff;border-radius:11px;padding:10px 14px}.btn:hover{border-color:rgba(124,92,255,.6);transform:translateY(-1px)}.primary{background:linear-gradient(135deg,var(--accent),#4c8dff);border:0}.danger{color:#fff;background:rgba(255,85,122,.12);border-color:rgba(255,85,122,.25)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{padding:18px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025)}.stat strong{display:block;font-size:25px}.stat span{color:var(--muted);font-size:12px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}.input,.textarea,.select{width:100%;border:1px solid var(--line);background:rgba(0,0,0,.22);color:#fff;border-radius:11px;padding:11px 12px;outline:none}.input:focus,.textarea:focus{border-color:rgba(124,92,255,.7)}.search{flex:1;min-width:220px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:13px}.card{padding:18px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.025);transition:.2s}.card:hover{transform:translateY(-3px);border-color:rgba(124,92,255,.35);box-shadow:0 15px 45px rgba(0,0,0,.2)}.card h3{margin:10px 0 7px}.card p{color:var(--muted);font-size:13px;min-height:38px}.tag{display:inline-block;padding:5px 8px;border-radius:99px;background:rgba(25,211,255,.08);color:var(--accent2);font-size:10px;margin:3px 3px 0 0}.cardurl{font-size:11px;color:#aab2d0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:8px 0 12px}.modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);z-index:100}.modal.open{display:grid}.box{width:min(520px,calc(100% - 30px));max-height:90vh;overflow:auto;background:var(--panel2);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:var(--shadow)}.box h2{margin-top:0}.form{display:grid;gap:12px}.form label{font-size:12px;color:var(--muted)}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.close{float:right;background:none;border:0;color:var(--muted);font-size:25px}.hidden{display:none!important}.toast{position:fixed;right:22px;bottom:22px;z-index:200;padding:12px 15px;border:1px solid var(--line);background:var(--panel2);border-radius:12px;box-shadow:var(--shadow);opacity:0;transform:translateY(12px);transition:.25s}.toast.show{opacity:1;transform:none}.empty{text-align:center;padding:45px;color:var(--muted);grid-column:1/-1}
+@media(max-width:850px){.side{width:72px}.brand{font-size:0}.brand b{font-size:20px}.nav button span,.userbox{display:none}.main{margin-left:72px;width:calc(100% - 72px);padding:20px}.stats{grid-template-columns:1fr 1fr}}@media(max-width:520px){.stats{grid-template-columns:1fr}.row{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div id="scene"></div><div id="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+<div class="cursor"></div><div class="cursor-dot"></div>
+
+<div class="app">
+<aside class="side">
+  <div class="brand">VE<b>X</b>O</div>
+  <div class="nav">
+    <button class="active" data-page="home">◈ <span>Dashboard</span></button>
+    <button data-page="vault">⌘ <span>Community Vault</span></button>
+    <button data-page="submit">＋ <span>Submit Link</span></button>
+    <button data-page="favorites">★ <span>Favorites</span></button>
+    <button data-page="settings">⚙ <span>Settings</span></button>
+  </div>
+  <div class="userbox" id="userBox"><small>Not signed in</small><br><button class="btn primary" id="loginBtn">Sign in</button></div>
+</aside>
+
+<main class="main">
+  <div class="top"><div><h1 id="pageTitle">VEXO</h1><div class="muted" id="pageSub">A futuristic community for useful links.</div></div><div class="status">● SUPABASE ONLINE</div></div>
+
+  <section id="homePage" class="page">
+    <div class="panel hero">
+      <h2>Discover the web.<br><span style="color:var(--accent2)">Build VEXO together.</span></h2>
+      <p>Community-powered links, tools and resources. Submit useful sites and help others discover them.</p>
+      <div class="actions"><button class="btn primary" onclick="showPage('vault')">Explore Vault</button><button class="btn" onclick="showPage('submit')">Submit a Link</button></div>
+    </div>
+    <div class="stats"><div class="stat"><strong id="statLinks">0</strong><span>Approved links</span></div><div class="stat"><strong id="statUsers">—</strong><span>Your account</span></div><div class="stat"><strong id="statFav">0</strong><span>Your favorites</span></div><div class="stat"><strong>LIVE</strong><span>Community sync</span></div></div>
+  </section>
+
+  <section id="vaultPage" class="page hidden">
+    <div class="panel">
+      <div class="toolbar"><input class="input search" id="search" placeholder="Search links, tags, categories..."><select class="select" id="category" style="width:180px"><option value="">All categories</option></select><button class="btn primary" onclick="showPage('submit')">＋ Submit</button></div>
+      <div class="grid" id="linksGrid"></div>
+    </div>
+  </section>
+
+  <section id="favoritesPage" class="page hidden"><div class="panel"><h2>Your Favorites</h2><div class="grid" id="favoritesGrid"></div></div></section>
+
+  <section id="submitPage" class="page hidden"><div class="panel"><h2>Submit a community link</h2><p class="muted">Sign in first. New links start as pending until approved by a moderator.</p><form id="linkForm" class="form"><div><label>Title</label><input class="input" id="linkTitle" required placeholder="Example Tool"></div><div><label>URL</label><input class="input" id="linkURL" required type="url" placeholder="https://example.com"></div><div class="row"><div><label>Category</label><input class="input" id="linkCategory" placeholder="Tools"></div><div><label>Tags</label><input class="input" id="linkTags" placeholder="ai, web, coding"></div></div><div><label>Description</label><textarea class="textarea" id="linkDesc" rows="4" placeholder="What makes this useful?"></textarea></div><button class="btn primary" type="submit">Submit for review</button></form></div></section>
+
+  <section id="settingsPage" class="page hidden"><div class="panel"><h2>Settings</h2><p class="muted">Choose the VEXO visual mode.</p><div class="actions"><button class="btn" data-bg="grid">Neon Grid</button><button class="btn" data-bg="plain">Clean</button><button class="btn" data-bg="stars">Deep Space</button></div><hr style="border:0;border-top:1px solid var(--line);margin:22px 0"><button class="btn danger" id="logoutBtn">Sign out</button></div></section>
+</main></div>
+
+<div class="modal" id="authModal"><div class="box"><button class="close" onclick="closeAuth()">×</button><h2 id="authTitle">Sign in</h2><p class="muted" id="authSub">Enter your VEXO account.</p><form id="authForm" class="form"><div id="usernameWrap" class="hidden"><label>Username</label><input class="input" id="username" maxlength="24" placeholder="vexo_user"></div><div><label>Email</label><input class="input" id="email" type="email" required></div><div><label>Password</label><input class="input" id="password" type="password" minlength="6" required></div><button class="btn primary" id="authSubmit">Sign in</button></form><p style="text-align:center"><button class="btn" id="switchAuth">Create an account</button></p></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL="https://jxxjvwemjvhrozuaihso.supabase.co";
+const SUPABASE_KEY="sb_publishable_hbQfOIYOcFnCDyn0s6GPyg_amHog7u-";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let user=null, links=[], favorites=new Set(), authMode="login";
+
+const $=id=>document.getElementById(id);
+function toast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2600)}
+function esc(v=""){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function showPage(name){
+  document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));
+  $(name+"Page").classList.remove("hidden");
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
+  const titles={home:["VEXO","A futuristic community for useful links."],vault:["Community Vault","Discover community-submitted resources."],submit:["Submit Link","Share something useful with the community."],favorites:["Favorites","Your saved community links."],settings:["Settings","Customize your VEXO experience."]};
+  $("pageTitle").textContent=titles[name][0];$("pageSub").textContent=titles[name][1];
+  if(name==="favorites")renderFavorites();
+}
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+
+function openAuth(){ $("authModal").classList.add("open") }
+function closeAuth(){ $("authModal").classList.remove("open") }
+$("loginBtn").onclick=openAuth;
+$("switchAuth").onclick=()=>{authMode=authMode==="login"?"signup":"login";$("authTitle").textContent=authMode==="login"?"Sign in":"Create account";$("authSub").textContent=authMode==="login"?"Enter your VEXO account.":"Create your VEXO community account.";$("authSubmit").textContent=authMode==="login"?"Sign in":"Create account";$("switchAuth").textContent=authMode==="login"?"Create an account":"I already have an account";$("usernameWrap").classList.toggle("hidden",authMode==="login")};
+
+$("authForm").onsubmit=async e=>{
+ e.preventDefault();
+ const email=$("email").value.trim(),password=$("password").value,username=$("username").value.trim();
+ let res;
+ if(authMode==="signup") res=await db.auth.signUp({email,password,options:{data:{username:username||undefined}}});
+ else res=await db.auth.signInWithPassword({email,password});
+ if(res.error){toast(res.error.message);return}
+ if(authMode==="signup"&&!res.data.session) toast("Account created. Check your email to confirm it.");
+ else toast("Welcome to VEXO.");
+ closeAuth(); await loadSession();
+};
+
+$("logoutBtn").onclick=async()=>{await db.auth.signOut();toast("Signed out.");await loadSession();showPage("home")};
+
+async function loadSession(){
+ const {data}=await db.auth.getSession();user=data.session?.user||null;
+ if(user){
+   const {data:p}=await db.from("profiles").select("username").eq("id",user.id).maybeSingle();
+   $("userBox").innerHTML=`<small>Signed in as</small><br><strong>${esc(p?.username||user.email?.split("@")[0]||"VEXO user")}</strong>`;
+   $("statUsers").textContent="YOU";
+ }else{
+   $("userBox").innerHTML='<small>Not signed in</small><br><button class="btn primary" id="loginBtn">Sign in</button>';$("loginBtn").onclick=openAuth;$("statUsers").textContent="—";
+ }
+ await loadFavorites();await loadLinks();
+}
+
+async function loadFavorites(){
+ if(!user){favorites=new Set();$("statFav").textContent="0";return}
+ const {data,error}=await db.from("favorites").select("link_id").eq("user_id",user.id);
+ if(error){console.error(error);return} favorites=new Set((data||[]).map(x=>x.link_id));$("statFav").textContent=favorites.size;
+}
+
+async function loadLinks(){
+ const {data,error}=await db.from("links").select("*").eq("status","approved").order("created_at",{ascending:false});
+ if(error){toast(error.message);return} links=data||[];$("statLinks").textContent=links.length;buildCategories();renderLinks();
+}
+function buildCategories(){const cats=[...new Set(links.map(x=>x.category||"General"))].sort();$("category").innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option>${esc(c)}</option>`).join("")}
+function filteredLinks(){
+ const q=$("search").value.toLowerCase(),cat=$("category").value;
+ return links.filter(x=>(!cat||(x.category||"General")===cat)&&(!q||[x.title,x.url,x.description,x.category,...(x.tags||[])].join(" ").toLowerCase().includes(q)));
+}
+function card(x){
+ const tags=(x.tags||[]).map(t=>`<span class="tag">#${esc(t)}</span>`).join("");
+ const fav=favorites.has(x.id);
+ return `<article class="card"><div style="display:flex;justify-content:space-between"><span class="tag">${esc(x.category||"General")}</span><button class="btn" onclick="toggleFavorite('${x.id}')">${fav?"★":"☆"}</button></div><h3>${esc(x.title)}</h3><p>${esc(x.description||"No description")}</p><div class="cardurl">${esc(x.url)}</div><div>${tags}</div><div class="actions" style="margin-top:13px"><button class="btn primary" onclick="openLink('${x.id}')">Open</button><button class="btn" onclick="vote('${x.id}',1)">▲</button><button class="btn" onclick="vote('${x.id}',-1)">▼</button></div></article>`;
+}
+function renderLinks(){const arr=filteredLinks();$("linksGrid").innerHTML=arr.length?arr.map(card).join(""):'<div class="empty">No approved links match your search.</div>'}
+function renderFavorites(){const arr=links.filter(x=>favorites.has(x.id));$("favoritesGrid").innerHTML=arr.length?arr.map(card).join(""):'<div class="empty">You have no favorites yet.</div>'}
+$("search").oninput=renderLinks;$("category").onchange=renderLinks;
+
+async function openLink(id){const x=links.find(a=>a.id===id);if(!x)return;window.open(x.url,"_blank","noopener,noreferrer");await db.from("links").update({views:(x.views||0)+1}).eq("id",id)}
+async function toggleFavorite(id){
+ if(!user){openAuth();toast("Sign in to favorite links.");return}
+ if(favorites.has(id)){await db.from("favorites").delete().eq("link_id",id).eq("user_id",user.id);favorites.delete(id)}
+ else {const {error}=await db.from("favorites").insert({link_id:id,user_id:user.id});if(error){toast(error.message);return}favorites.add(id)}
+ $("statFav").textContent=favorites.size;renderLinks();renderFavorites();
+}
+async function vote(id,value){
+ if(!user){openAuth();toast("Sign in to vote.");return}
+ const {data:old}=await db.from("votes").select("id,vote").eq("link_id",id).eq("user_id",user.id).maybeSingle();
+ if(old?.vote===value) await db.from("votes").delete().eq("id",old.id);
+ else if(old) await db.from("votes").update({vote:value}).eq("id",old.id);
+ else await db.from("votes").insert({link_id:id,user_id:user.id,vote:value});
+ toast("Vote saved.");
+}
+$("linkForm").onsubmit=async e=>{
+ e.preventDefault();
+ if(!user){openAuth();toast("Sign in before submitting.");return}
+ const title=$("linkTitle").value.trim(),url=$("linkURL").value.trim(),category=$("linkCategory").value.trim()||"General",tags=$("linkTags").value.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean),description=$("linkDesc").value.trim();
+ const {error}=await db.from("links").insert({user_id:user.id,title,url,category,tags,description,status:"pending"});
+ if(error){toast(error.message);return}
+ e.target.reset();toast("Submitted! Your link is pending moderation.");showPage("home");
+};
+
+document.querySelectorAll("[data-bg]").forEach(b=>b.onclick=()=>{
+ const v=b.dataset.bg;localStorage.setItem("vexo-bg",v);
+ $("grid").style.display=v==="plain"?"none":"block";
+ document.querySelectorAll(".orb").forEach(o=>o.style.display=v==="plain"?"none":"block");
+ if(v==="stars"){$("scene").style.background="radial-gradient(circle at 20% 20%,rgba(124,92,255,.2),transparent 25%),radial-gradient(circle at 80% 60%,rgba(25,211,255,.14),transparent 25%),#03040a";$("grid").style.opacity=".18"}
+ else if(v==="grid"){$("scene").style.background="radial-gradient(circle at 50% 20%,rgba(124,92,255,.15),transparent 35%),linear-gradient(120deg,#050711,#0a0d1c 55%,#070914)";$("grid").style.opacity="1"}
+ else {$("scene").style.background="#070914"}
+});
+const saved=localStorage.getItem("vexo-bg")||"grid";document.querySelector(`[data-bg="${saved}"]`)?.click();
+
+let mx=0,my=0,cx=0,cy=0;document.addEventListener("mousemove",e=>{mx=e.clientX;my=e.clientY});function cursorLoop(){cx+=(mx-cx)*.18;cy+=(my-cy)*.18;document.querySelector(".cursor").style.left=cx+"px";document.querySelector(".cursor").style.top=cy+"px";document.querySelector(".cursor-dot").style.left=mx+"px";document.querySelector(".cursor-dot").style.top=my+"px";requestAnimationFrame(cursorLoop)}cursorLoop();
+document.addEventListener("mouseover",e=>{if(e.target.closest("button,a,input,textarea,select"))document.querySelector(".cursor").style.transform="translate(-50%,-50%) scale(1.35)";else document.querySelector(".cursor").style.transform="translate(-50%,-50%) scale(1)"});
+
+db.auth.onAuthStateChange((_event,_session)=>setTimeout(loadSession,0));
+loadSession();
+</script>
+</body>
+</html>
