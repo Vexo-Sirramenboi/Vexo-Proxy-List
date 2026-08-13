@@ -763,7 +763,7 @@ const SUPABASE_KEY = "sb_publishable_hbQfOIYOcFnCDyn0s6GPyg_amHog7u-";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* STATE */
-let user = null, isAdmin = false, links = [], allAdminLinks = [], favorites = new Set(), authMode = "login", refreshTimer = null;
+let user = null, isAdmin = false, links = [], myPendingLinks = [], allAdminLinks = [], favorites = new Set(), authMode = "login", refreshTimer = null;
 
 /* HELPERS */
 const $ = id => document.getElementById(id);
@@ -871,6 +871,7 @@ $("authForm").onsubmit = async e => {
   }
   closeAuth();
   await loadSession();
+  await loadLinks();
 };
 
 $("logoutBtn").onclick = async () => {
@@ -1056,12 +1057,34 @@ function restartAutoRefresh(){
 
 /* ================= DATA LAYER ================= */
 async function loadLinks(){
-  const {data, error} = await db.from("links")
+  const {data:approvedData, error:approvedError} = await db.from("links")
     .select("*, profiles(username)")
     .eq("status","approved")
     .order("created_at",{ascending:false});
-  if(error){ console.error("loadLinks:", error); return; }
-  links = data || [];
+
+  if(approvedError){
+    console.error("load approved links:", approvedError);
+    links = [];
+  } else {
+    links = approvedData || [];
+  }
+
+  myPendingLinks = [];
+
+  if(user){
+    const {data:pendingData, error:pendingError} = await db.from("links")
+      .select("*, profiles(username)")
+      .eq("user_id", user.id)
+      .eq("status","pending")
+      .order("created_at",{ascending:false});
+
+    if(pendingError){
+      console.error("load pending links:", pendingError);
+    } else {
+      myPendingLinks = pendingData || [];
+    }
+  }
+
   renderLinks();
   renderStats();
   renderTopLinks();
@@ -1071,14 +1094,27 @@ async function loadLinks(){
 function renderLinks(){
   const q = ($("search").value || "").toLowerCase();
   const cat = $("category").value;
-  const list = links.filter(l =>
-    (!q || (l.title||"").toLowerCase().includes(q) || (l.description||"").toLowerCase().includes(q) || (l.tags||"").toLowerCase().includes(q) || (l.category||"").toLowerCase().includes(q)) &&
-    (!cat || l.category === cat));
+
+  // Approved links are public. A signed-in user also sees their own pending
+  // submissions so they can confirm that the submission was received.
+  const visible = [...myPendingLinks, ...links];
+
+  const list = visible.filter(l =>
+    (!q || (l.title||"").toLowerCase().includes(q) ||
+      (l.description||"").toLowerCase().includes(q) ||
+      (l.tags||"").toLowerCase().includes(q) ||
+      (l.category||"").toLowerCase().includes(q)) &&
+    (!cat || l.category === cat)
+  );
+
   $("linksGrid").innerHTML = list.length
     ? list.map(linkCard).join("")
-    : emptyState("No links match your search.","⌕");
+    : emptyState(user && myPendingLinks.length
+        ? "No links match your search."
+        : "No approved links yet. Submit a link to get started.","⌕");
+
   if(!$("category").dataset.built){
-    const cats = [...new Set(links.map(l => l.category).filter(Boolean))].sort();
+    const cats = [...new Set(visible.map(l => l.category).filter(Boolean))].sort();
     cats.forEach(c => $("category").insertAdjacentHTML("beforeend", `<option value="${esc(c)}">${esc(c)}</option>`));
     $("category").dataset.built = "1";
   }
@@ -1088,22 +1124,27 @@ function linkCard(l){
   const fav = favorites.has(l.id);
   const votes = Array.isArray(l.votes) ? l.votes.length : (l.votes || 0);
   const v = l.views || 0;
+  const pending = l.status === "pending";
+
   return `
   <article class="card">
     <div class="card-top">
       <span class="cat">${esc(l.category || "General")}</span>
-      <button class="fav ${fav ? "on" : ""}" data-id="${l.id}" title="Toggle favorite">${fav ? "★" : "☆"}</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${pending ? '<span class="pill pending">pending</span>' : ''}
+        <button class="fav ${fav ? "on" : ""}" data-id="${l.id}" title="Toggle favorite">${fav ? "★" : "☆"}</button>
+      </div>
     </div>
     <h4><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.title)}</a></h4>
     <p>${esc(l.description || "No description provided.")}</p>
     <div class="tags">${(l.tags || "").split(",").filter(Boolean).slice(0,4).map(t => `<span class="tag">#${esc(t.trim())}</span>`).join("") || ""}</div>
     <div class="card-foot">
-      <span class="views">◉ ${v} view${v === 1 ? "" : "s"}</span>
+      <span class="views">${pending ? "◷ Awaiting review" : `◉ ${v} view${v === 1 ? "" : "s"}`}</span>
       <span class="mini">by ${esc((l.profiles && l.profiles.username) || "anonymous")} · ${shortDate(l.created_at)}</span>
     </div>
     <div class="card-actions">
       <button class="btn mini" onclick="window.open('${esc(l.url)}','_blank')">Visit ↗</button>
-      <button class="btn mini ${votes ? "primary" : ""}" data-vote="${l.id}">▲ ${votes}</button>
+      ${pending ? '<span class="btn mini" style="pointer-events:none">Waiting for approval</span>' : `<button class="btn mini ${votes ? "primary" : ""}" data-vote="${l.id}">▲ ${votes}</button>`}
     </div>
   </article>`;
 }
@@ -1160,8 +1201,20 @@ async function renderFavorites(){
 function renderStats(){
   $("statLinks").textContent = links.length;
   $("statFav").textContent = favorites.size;
-  $("statUsers").textContent = user ? "1" : "—";
-  $("statPending").textContent = "—";
+
+  if(user){
+    $("statUsers").textContent = "1";
+    $("statNote2").textContent = "Signed in";
+    $("statPending").textContent = myPendingLinks.length;
+    $("statNote4").textContent = myPendingLinks.length
+      ? "Awaiting review"
+      : "No pending submissions";
+  } else {
+    $("statUsers").textContent = "Guest";
+    $("statNote2").textContent = "Guest session";
+    $("statPending").textContent = "0";
+    $("statNote4").textContent = "Sign in to submit";
+  }
 }
 
 function renderTopLinks(){
@@ -1208,8 +1261,10 @@ $("linkForm").onsubmit = async e => {
     views: 0
   });
   if(error){ toast(error.message); return; }
-  toast("Submitted! It will appear after a moderator approves it.");
+  toast("Submitted! Your link is now waiting for moderator approval.");
   e.target.reset();
+  await loadLinks();
+  showPage("vault");
 };
 
 $("search").addEventListener("input", renderLinks);
