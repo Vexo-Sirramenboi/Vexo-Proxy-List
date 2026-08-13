@@ -6,32 +6,42 @@
 
 <title>VEXO — Community</title>
 
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰</text></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 
 :root{
---bg:#060812;
---panel:rgba(14,18,34,.78);
---panel2:#11172a;
---panel3:#171e35;
---text:#eef2ff;
---muted:#8993b2;
---line:rgba(255,255,255,.09);
+--bg:#06090f;
+--bg2:#0a0f1c;
+--card:#0e1626;
+--surface:rgba(17,24,43,.72);
+--line:rgba(148,163,184,.11);
+--line2:rgba(148,163,184,.18);
+--text:#e8eefb;
+--muted:#8a97b5;
 
 --accent:#7c5cff;
 --accent2:#19d3ff;
+--pink:#ff3f9d;
 
---good:#43e6a4;
---danger:#ff557a;
---warning:#ffca5c;
+--green:#34d399;
+--red:#fb7185;
+--amber:#fbbf24;
 
---shadow:0 25px 80px rgba(0,0,0,.4);
+--grad:linear-gradient(135deg,#7c5cff,#4c8dff 55%,#19d3ff);
+
+--shadow:0 20px 60px rgba(0,0,0,.45);
+
+--r:16px;
 }
 
-*{
-box-sizing:border-box;
-}
+*{box-sizing:border-box;}
 
 html,body{
 margin:0;
@@ -42,31 +52,23 @@ background:var(--bg);
 overflow-x:hidden;
 }
 
-body{
-cursor:none;
-}
+body{cursor:none;}
 
-button,
-input,
-textarea,
-select{
-font:inherit;
-}
+button,input,textarea,select{font:inherit;}
+button{cursor:none;}
+button:disabled{opacity:.5;cursor:not-allowed;}
 
-button{
-cursor:none;
-}
+::-webkit-scrollbar{width:9px;height:9px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(124,92,255,.28);border-radius:99px;border:2px solid var(--bg);}
+::-webkit-scrollbar-thumb:hover{background:rgba(124,92,255,.45);}
 
-button:disabled{
-opacity:.5;
-cursor:not-allowed;
-}
+/* ═══════ BACKGROUND LAYERS ═══════ */
 
 #scene{
 position:fixed;
 inset:0;
 z-index:-3;
-
 background:
 radial-gradient(circle at 50% 20%,rgba(124,92,255,.16),transparent 35%),
 linear-gradient(120deg,#050711,#0a0d1c 55%,#070914);
@@ -76,27 +78,13 @@ linear-gradient(120deg,#050711,#0a0d1c 55%,#070914);
 position:fixed;
 inset:-20%;
 z-index:-2;
-
 background-image:
 linear-gradient(rgba(124,92,255,.08) 1px,transparent 1px),
 linear-gradient(90deg,rgba(25,211,255,.07) 1px,transparent 1px);
-
 background-size:55px 55px;
-
-transform:
-perspective(600px)
-rotateX(58deg)
-translateY(20%);
-
+transform:perspective(600px) rotateX(58deg) translateY(20%);
 animation:drift 18s linear infinite;
-
-mask-image:
-linear-gradient(
-transparent,
-#000 25%,
-#000 70%,
-transparent
-);
+mask-image:linear-gradient(transparent,#000 25%,#000 70%,transparent);
 }
 
 .orb{
@@ -105,105 +93,139 @@ width:260px;
 height:260px;
 border-radius:50%;
 filter:blur(45px);
-opacity:.18;
+opacity:.16;
 z-index:-1;
 animation:float 12s ease-in-out infinite;
 }
 
-.o1{
-background:#7c5cff;
-left:8%;
-top:15%;
+.o1{background:#7c5cff;left:8%;top:15%;}
+.o2{background:#19d3ff;right:7%;top:42%;animation-delay:-4s;}
+.o3{background:#ff3f9d;left:45%;bottom:-80px;animation-delay:-8s;}
+
+@keyframes drift{to{transform:perspective(600px) rotateX(58deg) translateY(30%);}}
+@keyframes float{50%{transform:translate(40px,-35px) scale(1.15);}}
+
+/* ═══════ CUSTOM CURSOR ═══════ */
+
+.cursor,.cursor-ring{
+position:fixed;
+left:0;
+top:0;
+border-radius:50%;
+pointer-events:none;
+z-index:9999;
 }
 
-.o2{
-background:#19d3ff;
-right:7%;
-top:42%;
-animation-delay:-4s;
+.cursor{
+width:9px;
+height:9px;
+background:#fff;
+box-shadow:0 0 12px rgba(25,211,255,.9),0 0 30px rgba(124,92,255,.5);
 }
 
-.o3{
-background:#ff3f9d;
-left:45%;
-bottom:-80px;
-animation-delay:-8s;
+.cursor-ring{
+width:36px;
+height:36px;
+border:1.5px solid rgba(25,211,255,.55);
 }
 
-@keyframes drift{
-to{
-transform:
-perspective(600px)
-rotateX(58deg)
-translateY(30%);
-}
-}
+/* ═══════ LAYOUT ═══════ */
 
-@keyframes float{
-50%{
-transform:
-translate(40px,-35px)
-scale(1.15);
-}
-}
+.app{display:flex;min-height:100vh;}
 
-.app{
-display:flex;
-min-height:100vh;
-}
-
-/* SIDEBAR */
+/* ─── SIDEBAR ─── */
 
 .side{
-width:250px;
+width:264px;
 position:fixed;
 inset:0 auto 0 0;
-
-padding:22px 16px;
-
-background:rgba(6,8,18,.72);
-backdrop-filter:blur(22px);
-
+padding:24px 18px;
+display:flex;
+flex-direction:column;
+background:rgba(8,12,22,.82);
+backdrop-filter:blur(24px);
 border-right:1px solid var(--line);
-
 z-index:20;
 }
 
 .brand{
-font-size:25px;
-font-weight:900;
-letter-spacing:.18em;
-padding:8px 10px 28px;
+display:flex;
+align-items:center;
+gap:12px;
+padding:6px 8px 26px;
+font-family:'Space Grotesk',sans-serif;
+font-size:22px;
+font-weight:700;
+letter-spacing:.16em;
 }
 
-.brand b{
-color:var(--accent2);
+.brand .logo{
+width:36px;
+height:36px;
+border-radius:11px;
+background:var(--grad);
+display:grid;
+place-items:center;
+font-size:17px;
+color:#fff;
+box-shadow:0 0 22px rgba(124,92,255,.5);
 }
+
+.brand b{color:var(--accent2);}
 
 .nav{
 display:grid;
-gap:7px;
+gap:4px;
 }
 
 .nav button{
+position:relative;
+display:flex;
+align-items:center;
+gap:12px;
+width:100%;
+padding:11px 13px;
 border:1px solid transparent;
+border-radius:11px;
 background:transparent;
 color:var(--muted);
-
-padding:12px 13px;
-
-border-radius:12px;
-
+font-size:13.5px;
+font-weight:600;
 text-align:left;
-
 transition:.2s;
 }
 
-.nav button:hover,
-.nav button.active{
-background:rgba(124,92,255,.12);
-border-color:rgba(124,92,255,.22);
+.nav button::before{
+content:"";
+position:absolute;
+left:0;
+top:50%;
+transform:translateY(-50%);
+width:3px;
+height:0;
+border-radius:3px;
+background:var(--grad);
+transition:.25s;
+}
+
+.nav button:hover{
 color:#fff;
+background:rgba(255,255,255,.04);
+}
+
+.nav button.active{
+color:#fff;
+background:linear-gradient(90deg,rgba(124,92,255,.2),rgba(25,211,255,.06));
+border-color:rgba(124,92,255,.22);
+}
+
+.nav button.active::before{height:20px;}
+
+.nav .ic{
+width:22px;
+text-align:center;
+font-size:15px;
+flex:none;
 }
 
 .admin-nav{
@@ -213,746 +235,1039 @@ padding-top:10px;
 border-top:1px solid var(--line);
 }
 
-.admin-nav.show{
-display:block;
-}
+.admin-nav.show{display:grid;gap:4px;}
 
 .admin-button{
-background:
-linear-gradient(
-135deg,
-rgba(124,92,255,.16),
-rgba(25,211,255,.08)
-)!important;
-
-border-color:
-rgba(124,92,255,.25)!important;
-
+background:linear-gradient(135deg,rgba(124,92,255,.16),rgba(25,211,255,.08))!important;
+border-color:rgba(124,92,255,.28)!important;
 color:#fff!important;
 }
 
+/* ─── USER BOX ─── */
+
 .userbox{
-position:absolute;
-bottom:18px;
-left:16px;
-right:16px;
-
+margin-top:auto;
+display:flex;
+align-items:center;
+gap:12px;
 padding:13px;
-
 border:1px solid var(--line);
-background:var(--panel);
-
 border-radius:15px;
+background:rgba(255,255,255,.03);
 }
 
-.userbox small{
+.userbox .avatar{
+width:40px;
+height:40px;
+border-radius:12px;
+background:var(--grad);
+display:grid;
+place-items:center;
+font-size:15px;
+font-weight:800;
+color:#fff;
+flex:none;
+box-shadow:0 6px 18px rgba(124,92,255,.35);
+}
+
+.userbox .ub-info{
+min-width:0;
+flex:1;
+}
+
+.userbox .ub-info strong{
+display:block;
+font-size:13.5px;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+
+.userbox .ub-info small{
 color:var(--muted);
+font-size:11px;
 }
 
-/* MAIN */
+/* ─── MAIN ─── */
 
 .main{
-margin-left:250px;
-width:calc(100% - 250px);
-padding:28px 34px;
+margin-left:264px;
+width:calc(100% - 264px);
+padding:26px 34px 60px;
 }
 
 .top{
 display:flex;
 justify-content:space-between;
-align-items:center;
+align-items:flex-start;
 gap:15px;
-margin-bottom:30px;
+margin-bottom:26px;
 }
+
+.crumbs{
+display:flex;
+align-items:center;
+gap:8px;
+font-size:11px;
+font-weight:700;
+letter-spacing:.12em;
+text-transform:uppercase;
+color:var(--muted);
+margin-bottom:5px;
+}
+
+.crumbs .sep{color:rgba(138,151,181,.4);}
+.crumbs .cur{color:var(--accent2);}
 
 .top h1{
 margin:0;
-font-size:30px;
+font-size:27px;
+font-weight:800;
+letter-spacing:-.02em;
 }
 
-.status{
-font-size:12px;
-color:var(--good);
-
-padding:8px 11px;
-
-border:1px solid rgba(67,230,164,.25);
-
-border-radius:99px;
-
-background:rgba(67,230,164,.06);
-}
-
-/* PANELS */
-
-.panel{
-background:var(--panel);
-
-border:1px solid var(--line);
-
-box-shadow:var(--shadow);
-
-backdrop-filter:blur(20px);
-
-border-radius:20px;
-
-padding:22px;
-
-margin-bottom:20px;
-}
-
-.hero{
-padding:30px;
-}
-
-.hero h2{
-font-size:clamp(30px,5vw,58px);
-line-height:1;
-margin:0 0 14px;
-}
-
-.hero p,
-.muted{
-color:var(--muted);
-}
-
-.actions{
+.top-right{
 display:flex;
-flex-wrap:wrap;
-gap:9px;
+align-items:center;
+gap:12px;
 }
 
-.btn{
+.icon-btn{
+position:relative;
+width:42px;
+height:42px;
+border-radius:12px;
 border:1px solid var(--line);
-
-background:rgba(255,255,255,.045);
-
-color:#fff;
-
-border-radius:11px;
-
-padding:10px 14px;
-
+background:rgba(255,255,255,.04);
+color:var(--muted);
+display:grid;
+place-items:center;
+font-size:16px;
 transition:.2s;
 }
 
-.btn:hover{
-border-color:rgba(124,92,255,.6);
+.icon-btn:hover{
+color:#fff;
+border-color:rgba(124,92,255,.5);
 transform:translateY(-1px);
 }
 
-.primary{
-background:
-linear-gradient(
-135deg,
-var(--accent),
-#4c8dff
-);
-
-border:0;
-}
-
-.danger{
+.badge{
+position:absolute;
+top:-5px;
+right:-5px;
+min-width:18px;
+height:18px;
+padding:0 5px;
+border-radius:99px;
+background:var(--grad);
 color:#fff;
-background:rgba(255,85,122,.12);
-border-color:rgba(255,85,122,.25);
+font-size:10px;
+font-weight:800;
+display:grid;
+place-items:center;
+box-shadow:0 0 10px rgba(124,92,255,.6);
 }
 
-.success{
-background:rgba(67,230,164,.12);
-border-color:rgba(67,230,164,.25);
+.status{
+display:inline-flex;
+align-items:center;
+gap:7px;
+font-size:12px;
+font-weight:700;
+color:var(--green);
+padding:8px 13px;
+border:1px solid rgba(52,211,153,.28);
+border-radius:99px;
+background:rgba(52,211,153,.07);
 }
 
-.warning{
-background:rgba(255,202,92,.12);
-border-color:rgba(255,202,92,.25);
+.status::before{
+content:"";
+width:7px;
+height:7px;
+border-radius:50%;
+background:var(--green);
+box-shadow:0 0 9px var(--green);
+animation:pulse 2s ease-in-out infinite;
 }
 
-/* STATS */
+@keyframes pulse{50%{opacity:.45;}}
+
+/* ═══════ PANELS ═══════ */
+
+.panel{
+background:linear-gradient(180deg,rgba(17,24,43,.74),rgba(13,18,32,.74));
+border:1px solid var(--line);
+border-radius:var(--r);
+box-shadow:var(--shadow);
+backdrop-filter:blur(18px);
+padding:22px;
+margin-bottom:20px;
+}
+
+.panel-head{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:12px;
+margin-bottom:16px;
+}
+
+.panel-head h3{
+margin:0;
+font-size:16px;
+font-weight:700;
+letter-spacing:-.01em;
+}
+
+.muted{color:var(--muted);}
+.muted-sm{color:var(--muted);font-size:12px;}
+
+/* ─── HERO ─── */
+
+.hero{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:30px;
+padding:32px;
+position:relative;
+overflow:hidden;
+}
+
+.hero-left{max-width:580px;}
+
+.eyebrow{
+font-size:11px;
+font-weight:800;
+letter-spacing:.18em;
+text-transform:uppercase;
+color:var(--accent2);
+}
+
+.hero h2{
+margin:10px 0 14px;
+font-size:clamp(28px,4.5vw,52px);
+font-weight:800;
+line-height:1.06;
+letter-spacing:-.02em;
+}
+
+.grad{
+background:var(--grad);
+-webkit-background-clip:text;
+background-clip:text;
+color:transparent;
+}
+
+.hero p{color:var(--muted);margin:0 0 22px;font-size:14.5px;line-height:1.6;}
+
+.hero-art{
+position:relative;
+width:240px;
+height:240px;
+flex:none;
+display:grid;
+place-items:center;
+}
+
+.art-core{
+width:86px;
+height:86px;
+border-radius:26px;
+background:var(--grad);
+display:grid;
+place-items:center;
+font-family:'Space Grotesk',sans-serif;
+font-size:36px;
+font-weight:700;
+color:#fff;
+box-shadow:0 0 55px rgba(124,92,255,.55);
+z-index:2;
+}
+
+.art-ring{
+position:absolute;
+border-radius:50%;
+border:1.5px dashed rgba(124,92,255,.4);
+animation:spin 26s linear infinite;
+}
+
+.r1{width:175px;height:175px;}
+.r2{width:240px;height:240px;border-color:rgba(25,211,255,.25);animation-direction:reverse;animation-duration:38s;}
+
+.art-dot{
+position:absolute;
+width:12px;
+height:12px;
+border-radius:50%;
+background:var(--accent2);
+box-shadow:0 0 14px var(--accent2);
+z-index:2;
+}
+
+.d1{top:20%;left:10%;}
+.d2{bottom:16%;right:6%;background:var(--pink);box-shadow:0 0 14px var(--pink);}
+.d3{top:6%;right:28%;width:8px;height:8px;background:#fff;}
+
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ─── KPI STATS ─── */
 
 .stats{
 display:grid;
 grid-template-columns:repeat(4,1fr);
-gap:12px;
+gap:14px;
+margin-bottom:20px;
 }
 
 .stat{
+display:flex;
+align-items:center;
+gap:14px;
 padding:18px;
-
 border:1px solid var(--line);
-
 border-radius:16px;
+background:var(--card);
+position:relative;
+overflow:hidden;
+transition:.25s;
+}
 
-background:rgba(255,255,255,.025);
+.stat::after{
+content:"";
+position:absolute;
+width:90px;
+height:90px;
+right:-45px;
+top:-45px;
+border-radius:50%;
+background:rgba(124,92,255,.08);
+filter:blur(4px);
+}
+
+.stat:hover{
+transform:translateY(-3px);
+border-color:rgba(124,92,255,.4);
+}
+
+.stat .ico{
+width:46px;
+height:46px;
+border-radius:13px;
+background:rgba(124,92,255,.13);
+display:grid;
+place-items:center;
+font-size:20px;
+flex:none;
 }
 
 .stat strong{
 display:block;
-font-size:25px;
+font-family:'Space Grotesk',sans-serif;
+font-size:26px;
+font-weight:700;
+letter-spacing:-.02em;
+line-height:1.1;
 }
 
-.stat span{
-color:var(--muted);
-font-size:12px;
+.stat span{color:var(--muted);font-size:12px;}
+
+.stat small{
+color:var(--green);
+font-size:11px;
+font-weight:600;
 }
 
-/* INPUTS */
+/* ─── HOME GRID ─── */
+
+.home-grid{
+display:grid;
+grid-template-columns:1.2fr 1fr;
+gap:20px;
+}
+
+/* bars */
+
+.bars{display:grid;gap:15px;}
+
+.bar-label{
+display:flex;
+justify-content:space-between;
+gap:12px;
+font-size:12.5px;
+margin-bottom:6px;
+}
+
+.bar-label b{
+color:var(--text);
+font-weight:600;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+
+.bar-label span{color:var(--muted);flex:none;}
+
+.bar-track{
+height:8px;
+border-radius:99px;
+background:rgba(255,255,255,.05);
+overflow:hidden;
+}
+
+.bar-fill{
+height:100%;
+border-radius:99px;
+background:var(--grad);
+box-shadow:0 0 12px rgba(124,92,255,.5);
+transition:width .8s cubic-bezier(.22,1,.36,1);
+}
+
+/* feed */
+
+.feed{display:grid;gap:4px;}
+
+.feed-item{
+display:flex;
+align-items:center;
+gap:12px;
+padding:10px 8px;
+border-radius:12px;
+transition:.2s;
+}
+
+.feed-item:hover{background:rgba(255,255,255,.035);}
+
+.feed-icon{
+width:38px;
+height:38px;
+border-radius:11px;
+background:rgba(25,211,255,.09);
+display:grid;
+place-items:center;
+font-size:16px;
+flex:none;
+}
+
+.feed-body{min-width:0;flex:1;}
+
+.feed-body strong{
+display:block;
+font-size:13.5px;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+
+/* ═══════ BUTTONS ═══════ */
+
+.actions{display:flex;flex-wrap:wrap;gap:9px;}
+
+.btn{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+gap:7px;
+border:1px solid var(--line);
+background:rgba(255,255,255,.05);
+color:var(--text);
+border-radius:10px;
+padding:9px 14px;
+font-size:13px;
+font-weight:600;
+transition:.2s;
+}
+
+.btn:hover{
+border-color:rgba(124,92,255,.55);
+background:rgba(124,92,255,.09);
+transform:translateY(-1px);
+}
+
+.btn.primary{
+background:var(--grad);
+border:0;
+color:#fff;
+box-shadow:0 8px 24px rgba(124,92,255,.35);
+}
+
+.btn.primary:hover{filter:brightness(1.12);}
+
+.btn.danger{
+color:var(--red);
+background:rgba(251,113,133,.08);
+border-color:rgba(251,113,133,.28);
+}
+
+.btn.success{
+color:var(--green);
+background:rgba(52,211,153,.08);
+border-color:rgba(52,211,153,.28);
+}
+
+.btn.warning{
+color:var(--amber);
+background:rgba(251,191,36,.08);
+border-color:rgba(251,191,36,.28);
+}
+
+.btn.mini{padding:6px 10px;font-size:12px;border-radius:8px;}
+
+/* ═══════ INPUTS ═══════ */
 
 .toolbar{
 display:flex;
 gap:10px;
 flex-wrap:wrap;
-margin-bottom:15px;
+margin-bottom:16px;
 }
 
-.input,
-.textarea,
-.select{
+.input,.textarea,.select{
 width:100%;
-
 border:1px solid var(--line);
-
-background:rgba(0,0,0,.22);
-
-color:#fff;
-
+background:rgba(0,0,0,.28);
+color:var(--text);
 border-radius:11px;
-
-padding:11px 12px;
-
+padding:11px 13px;
+font-size:13.5px;
 outline:none;
-}
-
-.input:focus,
-.textarea:focus,
-.select:focus{
-border-color:rgba(124,92,255,.7);
-}
-
-.search{
-flex:1;
-min-width:220px;
-}
-
-/* CARDS */
-
-.grid{
-display:grid;
-grid-template-columns:
-repeat(auto-fill,minmax(250px,1fr));
-
-gap:13px;
-}
-
-.card{
-padding:18px;
-
-border:1px solid var(--line);
-
-border-radius:17px;
-
-background:rgba(255,255,255,.025);
-
 transition:.2s;
 }
 
+.input::placeholder,.textarea::placeholder{color:#5b6884;}
+
+.input:focus,.textarea:focus,.select:focus{
+border-color:rgba(124,92,255,.65);
+box-shadow:0 0 0 3px rgba(124,92,255,.13);
+}
+
+.select option{background:#0e1626;color:var(--text);}
+
+.search{flex:1;min-width:220px;}
+
+.form{display:grid;gap:14px;}
+
+.form label{
+display:block;
+font-size:12px;
+font-weight:700;
+color:var(--muted);
+margin-bottom:6px;
+letter-spacing:.04em;
+}
+
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ═══════ VAULT CARDS ═══════ */
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+gap:14px;
+}
+
+.card{
+position:relative;
+display:flex;
+flex-direction:column;
+gap:10px;
+padding:18px;
+border:1px solid var(--line);
+border-radius:16px;
+background:var(--card);
+overflow:hidden;
+transition:.25s;
+}
+
+.card::before{
+content:"";
+position:absolute;
+inset:0 0 auto 0;
+height:2px;
+background:var(--grad);
+opacity:0;
+transition:.25s;
+}
+
 .card:hover{
-transform:translateY(-3px);
+transform:translateY(-4px);
+border-color:rgba(124,92,255,.4);
+box-shadow:0 18px 40px rgba(0,0,0,.35);
+}
 
-border-color:
-rgba(124,92,255,.35);
+.card:hover::before{opacity:1;}
 
-box-shadow:
-0 15px 45px rgba(0,0,0,.2);
+.card-head{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+}
+
+.chip{
+font-size:10.5px;
+font-weight:800;
+letter-spacing:.07em;
+text-transform:uppercase;
+padding:5px 10px;
+border-radius:99px;
+background:rgba(25,211,255,.09);
+color:var(--accent2);
 }
 
 .card h3{
-margin:10px 0 7px;
+margin:0;
+font-size:16px;
+font-weight:700;
+letter-spacing:-.01em;
 }
 
 .card p{
+margin:0;
 color:var(--muted);
 font-size:13px;
+line-height:1.55;
 min-height:38px;
+display:-webkit-box;
+-webkit-line-clamp:2;
+-webkit-box-orient:vertical;
+overflow:hidden;
 }
 
 .cardurl{
-font-size:11px;
-
-color:#aab2d0;
-
+font-size:11.5px;
+color:#9aa7c8;
 white-space:nowrap;
 overflow:hidden;
 text-overflow:ellipsis;
+background:rgba(0,0,0,.25);
+border:1px solid var(--line);
+border-radius:9px;
+padding:8px 10px;
+}
 
-margin:8px 0 12px;
+.card-tags{
+display:flex;
+flex-wrap:wrap;
+gap:5px;
+min-height:22px;
 }
 
 .tag{
 display:inline-block;
-
-padding:5px 8px;
-
+padding:4px 9px;
 border-radius:99px;
-
-background:rgba(25,211,255,.08);
-
-color:var(--accent2);
-
-font-size:10px;
-
-margin:3px 3px 0 0;
+background:rgba(124,92,255,.1);
+color:#b9a8ff;
+font-size:10.5px;
+font-weight:600;
 }
 
-/* ADMIN */
+.card-foot{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+margin-top:auto;
+padding-top:4px;
+}
+
+.card-meta{
+display:flex;
+align-items:center;
+gap:6px;
+color:var(--muted);
+font-size:12px;
+}
+
+.icon-btn.on{
+color:var(--amber);
+border-color:rgba(251,191,36,.4);
+background:rgba(251,191,36,.08);
+}
+
+/* ═══════ ADMIN ═══════ */
 
 .admin-header{
 display:flex;
 justify-content:space-between;
 align-items:center;
 gap:15px;
-
 margin-bottom:20px;
 }
 
 .admin-title{
 font-size:27px;
 font-weight:800;
+letter-spacing:-.02em;
 }
 
-.admin-sub{
-font-size:13px;
-color:var(--muted);
-}
+.admin-sub{font-size:13px;color:var(--muted);}
 
 .admin-stats{
 display:grid;
-grid-template-columns:
-repeat(4,1fr);
-
-gap:12px;
-
+grid-template-columns:repeat(4,1fr);
+gap:14px;
 margin-bottom:20px;
 }
 
 .admin-stat{
 position:relative;
-
 padding:20px;
-
 border:1px solid var(--line);
-
-background:
-linear-gradient(
-135deg,
-rgba(255,255,255,.045),
-rgba(255,255,255,.015)
-);
-
-border-radius:17px;
-
+border-radius:16px;
+background:var(--card);
 overflow:hidden;
+transition:.25s;
 }
 
 .admin-stat::after{
 content:"";
-
 position:absolute;
-
-width:100px;
-height:100px;
-
-right:-40px;
-top:-40px;
-
+width:110px;
+height:110px;
+right:-45px;
+top:-45px;
 border-radius:50%;
-
-background:
-rgba(124,92,255,.12);
-
+background:rgba(124,92,255,.12);
 filter:blur(5px);
 }
 
+.admin-stat:hover{transform:translateY(-3px);border-color:rgba(124,92,255,.4);}
+
 .admin-stat strong{
-font-size:30px;
 display:block;
+font-family:'Space Grotesk',sans-serif;
+font-size:30px;
+font-weight:700;
+letter-spacing:-.02em;
 }
 
-.admin-stat span{
-font-size:12px;
-color:var(--muted);
-}
+.admin-stat span{font-size:12px;color:var(--muted);}
 
-.queue{
-display:grid;
-gap:12px;
-}
+/* queue */
+
+.queue{display:grid;gap:12px;}
 
 .submission{
 display:grid;
-
-grid-template-columns:
-1fr auto;
-
-gap:18px;
-
+grid-template-columns:44px 1fr auto;
+gap:16px;
+align-items:start;
 padding:18px;
-
 border:1px solid var(--line);
-
-border-radius:17px;
-
-background:
-rgba(255,255,255,.025);
-
+border-radius:16px;
+background:var(--card);
 transition:.2s;
 }
 
 .submission:hover{
-border-color:
-rgba(124,92,255,.35);
-
-background:
-rgba(124,92,255,.045);
+border-color:rgba(124,92,255,.4);
+background:linear-gradient(90deg,rgba(124,92,255,.05),transparent);
 }
 
-.submission-main{
-min-width:0;
+.avatar{
+width:44px;
+height:44px;
+border-radius:13px;
+background:var(--grad);
+color:#fff;
+font-weight:800;
+font-size:16px;
+display:grid;
+place-items:center;
+flex:none;
+box-shadow:0 6px 18px rgba(124,92,255,.35);
+}
+
+.submission-main{min-width:0;}
+
+.submission-top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+margin-bottom:8px;
 }
 
 .submission-title{
-font-size:17px;
+font-size:16px;
 font-weight:700;
-margin-bottom:5px;
+margin-bottom:4px;
+letter-spacing:-.01em;
 }
 
 .submission-url{
 font-size:12px;
 color:var(--accent2);
-
+white-space:nowrap;
 overflow:hidden;
 text-overflow:ellipsis;
-white-space:nowrap;
+margin-bottom:8px;
 }
 
 .submission-description{
 font-size:13px;
 color:var(--muted);
-margin:10px 0;
+line-height:1.55;
+margin-bottom:10px;
 }
 
 .submitter{
 display:flex;
 align-items:center;
-gap:9px;
-
-margin-top:12px;
-
+gap:6px;
 font-size:12px;
 color:var(--muted);
 }
 
-.avatar{
-width:30px;
-height:30px;
-
-display:grid;
-place-items:center;
-
-border-radius:50%;
-
-background:
-linear-gradient(
-135deg,
-var(--accent),
-var(--accent2)
-);
-
-font-size:11px;
-font-weight:800;
-color:white;
-}
+.submitter strong{color:var(--text);}
 
 .submission-actions{
 display:flex;
 align-items:center;
 gap:7px;
+flex-wrap:wrap;
 }
 
 .status-badge{
 display:inline-flex;
 align-items:center;
-
-padding:5px 9px;
-
+gap:6px;
+padding:5px 11px;
 border-radius:99px;
-
-font-size:10px;
-font-weight:700;
-
-margin-bottom:9px;
+font-size:10.5px;
+font-weight:800;
+letter-spacing:.09em;
 }
 
-.pending{
-color:var(--warning);
-background:rgba(255,202,92,.1);
+.status-badge::before{
+content:"";
+width:6px;
+height:6px;
+border-radius:50%;
+background:currentColor;
 }
 
-.approved{
-color:var(--good);
-background:rgba(67,230,164,.1);
-}
+.pending{color:var(--amber);background:rgba(251,191,36,.1);}
+.approved{color:var(--green);background:rgba(52,211,153,.1);}
+.rejected{color:var(--red);background:rgba(251,113,133,.1);}
 
-.rejected{
-color:var(--danger);
-background:rgba(255,85,122,.1);
-}
+/* notifications */
 
 .notification{
 display:flex;
-gap:12px;
-
-padding:14px;
-
+gap:13px;
+padding:14px 6px;
 border-bottom:1px solid var(--line);
 }
 
-.notification:last-child{
-border-bottom:0;
-}
+.notification:last-child{border-bottom:0;}
 
 .notification-icon{
-width:35px;
-height:35px;
-
+width:38px;
+height:38px;
+border-radius:11px;
+background:rgba(124,92,255,.13);
 display:grid;
 place-items:center;
-
-border-radius:10px;
-
-background:
-rgba(124,92,255,.12);
+font-size:17px;
+flex:none;
 }
 
-/* MODAL */
+/* ═══════ EMPTY STATE ═══════ */
+
+.empty{
+text-align:center;
+padding:45px 20px;
+color:var(--muted);
+grid-column:1/-1;
+border:1.5px dashed var(--line2);
+border-radius:14px;
+}
+
+.empty-icon{
+font-size:34px;
+margin-bottom:10px;
+opacity:.7;
+}
+
+.empty p{margin:0;font-size:13.5px;}
+
+/* ═══════ MODAL ═══════ */
 
 .modal{
 position:fixed;
 inset:0;
-
 display:none;
 place-items:center;
-
-background:rgba(0,0,0,.65);
-
-backdrop-filter:blur(8px);
-
+background:rgba(2,4,10,.7);
+backdrop-filter:blur(10px);
 z-index:100;
 }
 
-.modal.open{
-display:grid;
-}
+.modal.open{display:grid;}
 
 .box{
 width:min(520px,calc(100% - 30px));
-
 max-height:90vh;
-
 overflow:auto;
-
-background:var(--panel2);
-
-border:1px solid var(--line);
-
+background:linear-gradient(180deg,#131b32,#0d1424);
+border:1px solid var(--line2);
 border-radius:22px;
-
-padding:24px;
-
+padding:26px;
 box-shadow:var(--shadow);
 }
 
 .box h2{
-margin-top:0;
-}
-
-.form{
-display:grid;
-gap:12px;
-}
-
-.form label{
-font-size:12px;
-color:var(--muted);
-}
-
-.row{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
+margin:0 0 6px;
+font-size:22px;
+letter-spacing:-.02em;
 }
 
 .close{
 float:right;
-
 background:none;
 border:0;
-
 color:var(--muted);
-
-font-size:25px;
+font-size:26px;
+line-height:1;
+transition:.2s;
 }
 
-.hidden{
-display:none!important;
-}
+.close:hover{color:#fff;transform:rotate(90deg);}
 
-.empty{
-text-align:center;
-
-padding:45px;
-
-color:var(--muted);
-
-grid-column:1/-1;
-}
-
-.toast{
-position:fixed;
-
-right:22px;
-bottom:22px;
-
-z-index:200;
-
-padding:12px 15px;
-
-border:1px solid var(--line);
-
-background:var(--panel2);
-
-border-radius:12px;
-
-box-shadow:var(--shadow);
-
-opacity:0;
-
-transform:translateY(12px);
-
-transition:.25s;
-}
-
-.toast.show{
-opacity:1;
-transform:none;
-}
-
-hr{
-border:0;
-border-top:1px solid var(--line);
-margin:22px 0;
-}
-
-@media(max-width:850px){
-
-.side{
-width:72px;
-}
-
-.brand{
-font-size:0;
-}
-
-.brand b{
-font-size:20px;
-}
-
-.nav button span,
-.userbox{
-display:none;
-}
-
-.main{
-margin-left:72px;
-width:calc(100% - 72px);
-padding:20px;
-}
-
-.stats,
-.admin-stats{
-grid-template-columns:1fr 1fr;
-}
-
-.submission{
-grid-template-columns:1fr;
-}
-
-}
-
-@media(max-width:520px){
-
-.stats,
-.admin-stats{
-grid-template-columns:1fr;
-}
-
-.row{
-grid-template-columns:1fr;
-}
-
-.top{
-align-items:flex-start;
-flex-direction:column;
-}
-
-}
-
-/* LOCK SCREEN */
+/* ═══════ LOCK SCREEN ═══════ */
 
 .admin-lock{
 position:fixed;
 inset:0;
-
 display:none;
-
 place-items:center;
-
 z-index:500;
-
 background:
-radial-gradient(
-circle at center,
-rgba(124,92,255,.12),
-#050711 60%
-);
-
+radial-gradient(circle at center,rgba(124,92,255,.13),#050711 60%);
 backdrop-filter:blur(20px);
 }
 
-.admin-lock.show{
-display:grid;
-}
+.admin-lock.show{display:grid;}
 
 .lock-box{
-width:min(500px,calc(100% - 30px));
-
+width:min(480px,calc(100% - 30px));
 padding:40px;
-
 text-align:center;
-
-border:1px solid var(--line);
-
-background:
-rgba(14,18,34,.9);
-
-border-radius:25px;
-
+border:1px solid var(--line2);
+background:rgba(13,20,36,.92);
+border-radius:24px;
 box-shadow:var(--shadow);
 }
 
 .lock-icon{
-font-size:55px;
-margin-bottom:15px;
+width:78px;
+height:78px;
+margin:0 auto 18px;
+border-radius:22px;
+background:var(--grad);
+display:grid;
+place-items:center;
+font-size:34px;
+box-shadow:0 0 40px rgba(124,92,255,.5);
+}
+
+/* ═══════ TOAST ═══════ */
+
+.toast{
+position:fixed;
+right:22px;
+bottom:22px;
+z-index:300;
+display:flex;
+align-items:center;
+gap:10px;
+padding:13px 17px;
+border-radius:13px;
+background:#131c33;
+border:1px solid var(--line2);
+box-shadow:var(--shadow);
+font-size:13.5px;
+font-weight:600;
+opacity:0;
+transform:translateY(14px);
+transition:.25s;
+max-width:min(360px,calc(100vw - 44px));
+}
+
+.toast.show{opacity:1;transform:none;}
+
+.toast-dot{
+width:8px;
+height:8px;
+border-radius:50%;
+background:var(--green);
+box-shadow:0 0 10px var(--green);
+flex:none;
+}
+
+/* ═══════ MISC ═══════ */
+
+hr{border:0;border-top:1px solid var(--line);margin:22px 0;}
+
+.hidden{display:none!important;}
+
+.page{animation:fadeUp .35s ease;}
+
+@keyframes fadeUp{
+from{opacity:0;transform:translateY(10px);}
+to{opacity:1;transform:none;}
+}
+
+/* ═══════ RESPONSIVE ═══════ */
+
+@media(max-width:1080px){
+.home-grid{grid-template-columns:1fr;}
+}
+
+@media(max-width:920px){
+
+.side{width:78px;padding:20px 10px;}
+
+.brand{justify-content:center;padding-bottom:20px;}
+
+.brand .word{display:none;}
+
+.nav button{justify-content:center;padding:11px 0;}
+
+.nav button .lbl{display:none;}
+
+.nav button::before{display:none;}
+
+.userbox{display:none;}
+
+.main{margin-left:78px;width:calc(100% - 78px);padding:20px;}
+
+.stats,.admin-stats{grid-template-columns:1fr 1fr;}
+
+.submission{grid-template-columns:1fr;}
+
+.hero-art{display:none;}
+
+}
+
+@media(max-width:560px){
+
+.stats,.admin-stats,.row{grid-template-columns:1fr;}
+
+.top{align-items:flex-start;flex-direction:column;}
+
+.top-right{width:100%;justify-content:space-between;}
+
+}
+
+@media(pointer:coarse){
+body,button{cursor:auto;}
+.cursor,.cursor-ring{display:none;}
 }
 
 </style>
@@ -967,43 +1282,49 @@ margin-bottom:15px;
 <div class="orb o2"></div>
 <div class="orb o3"></div>
 
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
 <div class="app">
 
 <aside class="side">
 
 <div class="brand">
+
+<span class="logo">V</span>
+
+<span class="word">
 VE<b>X</b>O
+</span>
+
 </div>
 
 <div class="nav">
 
 <button class="active" data-page="home">
-◈ <span>Dashboard</span>
+<span class="ic">◈</span><span class="lbl">Dashboard</span>
 </button>
 
 <button data-page="vault">
-⌘ <span>Community Vault</span>
+<span class="ic">⌘</span><span class="lbl">Community Vault</span>
 </button>
 
 <button data-page="submit">
-＋ <span>Submit Link</span>
+<span class="ic">＋</span><span class="lbl">Submit Link</span>
 </button>
 
 <button data-page="favorites">
-★ <span>Favorites</span>
+<span class="ic">★</span><span class="lbl">Favorites</span>
 </button>
 
 <button data-page="settings">
-⚙ <span>Settings</span>
+<span class="ic">⚙</span><span class="lbl">Settings</span>
 </button>
 
 <div id="adminNav" class="admin-nav">
 
-<button
-class="admin-button"
-data-page="admin"
->
-🛡 <span>Admin Center</span>
+<button class="admin-button" data-page="admin">
+<span class="ic">🛡</span><span class="lbl">Admin Center</span>
 </button>
 
 </div>
@@ -1012,16 +1333,17 @@ data-page="admin"
 
 <div class="userbox" id="userBox">
 
-<small>
-Not signed in
-</small>
+<div class="avatar">?</div>
 
-<br>
+<div class="ub-info">
 
-<button
-class="btn primary"
-id="loginBtn"
->
+<small>Not signed in</small>
+
+<strong>Guest</strong>
+
+</div>
+
+<button class="btn primary mini" id="loginBtn">
 Sign in
 </button>
 
@@ -1036,42 +1358,49 @@ Sign in
 
 <div>
 
+<div class="crumbs">
+<span>VEXO</span>
+<span class="sep">/</span>
+<span class="cur" id="crumbPage">Dashboard</span>
+</div>
+
 <h1 id="pageTitle">
 VEXO
 </h1>
 
-<div
-class="muted"
-id="pageSub"
->
+<div class="muted" id="pageSub">
 A futuristic community for useful links.
 </div>
 
 </div>
 
-<div class="status">
-● SUPABASE ONLINE
-</div>
+<div class="top-right">
+
+<button class="icon-btn" id="bellBtn" title="Notifications">
+🔔
+<span class="badge hidden" id="bellBadge">0</span>
+</button>
+
+<span class="status">SUPABASE ONLINE</span>
 
 </div>
 
+</div>
 
-<!-- HOME -->
 
-<section
-id="homePage"
-class="page"
->
+<!-- ════════ HOME ════════ -->
+
+<section id="homePage" class="page">
 
 <div class="panel hero">
 
+<div class="hero-left">
+
+<span class="eyebrow">Welcome to the VEXO network</span>
+
 <h2>
 Discover the web.<br>
-
-<span style="color:var(--accent2)">
-Build VEXO together.
-</span>
-
+<span class="grad">Build VEXO together.</span>
 </h2>
 
 <p>
@@ -1081,19 +1410,28 @@ Submit useful sites and help others discover them.
 
 <div class="actions">
 
-<button
-class="btn primary"
-onclick="showPage('vault')"
->
-Explore Vault
+<button class="btn primary" onclick="showPage('vault')">
+⌘ Explore Vault
 </button>
 
-<button
-class="btn"
-onclick="showPage('submit')"
->
-Submit a Link
+<button class="btn" onclick="showPage('submit')">
+＋ Submit a Link
 </button>
+
+</div>
+
+</div>
+
+<div class="hero-art">
+
+<span class="art-dot d1"></span>
+<span class="art-dot d2"></span>
+<span class="art-dot d3"></span>
+
+<div class="art-ring r2"></div>
+<div class="art-ring r1"></div>
+
+<div class="art-core">V</div>
 
 </div>
 
@@ -1104,52 +1442,102 @@ Submit a Link
 
 <div class="stat">
 
-<strong id="statLinks">
-0
-</strong>
+<div class="ico">🌐</div>
 
-<span>
-Approved links
-</span>
+<div>
+
+<strong id="statLinks">0</strong>
+
+<span>Approved links</span>
+
+<small id="statNote1">No views yet</small>
+
+</div>
 
 </div>
 
 
 <div class="stat">
 
-<strong id="statUsers">
-—
-</strong>
+<div class="ico">👤</div>
 
-<span>
-Your account
-</span>
+<div>
+
+<strong id="statUsers">—</strong>
+
+<span>Your account</span>
+
+<small id="statNote2">Guest session</small>
+
+</div>
 
 </div>
 
 
 <div class="stat">
 
-<strong id="statFav">
-0
-</strong>
+<div class="ico">⭐</div>
 
-<span>
-Your favorites
-</span>
+<div>
+
+<strong id="statFav">0</strong>
+
+<span>Your favorites</span>
+
+<small id="statNote3">Saved links</small>
+
+</div>
 
 </div>
 
 
 <div class="stat">
 
-<strong id="statPending">
-—
-</strong>
+<div class="ico">⏳</div>
 
-<span>
-Your pending submissions
-</span>
+<div>
+
+<strong id="statPending">—</strong>
+
+<span>Pending submissions</span>
+
+<small id="statNote4">Awaiting review</small>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="home-grid">
+
+<div class="panel">
+
+<div class="panel-head">
+
+<h3>📊 Top Links</h3>
+
+<span class="muted-sm">by views</span>
+
+</div>
+
+<div class="bars" id="topLinksBar"></div>
+
+</div>
+
+
+<div class="panel">
+
+<div class="panel-head">
+
+<h3>🕒 Recently Added</h3>
+
+<span class="muted-sm">latest first</span>
+
+</div>
+
+<div class="feed" id="recentLinks"></div>
 
 </div>
 
@@ -1158,186 +1546,144 @@ Your pending submissions
 </section>
 
 
-<!-- VAULT -->
+<!-- ════════ VAULT ════════ -->
 
-<section
-id="vaultPage"
-class="page hidden"
->
+<section id="vaultPage" class="page hidden">
 
 <div class="panel">
 
+<div class="panel-head">
+
+<div>
+
+<h3>Community Vault</h3>
+
+<div class="muted-sm">
+Discover community-submitted resources.
+</div>
+
+</div>
+
+</div>
+
 <div class="toolbar">
 
-<input
-class="input search"
-id="search"
-placeholder="Search links, tags, categories..."
->
+<input class="input search" id="search" placeholder="Search links, tags, categories...">
 
-<select
-class="select"
-id="category"
-style="width:180px"
->
+<select class="select" id="category" style="width:190px">
 
-<option value="">
-All categories
-</option>
+<option value="">All categories</option>
 
 </select>
 
-<button
-class="btn primary"
-onclick="showPage('submit')"
->
+<button class="btn primary" onclick="showPage('submit')">
 ＋ Submit
 </button>
 
 </div>
 
-<div
-class="grid"
-id="linksGrid"
-></div>
+<div class="grid" id="linksGrid"></div>
 
 </div>
 
 </section>
 
 
-<!-- FAVORITES -->
+<!-- ════════ FAVORITES ════════ -->
 
-<section
-id="favoritesPage"
-class="page hidden"
->
+<section id="favoritesPage" class="page hidden">
 
 <div class="panel">
 
-<h2>
-Your Favorites
-</h2>
+<div class="panel-head">
 
-<div
-class="grid"
-id="favoritesGrid"
-></div>
+<div>
+
+<h3>Your Favorites</h3>
+
+<div class="muted-sm">
+Links you've saved for later.
+</div>
+
+</div>
+
+</div>
+
+<div class="grid" id="favoritesGrid"></div>
 
 </div>
 
 </section>
 
 
-<!-- SUBMIT -->
+<!-- ════════ SUBMIT ════════ -->
 
-<section
-id="submitPage"
-class="page hidden"
->
+<section id="submitPage" class="page hidden">
 
 <div class="panel">
 
-<h2>
-Submit a community link
-</h2>
+<div class="panel-head">
 
-<p class="muted">
+<div>
+
+<h3>Submit a community link</h3>
+
+<div class="muted-sm">
 Sign in first. New links start as pending until approved by a moderator.
-</p>
-
-<form
-id="linkForm"
-class="form"
->
-
-<div>
-
-<label>
-Title
-</label>
-
-<input
-class="input"
-id="linkTitle"
-required
-placeholder="Example Tool"
->
+</div>
 
 </div>
 
+</div>
+
+<form id="linkForm" class="form">
 
 <div>
 
-<label>
-URL
-</label>
+<label>Title</label>
 
-<input
-class="input"
-id="linkURL"
-required
-type="url"
-placeholder="https://example.com"
->
+<input class="input" id="linkTitle" required placeholder="Example Tool">
 
 </div>
 
+<div>
+
+<label>URL</label>
+
+<input class="input" id="linkURL" required type="url" placeholder="https://example.com">
+
+</div>
 
 <div class="row">
 
 <div>
 
-<label>
-Category
-</label>
+<label>Category</label>
 
-<input
-class="input"
-id="linkCategory"
-placeholder="Tools"
->
+<input class="input" id="linkCategory" placeholder="Tools">
 
 </div>
 
 <div>
 
-<label>
-Tags
-</label>
+<label>Tags</label>
 
-<input
-class="input"
-id="linkTags"
-placeholder="ai, web, coding"
->
+<input class="input" id="linkTags" placeholder="ai, web, coding">
 
 </div>
 
 </div>
-
 
 <div>
 
-<label>
-Description
-</label>
+<label>Description</label>
 
-<textarea
-class="textarea"
-id="linkDesc"
-rows="4"
-placeholder="What makes this useful?"
-></textarea>
+<textarea class="textarea" id="linkDesc" rows="4" placeholder="What makes this useful?"></textarea>
 
 </div>
 
-
-<button
-class="btn primary"
-type="submit"
->
-Submit for review
+<button class="btn primary" type="submit">
+🚀 Submit for review
 </button>
 
 </form>
@@ -1347,46 +1693,40 @@ Submit for review
 </section>
 
 
-<!-- SETTINGS -->
+<!-- ════════ SETTINGS ════════ -->
 
-<section
-id="settingsPage"
-class="page hidden"
->
+<section id="settingsPage" class="page hidden">
 
 <div class="panel">
 
-<h2>
-Settings
-</h2>
+<div class="panel-head">
 
-<p class="muted">
+<div>
+
+<h3>Settings</h3>
+
+<div class="muted-sm">
 Choose the VEXO visual mode.
-</p>
+</div>
+
+</div>
+
+</div>
 
 <div class="actions">
 
-<button class="btn" data-bg="grid">
-Neon Grid
-</button>
+<button class="btn" data-bg="grid">▦ Neon Grid</button>
 
-<button class="btn" data-bg="plain">
-Clean
-</button>
+<button class="btn" data-bg="plain">▢ Clean</button>
 
-<button class="btn" data-bg="stars">
-Deep Space
-</button>
+<button class="btn" data-bg="stars">✦ Deep Space</button>
 
 </div>
 
 <hr>
 
-<button
-class="btn danger"
-id="logoutBtn"
->
-Sign out
+<button class="btn danger" id="logoutBtn">
+⏻ Sign out
 </button>
 
 </div>
@@ -1394,12 +1734,9 @@ Sign out
 </section>
 
 
-<!-- ADMIN CENTER -->
+<!-- ════════ ADMIN ════════ -->
 
-<section
-id="adminPage"
-class="page hidden"
->
+<section id="adminPage" class="page hidden">
 
 <div class="panel">
 
@@ -1407,9 +1744,7 @@ class="page hidden"
 
 <div>
 
-<div class="admin-title">
-🛡 VEXO Admin Center
-</div>
+<div class="admin-title">🛡 VEXO Admin Center</div>
 
 <div class="admin-sub">
 Moderation, submissions and community management
@@ -1417,63 +1752,41 @@ Moderation, submissions and community management
 
 </div>
 
-<div class="status">
-ADMIN ACCESS
-</div>
+<span class="status">ADMIN ACCESS</span>
 
 </div>
-
 
 <div class="admin-stats">
 
 <div class="admin-stat">
 
-<strong id="adminPending">
-0
-</strong>
+<strong id="adminPending">0</strong>
 
-<span>
-Pending submissions
-</span>
+<span>Pending submissions</span>
 
 </div>
 
-
 <div class="admin-stat">
 
-<strong id="adminApproved">
-0
-</strong>
+<strong id="adminApproved">0</strong>
 
-<span>
-Approved links
-</span>
+<span>Approved links</span>
 
 </div>
 
-
 <div class="admin-stat">
 
-<strong id="adminRejected">
-0
-</strong>
+<strong id="adminRejected">0</strong>
 
-<span>
-Rejected links
-</span>
+<span>Rejected links</span>
 
 </div>
 
-
 <div class="admin-stat">
 
-<strong id="adminUsers">
-0
-</strong>
+<strong id="adminUsers">0</strong>
 
-<span>
-Admins
-</span>
+<span>Admins</span>
 
 </div>
 
@@ -1484,64 +1797,64 @@ Admins
 
 <div class="panel">
 
+<div class="panel-head">
+
+<div>
+
+<h3>Moderation Queue</h3>
+
+<div class="muted-sm">
+Review, approve or reject community submissions.
+</div>
+
+</div>
+
+</div>
+
 <div class="toolbar">
 
-<input
-class="input search"
-id="adminSearch"
-placeholder="Search submissions..."
->
+<input class="input search" id="adminSearch" placeholder="Search submissions...">
 
-<select
-class="select"
-id="adminStatus"
-style="width:170px"
->
+<select class="select" id="adminStatus" style="width:180px">
 
-<option value="pending">
-Pending
-</option>
+<option value="pending">Pending</option>
 
-<option value="approved">
-Approved
-</option>
+<option value="approved">Approved</option>
 
-<option value="rejected">
-Rejected
-</option>
+<option value="rejected">Rejected</option>
 
-<option value="all">
-All submissions
-</option>
+<option value="all">All submissions</option>
 
 </select>
 
-<button
-class="btn"
-onclick="loadAdminData()"
->
+<button class="btn" onclick="loadAdminData()">
 ↻ Refresh
 </button>
 
 </div>
 
-<div
-id="adminQueue"
-class="queue"
-></div>
+<div id="adminQueue" class="queue"></div>
 
 </div>
 
 
 <div class="panel">
 
-<h2>
-🔔 Admin Notifications
-</h2>
+<div class="panel-head">
 
-<div
-id="adminNotifications"
-></div>
+<div>
+
+<h3>🔔 Admin Notifications</h3>
+
+<div class="muted-sm">
+Latest activity across VEXO.
+</div>
+
+</div>
+
+</div>
+
+<div id="adminNotifications"></div>
 
 </div>
 
@@ -1553,108 +1866,51 @@ id="adminNotifications"
 </div>
 
 
-<!-- AUTH MODAL -->
+<!-- ════════ AUTH MODAL ════════ -->
 
-<div
-class="modal"
-id="authModal"
->
+<div class="modal" id="authModal">
 
 <div class="box">
 
-<button
-class="close"
-onclick="closeAuth()"
->
-×
-</button>
+<button class="close" onclick="closeAuth()">×</button>
 
-<h2 id="authTitle">
-Sign in
-</h2>
+<h2 id="authTitle">Sign in</h2>
 
-<p
-class="muted"
-id="authSub"
->
-Enter your VEXO account.
-</p>
+<p class="muted" id="authSub">Enter your VEXO account.</p>
 
-<form
-id="authForm"
-class="form"
->
+<form id="authForm" class="form">
 
-<div
-id="usernameWrap"
-class="hidden"
->
+<div id="usernameWrap" class="hidden">
 
-<label>
-Username
-</label>
+<label>Username</label>
 
-<input
-class="input"
-id="username"
-maxlength="24"
-placeholder="vexo_user"
->
+<input class="input" id="username" maxlength="24" placeholder="vexo_user">
 
 </div>
-
 
 <div>
 
-<label>
-Email
-</label>
+<label>Email</label>
 
-<input
-class="input"
-id="email"
-type="email"
-required
->
+<input class="input" id="email" type="email" required>
 
 </div>
-
 
 <div>
 
-<label>
-Password
-</label>
+<label>Password</label>
 
-<input
-class="input"
-id="password"
-type="password"
-minlength="6"
-required
->
+<input class="input" id="password" type="password" minlength="6" required>
 
 </div>
 
-
-<button
-class="btn primary"
-id="authSubmit"
->
-Sign in
-</button>
+<button class="btn primary" id="authSubmit">Sign in</button>
 
 </form>
 
-
 <p style="text-align:center">
 
-<button
-class="btn"
-id="switchAuth"
->
-Create an account
-</button>
+<button class="btn" id="switchAuth">Create an account</button>
 
 </p>
 
@@ -1663,31 +1919,21 @@ Create an account
 </div>
 
 
-<!-- ADMIN LOCK -->
+<!-- ════════ ADMIN LOCK ════════ -->
 
-<div
-class="admin-lock"
-id="adminLock"
->
+<div class="admin-lock" id="adminLock">
 
 <div class="lock-box">
 
-<div class="lock-icon">
-🔒
-</div>
+<div class="lock-icon">🔒</div>
 
-<h2>
-Admin access required
-</h2>
+<h2>Admin access required</h2>
 
 <p class="muted">
 This area is restricted to VEXO administrators.
 </p>
 
-<button
-class="btn"
-onclick="showPage('home');closeAdminLock()"
->
+<button class="btn" onclick="showPage('home');closeAdminLock()">
 Return to VEXO
 </button>
 
@@ -1696,17 +1942,14 @@ Return to VEXO
 </div>
 
 
-<div
-class="toast"
-id="toast"
-></div>
+<div class="toast" id="toast"></div>
 
 
 <script>
 
-/* =====================================================
+/* ══════════════════════════════════════════
    SUPABASE
-===================================================== */
+══════════════════════════════════════════ */
 
 const SUPABASE_URL =
 "https://jxxjvwemjvhrozuaihso.supabase.co";
@@ -1721,9 +1964,9 @@ SUPABASE_KEY
 );
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    STATE
-===================================================== */
+══════════════════════════════════════════ */
 
 let user = null;
 
@@ -1738,9 +1981,9 @@ let favorites = new Set();
 let authMode = "login";
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    HELPERS
-===================================================== */
+══════════════════════════════════════════ */
 
 const $ =
 id => document.getElementById(id);
@@ -1748,12 +1991,18 @@ id => document.getElementById(id);
 
 function toast(msg){
 
-$("toast").textContent = msg;
+const t = $("toast");
 
-$("toast").classList.add("show");
+t.innerHTML =
+`<span class="toast-dot"></span><span>${esc(msg)}</span>`;
 
+t.classList.add("show");
+
+clearTimeout(t._timer);
+
+t._timer =
 setTimeout(
-() => $("toast").classList.remove("show"),
+() => t.classList.remove("show"),
 2600
 );
 
@@ -1776,9 +2025,61 @@ m => ({
 }
 
 
-/* =====================================================
+function emptyState(msg,icon="🛰"){
+
+return `
+
+<div class="empty">
+
+<div class="empty-icon">${icon}</div>
+
+<p>${msg}</p>
+
+</div>
+
+`;
+
+}
+
+
+function shortDate(iso){
+
+if(!iso) return "Unknown date";
+
+return new Date(iso).toLocaleDateString(
+undefined,
+{month:"short",day:"numeric"}
+);
+
+}
+
+
+function categoryIcon(cat=""){
+
+const map = {
+"tools":"🛠",
+"ai":"🤖",
+"web":"🌐",
+"design":"🎨",
+"dev":"💻",
+"security":"🛡",
+"productivity":"⚡",
+"learning":"📚",
+"entertainment":"🎮",
+"news":"📰"
+};
+
+const key =
+String(cat).toLowerCase();
+
+return map[key] || "🔗";
+
+}
+
+
+/* ══════════════════════════════════════════
    PAGE NAVIGATION
-===================================================== */
+══════════════════════════════════════════ */
 
 function showPage(name){
 
@@ -1814,35 +2115,12 @@ b.dataset.page === name
 
 const titles = {
 
-home:[
-"VEXO",
-"A futuristic community for useful links."
-],
-
-vault:[
-"Community Vault",
-"Discover community-submitted resources."
-],
-
-submit:[
-"Submit Link",
-"Share something useful with the community."
-],
-
-favorites:[
-"Favorites",
-"Your saved community links."
-],
-
-settings:[
-"Settings",
-"Customize your VEXO experience."
-],
-
-admin:[
-"Admin Center",
-"Moderate submissions and manage the VEXO community."
-]
+home:["VEXO","A futuristic community for useful links."],
+vault:["Community Vault","Discover community-submitted resources."],
+submit:["Submit Link","Share something useful with the community."],
+favorites:["Favorites","Your saved community links."],
+settings:["Settings","Customize your VEXO experience."],
+admin:["Admin Center","Moderate submissions and manage the VEXO community."]
 
 };
 
@@ -1852,6 +2130,9 @@ titles[name][0];
 
 $("pageSub").textContent =
 titles[name][1];
+
+$("crumbPage").textContent =
+titles[name][0];
 
 
 if(name === "favorites")
@@ -1879,9 +2160,9 @@ $("adminLock").classList.remove("show");
 }
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    AUTH
-===================================================== */
+══════════════════════════════════════════ */
 
 function openAuth(){
 
@@ -1967,7 +2248,6 @@ res =
 await db.auth.signUp({
 
 email,
-
 password,
 
 options:{
@@ -2005,9 +2285,7 @@ authMode === "signup"
 !res.data.session
 ){
 
-toast(
-"Account created. Check your email to confirm it."
-);
+toast("Account created. Check your email to confirm it.");
 
 }else{
 
@@ -2039,9 +2317,9 @@ showPage("home");
 };
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    ADMIN CHECK
-===================================================== */
+══════════════════════════════════════════ */
 
 async function checkAdmin(){
 
@@ -2049,8 +2327,9 @@ if(!user){
 
 isAdmin = false;
 
-$("adminNav")
-.classList.remove("show");
+$("adminNav").classList.remove("show");
+
+$("bellBadge").classList.add("hidden");
 
 return false;
 
@@ -2068,34 +2347,31 @@ await db
 
 if(error){
 
-console.error(
-"Admin check:",
-error
-);
+console.error("Admin check:",error);
 
 isAdmin = false;
 
-$("adminNav")
-.classList.remove("show");
+$("adminNav").classList.remove("show");
+
+$("bellBadge").classList.add("hidden");
 
 return false;
 
 }
 
 
-isAdmin =
-!!data;
+isAdmin = !!data;
 
 
 if(isAdmin){
 
-$("adminNav")
-.classList.add("show");
+$("adminNav").classList.add("show");
 
 }else{
 
-$("adminNav")
-.classList.remove("show");
+$("adminNav").classList.remove("show");
+
+$("bellBadge").classList.add("hidden");
 
 }
 
@@ -2105,9 +2381,9 @@ return isAdmin;
 }
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    SESSION
-===================================================== */
+══════════════════════════════════════════ */
 
 async function loadSession(){
 
@@ -2138,40 +2414,73 @@ user.email?.split("@")[0] ||
 "VEXO user";
 
 
+const initial =
+displayName
+.charAt(0)
+.toUpperCase();
+
+
 $("userBox").innerHTML = `
+
+<div class="avatar">${esc(initial)}</div>
+
+<div class="ub-info">
 
 <small>
 ${isAdmin ? "Administrator" : "Signed in as"}
 </small>
 
-<br>
-
 <strong>
 ${esc(displayName)}
 </strong>
 
+</div>
+
+<button class="btn danger mini" id="logoutQuick">
+⏻
+</button>
+
 `;
 
-$("statUsers").textContent =
-isAdmin
-? "ADMIN"
-: "YOU";
+$("logoutQuick").onclick =
+async () => {
 
+await db.auth.signOut();
+
+isAdmin = false;
+
+toast("Signed out.");
+
+await loadSession();
+
+showPage("home");
+
+};
+
+
+$("statUsers").textContent =
+isAdmin ? "ADMIN" : "YOU";
+
+$("statNote2").textContent =
+isAdmin
+? "Full access"
+: "Signed in";
 
 }else{
 
 $("userBox").innerHTML = `
 
-<small>
-Not signed in
-</small>
+<div class="avatar">?</div>
 
-<br>
+<div class="ub-info">
 
-<button
-class="btn primary"
-id="loginBtn"
->
+<small>Not signed in</small>
+
+<strong>Guest</strong>
+
+</div>
+
+<button class="btn primary mini" id="loginBtn">
 Sign in
 </button>
 
@@ -2180,8 +2489,10 @@ Sign in
 $("loginBtn").onclick =
 openAuth;
 
-$("statUsers").textContent =
-"—";
+$("statUsers").textContent = "—";
+
+$("statNote2").textContent =
+"Guest session";
 
 }
 
@@ -2202,19 +2513,17 @@ await loadAdminData();
 }
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    FAVORITES
-===================================================== */
+══════════════════════════════════════════ */
 
 async function loadFavorites(){
 
 if(!user){
 
-favorites =
-new Set();
+favorites = new Set();
 
-$("statFav").textContent =
-"0";
+$("statFav").textContent = "0";
 
 return;
 
@@ -2248,12 +2557,17 @@ x => x.link_id
 $("statFav").textContent =
 favorites.size;
 
+$("statNote3").textContent =
+favorites.size
+? "Saved to your vault"
+: "Star links to save them";
+
 }
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    LINKS
-===================================================== */
+══════════════════════════════════════════ */
 
 async function loadLinks(){
 
@@ -2285,9 +2599,24 @@ $("statLinks").textContent =
 links.length;
 
 
+const totalViews =
+links.reduce(
+(a,x) => a + (x.views || 0),
+0
+);
+
+
+$("statNote1").textContent =
+totalViews
+? `${totalViews.toLocaleString()} total views`
+: "No views yet";
+
+
 buildCategories();
 
 renderLinks();
+
+renderHomeSections();
 
 }
 
@@ -2306,9 +2635,7 @@ x => x.category || "General"
 
 $("category").innerHTML =
 `
-<option value="">
-All categories
-</option>
+<option value="">All categories</option>
 `
 +
 cats
@@ -2337,8 +2664,7 @@ return links.filter(
 x =>
 (
 !cat ||
-(x.category || "General")
-=== cat
+(x.category || "General") === cat
 )
 &&
 (
@@ -2359,15 +2685,18 @@ x.category,
 }
 
 
+/* ══════════════════════════════════════════
+   CARD RENDER
+══════════════════════════════════════════ */
+
 function card(x){
 
 const tags =
 (x.tags || [])
+.slice(0,4)
 .map(
 t =>
-`<span class="tag">
-#${esc(t)}
-</span>`
+`<span class="tag">#${esc(t)}</span>`
 )
 .join("");
 
@@ -2375,72 +2704,59 @@ t =>
 const fav =
 favorites.has(x.id);
 
+const views =
+x.views || 0;
+
 
 return `
 
 <article class="card">
 
-<div
-style="
-display:flex;
-justify-content:space-between
-"
->
+<div class="card-head">
 
-<span class="tag">
-${esc(x.category || "General")}
-</span>
+<span class="chip">${esc(x.category || "General")}</span>
 
 <button
-class="btn"
+class="icon-btn ${fav ? "on" : ""}"
 onclick="toggleFavorite('${x.id}')"
+title="${fav ? "Remove favorite" : "Add to favorites"}"
 >
 ${fav ? "★" : "☆"}
 </button>
 
 </div>
 
-<h3>
-${esc(x.title)}
-</h3>
+<h3>${esc(x.title)}</h3>
 
-<p>
-${esc(x.description || "No description")}
-</p>
+<p>${esc(x.description || "No description")}</p>
 
-<div class="cardurl">
-${esc(x.url)}
+<div class="cardurl">${esc(x.url)}</div>
+
+<div class="card-tags">
+${tags || `<span class="muted-sm">no tags</span>`}
 </div>
 
-<div>
-${tags}
+<div class="card-foot">
+
+<div class="card-meta">
+👁 ${views.toLocaleString()}
 </div>
 
-<div
-class="actions"
-style="margin-top:13px"
->
+<div class="actions">
 
-<button
-class="btn primary"
-onclick="openLink('${x.id}')"
->
-Open
+<button class="btn mini primary" onclick="openLink('${x.id}')">
+Open ↗
 </button>
 
-<button
-class="btn"
-onclick="vote('${x.id}',1)"
->
+<button class="btn mini" onclick="vote('${x.id}',1)" title="Upvote">
 ▲
 </button>
 
-<button
-class="btn"
-onclick="vote('${x.id}',-1)"
->
+<button class="btn mini" onclick="vote('${x.id}',-1)" title="Downvote">
 ▼
 </button>
+
+</div>
 
 </div>
 
@@ -2462,11 +2778,10 @@ arr.length
 ?
 arr.map(card).join("")
 :
-`
-<div class="empty">
-No approved links match your search.
-</div>
-`;
+emptyState(
+"No approved links match your search.",
+"🔍"
+);
 
 }
 
@@ -2484,11 +2799,10 @@ arr.length
 ?
 arr.map(card).join("")
 :
-`
-<div class="empty">
-You have no favorites yet.
-</div>
-`;
+emptyState(
+"You have no favorites yet. Star a link to save it.",
+"☆"
+);
 
 }
 
@@ -2500,9 +2814,107 @@ $("category").onchange =
 renderLinks;
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
+   HOME SECTIONS
+══════════════════════════════════════════ */
+
+function renderHomeSections(){
+
+const top =
+[...links]
+.sort(
+(a,b) => (b.views || 0) - (a.views || 0)
+)
+.slice(0,5);
+
+
+if(!top.length){
+
+$("topLinksBar").innerHTML =
+emptyState(
+"No links yet — submit the first one!",
+"📊"
+);
+
+$("recentLinks").innerHTML =
+emptyState(
+"Nothing here yet.",
+"🕒"
+);
+
+return;
+
+}
+
+
+const max =
+top[0].views || 1;
+
+
+$("topLinksBar").innerHTML =
+top
+.map(
+x => `
+
+<div class="bar-item">
+
+<div class="bar-label">
+
+<b>${esc(x.title)}</b>
+
+<span>${(x.views || 0).toLocaleString()} 👁</span>
+
+</div>
+
+<div class="bar-track">
+
+<div class="bar-fill" style="width:${Math.max(4, Math.round(((x.views || 0) / max) * 100))}%"></div>
+
+</div>
+
+</div>
+
+`
+)
+.join("");
+
+
+$("recentLinks").innerHTML =
+links
+.slice(0,5)
+.map(
+x => `
+
+<div class="feed-item">
+
+<div class="feed-icon">${categoryIcon(x.category)}</div>
+
+<div class="feed-body">
+
+<strong>${esc(x.title)}</strong>
+
+<span class="muted-sm">
+${esc(x.category || "General")} · ${shortDate(x.created_at)}
+</span>
+
+</div>
+
+<a class="btn mini" href="${esc(x.url)}" target="_blank" rel="noopener">
+↗
+</a>
+
+</div>
+
+`
+)
+.join("");
+
+}
+
+
+/* ══════════════════════════════════════════
    OPEN LINK
-===================================================== */
+══════════════════════════════════════════ */
 
 async function openLink(id){
 
@@ -2533,9 +2945,9 @@ views:(x.views || 0) + 1
 }
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    FAVORITE
-===================================================== */
+══════════════════════════════════════════ */
 
 async function toggleFavorite(id){
 
@@ -2543,9 +2955,7 @@ if(!user){
 
 openAuth();
 
-toast(
-"Sign in to favorite links."
-);
+toast("Sign in to favorite links.");
 
 return;
 
@@ -2563,6 +2973,8 @@ await db
 .eq("user_id",user.id);
 
 favorites.delete(id);
+
+toast("Removed from favorites.");
 
 }else{
 
@@ -2586,11 +2998,18 @@ return;
 
 favorites.add(id);
 
+toast("Added to favorites ★");
+
 }
 
 
 $("statFav").textContent =
 favorites.size;
+
+$("statNote3").textContent =
+favorites.size
+? "Saved to your vault"
+: "Star links to save them";
 
 
 renderLinks();
@@ -2600,9 +3019,9 @@ renderFavorites();
 }
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    VOTES
-===================================================== */
+══════════════════════════════════════════ */
 
 async function vote(id,value){
 
@@ -2610,9 +3029,7 @@ if(!user){
 
 openAuth();
 
-toast(
-"Sign in to vote."
-);
+toast("Sign in to vote.");
 
 return;
 
@@ -2635,6 +3052,8 @@ await db
 .delete()
 .eq("id",old.id);
 
+toast("Vote removed.");
+
 }else if(old){
 
 await db
@@ -2643,6 +3062,8 @@ await db
 vote:value
 })
 .eq("id",old.id);
+
+toast("Vote updated.");
 
 }else{
 
@@ -2654,17 +3075,16 @@ user_id:user.id,
 vote:value
 });
 
-}
-
-
 toast("Vote saved.");
 
 }
 
+}
 
-/* =====================================================
+
+/* ══════════════════════════════════════════
    SUBMIT LINK
-===================================================== */
+══════════════════════════════════════════ */
 
 $("linkForm").onsubmit =
 async e => {
@@ -2676,9 +3096,7 @@ if(!user){
 
 openAuth();
 
-toast(
-"Sign in before submitting."
-);
+toast("Sign in before submitting.");
 
 return;
 
@@ -2739,9 +3157,7 @@ return;
 }
 
 
-/* ============================================
-   SEND NOTIFICATION TO EVERY ADMIN
-============================================ */
+/* SEND NOTIFICATION TO EVERY ADMIN */
 
 const {data:admins} =
 await db
@@ -2755,20 +3171,15 @@ if(admins?.length){
 const notifications =
 admins.map(admin => ({
 
-user_id:
-admin.user_id,
+user_id:admin.user_id,
 
-type:
-"submission",
+type:"submission",
 
-title:
-"New link submitted",
+title:"New link submitted",
 
-message:
-`${title} was submitted for moderation.`,
+message:`${title} was submitted for moderation.`,
 
-link_id:
-newLink.id
+link_id:newLink.id
 
 }));
 
@@ -2781,10 +3192,7 @@ await db
 
 if(notifError){
 
-console.error(
-"Notification error:",
-notifError
-);
+console.error("Notification error:",notifError);
 
 }
 
@@ -2794,9 +3202,7 @@ notifError
 e.target.reset();
 
 
-toast(
-"Submitted! All admins have been notified."
-);
+toast("Submitted! All admins have been notified.");
 
 
 await loadPendingCount();
@@ -2806,16 +3212,18 @@ showPage("home");
 };
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    USER PENDING COUNT
-===================================================== */
+══════════════════════════════════════════ */
 
 async function loadPendingCount(){
 
 if(!user){
 
-$("statPending").textContent =
-"—";
+$("statPending").textContent = "—";
+
+$("statNote4").textContent =
+"Sign in to submit";
 
 return;
 
@@ -2839,28 +3247,28 @@ head:true
 $("statPending").textContent =
 count || 0;
 
+$("statNote4").textContent =
+(count || 0)
+? "Awaiting review"
+: "All caught up";
+
 }
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    ADMIN DATA
-===================================================== */
+══════════════════════════════════════════ */
 
 async function loadAdminData(){
 
 if(!isAdmin){
 
-$("adminLock")
-.classList.add("show");
+$("adminLock").classList.add("show");
 
 return;
 
 }
 
-
-/* ---------------------------------------------
-   ALL LINKS
---------------------------------------------- */
 
 const {data,error} =
 await db
@@ -2887,21 +3295,15 @@ allAdminLinks =
 data || [];
 
 
-/* ---------------------------------------------
-   STATS
---------------------------------------------- */
-
 const pending =
 allAdminLinks.filter(
 x => x.status === "pending"
 ).length;
 
-
 const approved =
 allAdminLinks.filter(
 x => x.status === "approved"
 ).length;
-
 
 const rejected =
 allAdminLinks.filter(
@@ -2912,18 +3314,21 @@ x => x.status === "rejected"
 $("adminPending").textContent =
 pending;
 
-
 $("adminApproved").textContent =
 approved;
-
 
 $("adminRejected").textContent =
 rejected;
 
 
-/* ---------------------------------------------
-   ADMIN COUNT
---------------------------------------------- */
+$("bellBadge").textContent =
+pending;
+
+$("bellBadge").classList.toggle(
+"hidden",
+!pending
+);
+
 
 const {count:adminCount} =
 await db
@@ -2949,9 +3354,9 @@ await loadAdminNotifications();
 }
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    ADMIN QUEUE
-===================================================== */
+══════════════════════════════════════════ */
 
 async function renderAdminQueue(){
 
@@ -2989,8 +3394,7 @@ x.category
 .includes(search);
 
 
-return statusMatch &&
-searchMatch;
+return statusMatch && searchMatch;
 
 });
 
@@ -2998,20 +3402,17 @@ searchMatch;
 if(!arr.length){
 
 $("adminQueue").innerHTML =
-`
-<div class="empty">
-No submissions found.
-</div>
-`;
+emptyState(
+"No submissions found.",
+"📭"
+);
 
 return;
 
 }
 
 
-/* ---------------------------------------------
-   LOAD SUBMITTER PROFILES
---------------------------------------------- */
+/* LOAD SUBMITTER PROFILES */
 
 const ids =
 [
@@ -3049,12 +3450,11 @@ p => [p.id,p]
 );
 
 
-/* ---------------------------------------------
-   RENDER
---------------------------------------------- */
+/* RENDER */
 
 $("adminQueue").innerHTML =
-arr.map(x => {
+arr
+.map(x => {
 
 const profile =
 profileMap.get(x.user_id);
@@ -3083,9 +3483,7 @@ x.status === "approved"
 const date =
 x.created_at
 ?
-new Date(
-x.created_at
-).toLocaleString()
+new Date(x.created_at).toLocaleString()
 :
 "Unknown date";
 
@@ -3094,54 +3492,37 @@ return `
 
 <div class="submission">
 
+<div class="avatar">${esc(initial)}</div>
+
 <div class="submission-main">
 
-<span
-class="status-badge ${statusClass}"
->
+<div class="submission-top">
+
+<span class="status-badge ${statusClass}">
 ${esc(x.status || "pending").toUpperCase()}
 </span>
 
-<div class="submission-title">
-${esc(x.title)}
+<span class="muted-sm">${esc(date)}</span>
+
 </div>
 
-<div class="submission-url">
-${esc(x.url)}
-</div>
+<div class="submission-title">${esc(x.title)}</div>
+
+<div class="submission-url">${esc(x.url)}</div>
 
 <div class="submission-description">
-${esc(
-x.description ||
-"No description provided."
-)}
+${esc(x.description || "No description provided.")}
 </div>
-
 
 <div class="submitter">
 
-<div class="avatar">
-${esc(initial)}
-</div>
+<span class="muted-sm">submitted by</span>
 
-<div>
-
-<strong>
-${esc(submitter)}
-</strong>
-
-<br>
-
-<span>
-Submitted ${esc(date)}
-</span>
+<strong>${esc(submitter)}</strong>
 
 </div>
 
 </div>
-
-</div>
-
 
 <div class="submission-actions">
 
@@ -3150,17 +3531,11 @@ x.status === "pending"
 ?
 `
 
-<button
-class="btn success"
-onclick="approveLink('${x.id}')"
->
+<button class="btn success" onclick="approveLink('${x.id}')">
 ✓ Approve
 </button>
 
-<button
-class="btn danger"
-onclick="rejectLink('${x.id}')"
->
+<button class="btn danger" onclick="rejectLink('${x.id}')">
 ✕ Reject
 </button>
 
@@ -3175,10 +3550,7 @@ x.status === "approved"
 ?
 `
 
-<button
-class="btn danger"
-onclick="deleteLink('${x.id}')"
->
+<button class="btn danger" onclick="deleteLink('${x.id}')">
 🗑 Remove
 </button>
 
@@ -3187,21 +3559,21 @@ onclick="deleteLink('${x.id}')"
 ""
 }
 
-
 </div>
 
 </div>
 
 `;
 
-}).join("");
+})
+.join("");
 
 }
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    APPROVE
-===================================================== */
+══════════════════════════════════════════ */
 
 async function approveLink(id){
 
@@ -3235,8 +3607,6 @@ return;
 }
 
 
-/* Notify submitter */
-
 if(link?.user_id){
 
 await db
@@ -3268,9 +3638,9 @@ await loadLinks();
 }
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    REJECT
-===================================================== */
+══════════════════════════════════════════ */
 
 async function rejectLink(id){
 
@@ -3333,9 +3703,9 @@ await loadAdminData();
 }
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    DELETE
-===================================================== */
+══════════════════════════════════════════ */
 
 async function deleteLink(id){
 
@@ -3376,9 +3746,9 @@ await loadLinks();
 }
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    ADMIN NOTIFICATIONS
-===================================================== */
+══════════════════════════════════════════ */
 
 async function loadAdminNotifications(){
 
@@ -3410,11 +3780,10 @@ return;
 if(!data?.length){
 
 $("adminNotifications").innerHTML =
-`
-<div class="empty">
-No notifications yet.
-</div>
-`;
+emptyState(
+"No notifications yet.",
+"🔕"
+);
 
 return;
 
@@ -3422,31 +3791,24 @@ return;
 
 
 $("adminNotifications").innerHTML =
-data.map(n => `
+data
+.map(n => `
 
 <div class="notification">
 
 <div class="notification-icon">
-${n.type === "submission" ? "📥" : "🔔"}
+${n.type === "submission" ? "📥" : n.type === "approved" ? "✅" : n.type === "rejected" ? "⛔" : "🔔"}
 </div>
 
 <div>
 
-<strong>
-${esc(n.title)}
-</strong>
+<strong>${esc(n.title)}</strong>
 
-<div
-class="muted"
-style="font-size:12px;margin-top:4px"
->
+<div class="muted-sm" style="margin-top:4px">
 ${esc(n.message || "")}
 </div>
 
-<div
-class="muted"
-style="font-size:10px;margin-top:5px"
->
+<div class="muted-sm" style="font-size:10px;margin-top:5px">
 ${new Date(n.created_at).toLocaleString()}
 </div>
 
@@ -3454,27 +3816,46 @@ ${new Date(n.created_at).toLocaleString()}
 
 </div>
 
-`).join("");
-
+`)
+.join("");
 
 }
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    ADMIN SEARCH
-===================================================== */
+══════════════════════════════════════════ */
 
 $("adminSearch").oninput =
 renderAdminQueue;
-
 
 $("adminStatus").onchange =
 renderAdminQueue;
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
+   BELL
+══════════════════════════════════════════ */
+
+$("bellBtn").onclick =
+() => {
+
+if(isAdmin){
+
+showPage("admin");
+
+}else{
+
+toast("Admin access required.");
+
+}
+
+};
+
+
+/* ══════════════════════════════════════════
    BACKGROUND SETTINGS
-===================================================== */
+══════════════════════════════════════════ */
 
 document
 .querySelectorAll("[data-bg]")
@@ -3513,16 +3894,8 @@ if(v === "stars"){
 
 $("scene").style.background =
 `
-radial-gradient(
-circle at 20% 20%,
-rgba(124,92,255,.2),
-transparent 25%
-),
-radial-gradient(
-circle at 80% 60%,
-rgba(25,211,255,.14),
-transparent 25%
-),
+radial-gradient(circle at 20% 20%,rgba(124,92,255,.2),transparent 25%),
+radial-gradient(circle at 80% 60%,rgba(25,211,255,.14),transparent 25%),
 #03040a
 `;
 
@@ -3533,17 +3906,8 @@ $("grid").style.opacity =
 
 $("scene").style.background =
 `
-radial-gradient(
-circle at 50% 20%,
-rgba(124,92,255,.15),
-transparent 35%
-),
-linear-gradient(
-120deg,
-#050711,
-#0a0d1c 55%,
-#070914
-)
+radial-gradient(circle at 50% 20%,rgba(124,92,255,.15),transparent 35%),
+linear-gradient(120deg,#050711,#0a0d1c 55%,#070914)
 `;
 
 $("grid").style.opacity =
@@ -3566,21 +3930,26 @@ localStorage.getItem("vexo-bg")
 
 
 document
-.querySelector(
-`[data-bg="${saved}"]`
-)
+.querySelector(`[data-bg="${saved}"]`)
 ?.click();
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    CURSOR
-===================================================== */
+══════════════════════════════════════════ */
 
 let mx=0;
 let my=0;
 
 let cx=0;
 let cy=0;
+
+let rx=0;
+let ry=0;
+
+const cursorEl = $("cursor");
+
+const ringEl = $("cursorRing");
 
 
 document.addEventListener(
@@ -3597,10 +3966,23 @@ my=e.clientY;
 function cursorLoop(){
 
 cx +=
-(mx-cx)*.18;
+(mx-cx)*.22;
 
 cy +=
-(my-cy)*.18;
+(my-cy)*.22;
+
+rx +=
+(mx-rx)*.09;
+
+ry +=
+(my-ry)*.09;
+
+
+cursorEl.style.transform =
+`translate(${cx}px,${cy}px) translate(-50%,-50%)`;
+
+ringEl.style.transform =
+`translate(${rx}px,${ry}px) translate(-50%,-50%)`;
 
 
 requestAnimationFrame(
@@ -3613,9 +3995,9 @@ cursorLoop
 cursorLoop();
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    AUTH STATE
-===================================================== */
+══════════════════════════════════════════ */
 
 db.auth.onAuthStateChange(
 () =>
@@ -3626,9 +4008,9 @@ loadSession,
 );
 
 
-/* =====================================================
+/* ══════════════════════════════════════════
    START
-===================================================== */
+══════════════════════════════════════════ */
 
 loadSession();
 
