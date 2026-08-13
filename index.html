@@ -881,7 +881,7 @@ $("logoutBtn").onclick = async () => {
   showPage("home");
 };
 
-/* SESSION + ADMIN CHECK (single definition) */
+/* SESSION + ADMIN CHECK */
 async function loadSession(){
   const {data:{session}} = await db.auth.getSession();
   user = session ? session.user : null;
@@ -911,19 +911,41 @@ async function checkAdmin(){
     $("bellBadge").classList.add("hidden");
     return false;
   }
-  const {data, error} = await db.from("user_roles").select("role").eq("user_id", user.id).eq("role","admin").maybeSingle();
-  if(error){
-    console.error("Admin check:", error);
+
+  try {
+    const { data, error } = await db
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if(error){
+      console.error("Admin check:", error);
+      isAdmin = false;
+      $("adminNav").classList.remove("show");
+      $("bellBadge").classList.add("hidden");
+      return false;
+    }
+
+    isAdmin = data?.role === "admin";
+
+    $("adminNav").classList.toggle("show", isAdmin);
+    $("bellBadge").classList.toggle("hidden", !isAdmin);
+
+    if(isAdmin){
+      await loadAdminData();
+      await loadAdminNotifications();
+    }
+
+    return isAdmin;
+
+  } catch(err) {
+    console.error("Admin check failed:", err);
     isAdmin = false;
     $("adminNav").classList.remove("show");
     $("bellBadge").classList.add("hidden");
     return false;
   }
-  isAdmin = !!(data && data.role === "admin");
-  $("adminNav").classList.toggle("show", isAdmin);
-  $("bellBadge").classList.toggle("hidden", !isAdmin);
-  if(isAdmin){ loadAdminData(); loadAdminNotifications(); }
-  return isAdmin;
 }
 
 db.auth.onAuthStateChange(() => loadSession());
@@ -1204,11 +1226,16 @@ async function loadAdminData(){
 }
 
 function renderAdminStats(){
-  const s = allAdminLinks.reduce((a,l) => (a[l.status] = (a[l.status]||0)+1, a), {});
-  $("adminPending").textContent = s.pending || 0;
-  $("adminApproved").textContent = s.approved || 0;
-  $("adminRejected").textContent = s.rejected || 0;
-  $("adminUsers").textContent = isAdmin ? "1" : "0";
+  const counts = allAdminLinks.reduce((a, l) => {
+    a[l.status] = (a[l.status] || 0) + 1;
+    return a;
+  }, {});
+
+  $("adminPending").textContent = counts.pending || 0;
+  $("adminApproved").textContent = counts.approved || 0;
+  $("adminRejected").textContent = counts.rejected || 0;
+
+  $("adminUsers").textContent = isAdmin ? "✓" : "0";
 }
 
 function renderAdminQueue(){
@@ -1255,17 +1282,10 @@ $("adminSearch").addEventListener("input", renderAdminQueue);
 $("adminStatus").addEventListener("change", renderAdminQueue);
 
 async function loadAdminNotifications(){
-  const {data, error} = await db.from("admin_notifications")
-    .select("*").order("created_at",{ascending:false}).limit(10);
-  if(error){ console.error(error); return; }
-  $("adminNotifications").innerHTML = (data||[]).length
-    ? data.map(n => `
-      <div class="notif-item">
-        <span class="notif-badge ${esc(n.type||"info")}">${esc((n.type||"info").slice(0,2).toUpperCase())}</span>
-        <div><strong>${esc(n.title||"Notification")}</strong><small>${esc(n.message||"")}</small></div>
-        <span class="mini">${shortDate(n.created_at)}</span>
-      </div>`).join("")
-    : emptyState("No notifications yet.","·");
+  $("adminNotifications").innerHTML = emptyState(
+    "Admin notifications are not configured yet.",
+    "·"
+  );
 }
 
 /* ================= TOOLBOX ================= */
