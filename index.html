@@ -3,622 +3,958 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>VEXO — Community Tools</title>
+
+<title>VEXO — Community</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
 :root{
-  --bg:#070914;
-  --panel:rgba(13,17,32,.76);
-  --panel2:rgba(18,23,42,.92);
-  --text:#eef2ff;
-  --muted:#8d96b3;
-  --line:rgba(255,255,255,.09);
-  --accent:#7c5cff;
-  --accent2:#19d3ff;
-  --good:#43e6a4;
-  --danger:#ff557a;
-  --shadow:0 20px 70px rgba(0,0,0,.35)
+--bg:#060812;
+--panel:rgba(14,18,34,.78);
+--panel2:#11172a;
+--panel3:#171e35;
+--text:#eef2ff;
+--muted:#8993b2;
+--line:rgba(255,255,255,.09);
+
+--accent:#7c5cff;
+--accent2:#19d3ff;
+
+--good:#43e6a4;
+--danger:#ff557a;
+--warning:#ffca5c;
+
+--shadow:0 25px 80px rgba(0,0,0,.4);
 }
 
 *{
-  box-sizing:border-box
+box-sizing:border-box;
 }
 
 html,body{
-  margin:0;
-  min-height:100%;
-  font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;
-  color:var(--text);
-  background:var(--bg);
-  overflow-x:hidden
+margin:0;
+min-height:100%;
+font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;
+color:var(--text);
+background:var(--bg);
+overflow-x:hidden;
 }
 
 body{
-  cursor:none
-}
-
-.cursor,
-.cursor-dot{
-  position:fixed;
-  pointer-events:none;
-  z-index:99999;
-  border-radius:50%;
-  transform:translate(-50%,-50%);
-  mix-blend-mode:screen
-}
-
-.cursor{
-  width:30px;
-  height:30px;
-  border:1px solid rgba(124,92,255,.75);
-  transition:width .15s,height .15s,border-color .15s
-}
-
-.cursor-dot{
-  width:5px;
-  height:5px;
-  background:var(--accent2)
-}
-
-#scene{
-  position:fixed;
-  inset:0;
-  z-index:-3;
-  background:
-    radial-gradient(circle at 50% 20%,rgba(124,92,255,.15),transparent 35%),
-    linear-gradient(120deg,#050711,#0a0d1c 55%,#070914)
-}
-
-#grid{
-  position:fixed;
-  inset:-20%;
-  z-index:-2;
-  background-image:
-    linear-gradient(rgba(124,92,255,.08) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(25,211,255,.07) 1px,transparent 1px);
-  background-size:55px 55px;
-  transform:perspective(600px) rotateX(58deg) translateY(20%);
-  animation:drift 18s linear infinite;
-  mask-image:linear-gradient(transparent,#000 25%,#000 70%,transparent)
-}
-
-.orb{
-  position:fixed;
-  width:260px;
-  height:260px;
-  border-radius:50%;
-  filter:blur(45px);
-  opacity:.18;
-  z-index:-1;
-  animation:float 12s ease-in-out infinite
-}
-
-.o1{
-  background:#7c5cff;
-  left:8%;
-  top:15%
-}
-
-.o2{
-  background:#19d3ff;
-  right:7%;
-  top:42%;
-  animation-delay:-4s
-}
-
-.o3{
-  background:#ff3f9d;
-  left:45%;
-  bottom:-80px;
-  animation-delay:-8s
-}
-
-@keyframes drift{
-  to{
-    transform:perspective(600px) rotateX(58deg) translateY(30%)
-  }
-}
-
-@keyframes float{
-  50%{
-    transform:translate(40px,-35px) scale(1.15)
-  }
+cursor:none;
 }
 
 button,
 input,
 textarea,
 select{
-  font:inherit
+font:inherit;
 }
 
 button{
-  cursor:none
+cursor:none;
+}
+
+button:disabled{
+opacity:.5;
+cursor:not-allowed;
+}
+
+#scene{
+position:fixed;
+inset:0;
+z-index:-3;
+
+background:
+radial-gradient(circle at 50% 20%,rgba(124,92,255,.16),transparent 35%),
+linear-gradient(120deg,#050711,#0a0d1c 55%,#070914);
+}
+
+#grid{
+position:fixed;
+inset:-20%;
+z-index:-2;
+
+background-image:
+linear-gradient(rgba(124,92,255,.08) 1px,transparent 1px),
+linear-gradient(90deg,rgba(25,211,255,.07) 1px,transparent 1px);
+
+background-size:55px 55px;
+
+transform:
+perspective(600px)
+rotateX(58deg)
+translateY(20%);
+
+animation:drift 18s linear infinite;
+
+mask-image:
+linear-gradient(
+transparent,
+#000 25%,
+#000 70%,
+transparent
+);
+}
+
+.orb{
+position:fixed;
+width:260px;
+height:260px;
+border-radius:50%;
+filter:blur(45px);
+opacity:.18;
+z-index:-1;
+animation:float 12s ease-in-out infinite;
+}
+
+.o1{
+background:#7c5cff;
+left:8%;
+top:15%;
+}
+
+.o2{
+background:#19d3ff;
+right:7%;
+top:42%;
+animation-delay:-4s;
+}
+
+.o3{
+background:#ff3f9d;
+left:45%;
+bottom:-80px;
+animation-delay:-8s;
+}
+
+@keyframes drift{
+to{
+transform:
+perspective(600px)
+rotateX(58deg)
+translateY(30%);
+}
+}
+
+@keyframes float{
+50%{
+transform:
+translate(40px,-35px)
+scale(1.15);
+}
 }
 
 .app{
-  display:flex;
-  min-height:100vh
+display:flex;
+min-height:100vh;
 }
 
+/* SIDEBAR */
+
 .side{
-  width:250px;
-  position:fixed;
-  inset:0 auto 0 0;
-  padding:22px 16px;
-  background:rgba(6,8,18,.72);
-  backdrop-filter:blur(22px);
-  border-right:1px solid var(--line);
-  z-index:20
+width:250px;
+position:fixed;
+inset:0 auto 0 0;
+
+padding:22px 16px;
+
+background:rgba(6,8,18,.72);
+backdrop-filter:blur(22px);
+
+border-right:1px solid var(--line);
+
+z-index:20;
 }
 
 .brand{
-  font-size:25px;
-  font-weight:900;
-  letter-spacing:.18em;
-  padding:8px 10px 28px
+font-size:25px;
+font-weight:900;
+letter-spacing:.18em;
+padding:8px 10px 28px;
 }
 
 .brand b{
-  color:var(--accent2)
+color:var(--accent2);
 }
 
 .nav{
-  display:grid;
-  gap:7px
+display:grid;
+gap:7px;
 }
 
 .nav button{
-  border:1px solid transparent;
-  background:transparent;
-  color:var(--muted);
-  padding:12px 13px;
-  border-radius:12px;
-  text-align:left
+border:1px solid transparent;
+background:transparent;
+color:var(--muted);
+
+padding:12px 13px;
+
+border-radius:12px;
+
+text-align:left;
+
+transition:.2s;
 }
 
 .nav button:hover,
 .nav button.active{
-  background:rgba(124,92,255,.12);
-  border-color:rgba(124,92,255,.22);
-  color:#fff
+background:rgba(124,92,255,.12);
+border-color:rgba(124,92,255,.22);
+color:#fff;
 }
 
-.adminNav{
-  display:none
+.admin-nav{
+display:none;
+margin-top:10px;
+padding-top:10px;
+border-top:1px solid var(--line);
 }
 
-.adminNav.visible{
-  display:block
+.admin-nav.show{
+display:block;
 }
 
-.adminNav button{
-  color:#fff;
-  border-color:rgba(124,92,255,.3);
-  background:rgba(124,92,255,.08)
-}
+.admin-button{
+background:
+linear-gradient(
+135deg,
+rgba(124,92,255,.16),
+rgba(25,211,255,.08)
+)!important;
 
-.notificationBadge{
-  display:inline-flex;
-  min-width:18px;
-  height:18px;
-  padding:0 5px;
-  align-items:center;
-  justify-content:center;
-  border-radius:99px;
-  background:var(--danger);
-  color:#fff;
-  font-size:10px;
-  margin-left:5px
+border-color:
+rgba(124,92,255,.25)!important;
+
+color:#fff!important;
 }
 
 .userbox{
-  position:absolute;
-  bottom:18px;
-  left:16px;
-  right:16px;
-  padding:13px;
-  border:1px solid var(--line);
-  background:var(--panel);
-  border-radius:15px
+position:absolute;
+bottom:18px;
+left:16px;
+right:16px;
+
+padding:13px;
+
+border:1px solid var(--line);
+background:var(--panel);
+
+border-radius:15px;
 }
 
 .userbox small{
-  color:var(--muted)
+color:var(--muted);
 }
 
+/* MAIN */
+
 .main{
-  margin-left:250px;
-  width:calc(100% - 250px);
-  padding:28px 34px
+margin-left:250px;
+width:calc(100% - 250px);
+padding:28px 34px;
 }
 
 .top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:15px;
-  margin-bottom:30px
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:15px;
+margin-bottom:30px;
 }
 
 .top h1{
-  margin:0;
-  font-size:30px
+margin:0;
+font-size:30px;
 }
 
 .status{
-  font-size:12px;
-  color:var(--good);
-  padding:8px 11px;
-  border:1px solid rgba(67,230,164,.25);
-  border-radius:99px;
-  background:rgba(67,230,164,.06)
+font-size:12px;
+color:var(--good);
+
+padding:8px 11px;
+
+border:1px solid rgba(67,230,164,.25);
+
+border-radius:99px;
+
+background:rgba(67,230,164,.06);
 }
 
+/* PANELS */
+
 .panel{
-  background:var(--panel);
-  border:1px solid var(--line);
-  box-shadow:var(--shadow);
-  backdrop-filter:blur(20px);
-  border-radius:20px;
-  padding:22px;
-  margin-bottom:20px
+background:var(--panel);
+
+border:1px solid var(--line);
+
+box-shadow:var(--shadow);
+
+backdrop-filter:blur(20px);
+
+border-radius:20px;
+
+padding:22px;
+
+margin-bottom:20px;
 }
 
 .hero{
-  padding:30px
+padding:30px;
 }
 
 .hero h2{
-  font-size:clamp(30px,5vw,58px);
-  line-height:1;
-  margin:0 0 14px
+font-size:clamp(30px,5vw,58px);
+line-height:1;
+margin:0 0 14px;
 }
 
 .hero p,
 .muted{
-  color:var(--muted)
+color:var(--muted);
 }
 
 .actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:9px
+display:flex;
+flex-wrap:wrap;
+gap:9px;
 }
 
 .btn{
-  border:1px solid var(--line);
-  background:rgba(255,255,255,.045);
-  color:#fff;
-  border-radius:11px;
-  padding:10px 14px
+border:1px solid var(--line);
+
+background:rgba(255,255,255,.045);
+
+color:#fff;
+
+border-radius:11px;
+
+padding:10px 14px;
+
+transition:.2s;
 }
 
 .btn:hover{
-  border-color:rgba(124,92,255,.6);
-  transform:translateY(-1px)
+border-color:rgba(124,92,255,.6);
+transform:translateY(-1px);
 }
 
 .primary{
-  background:linear-gradient(135deg,var(--accent),#4c8dff);
-  border:0
+background:
+linear-gradient(
+135deg,
+var(--accent),
+#4c8dff
+);
+
+border:0;
 }
 
 .danger{
-  color:#fff;
-  background:rgba(255,85,122,.12);
-  border-color:rgba(255,85,122,.25)
+color:#fff;
+background:rgba(255,85,122,.12);
+border-color:rgba(255,85,122,.25);
 }
 
-.good{
-  color:#fff;
-  background:rgba(67,230,164,.12);
-  border-color:rgba(67,230,164,.3)
+.success{
+background:rgba(67,230,164,.12);
+border-color:rgba(67,230,164,.25);
 }
+
+.warning{
+background:rgba(255,202,92,.12);
+border-color:rgba(255,202,92,.25);
+}
+
+/* STATS */
 
 .stats{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:12px;
 }
 
 .stat{
-  padding:18px;
-  border:1px solid var(--line);
-  border-radius:16px;
-  background:rgba(255,255,255,.025)
+padding:18px;
+
+border:1px solid var(--line);
+
+border-radius:16px;
+
+background:rgba(255,255,255,.025);
 }
 
 .stat strong{
-  display:block;
-  font-size:25px
+display:block;
+font-size:25px;
 }
 
 .stat span{
-  color:var(--muted);
-  font-size:12px
+color:var(--muted);
+font-size:12px;
 }
 
+/* INPUTS */
+
 .toolbar{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:15px
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-bottom:15px;
 }
 
 .input,
 .textarea,
 .select{
-  width:100%;
-  border:1px solid var(--line);
-  background:rgba(0,0,0,.22);
-  color:#fff;
-  border-radius:11px;
-  padding:11px 12px;
-  outline:none
+width:100%;
+
+border:1px solid var(--line);
+
+background:rgba(0,0,0,.22);
+
+color:#fff;
+
+border-radius:11px;
+
+padding:11px 12px;
+
+outline:none;
 }
 
 .input:focus,
-.textarea:focus{
-  border-color:rgba(124,92,255,.7)
+.textarea:focus,
+.select:focus{
+border-color:rgba(124,92,255,.7);
 }
 
 .search{
-  flex:1;
-  min-width:220px
+flex:1;
+min-width:220px;
 }
 
+/* CARDS */
+
 .grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-  gap:13px
+display:grid;
+grid-template-columns:
+repeat(auto-fill,minmax(250px,1fr));
+
+gap:13px;
 }
 
 .card{
-  padding:18px;
-  border:1px solid var(--line);
-  border-radius:17px;
-  background:rgba(255,255,255,.025);
-  transition:.2s
+padding:18px;
+
+border:1px solid var(--line);
+
+border-radius:17px;
+
+background:rgba(255,255,255,.025);
+
+transition:.2s;
 }
 
 .card:hover{
-  transform:translateY(-3px);
-  border-color:rgba(124,92,255,.35);
-  box-shadow:0 15px 45px rgba(0,0,0,.2)
+transform:translateY(-3px);
+
+border-color:
+rgba(124,92,255,.35);
+
+box-shadow:
+0 15px 45px rgba(0,0,0,.2);
 }
 
 .card h3{
-  margin:10px 0 7px
+margin:10px 0 7px;
 }
 
 .card p{
-  color:var(--muted);
-  font-size:13px;
-  min-height:38px
-}
-
-.tag{
-  display:inline-block;
-  padding:5px 8px;
-  border-radius:99px;
-  background:rgba(25,211,255,.08);
-  color:var(--accent2);
-  font-size:10px;
-  margin:3px 3px 0 0
+color:var(--muted);
+font-size:13px;
+min-height:38px;
 }
 
 .cardurl{
-  font-size:11px;
-  color:#aab2d0;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  margin:8px 0 12px
+font-size:11px;
+
+color:#aab2d0;
+
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+
+margin:8px 0 12px;
 }
 
-.modal{
-  position:fixed;
-  inset:0;
-  display:none;
-  place-items:center;
-  background:rgba(0,0,0,.65);
-  backdrop-filter:blur(8px);
-  z-index:100
+.tag{
+display:inline-block;
+
+padding:5px 8px;
+
+border-radius:99px;
+
+background:rgba(25,211,255,.08);
+
+color:var(--accent2);
+
+font-size:10px;
+
+margin:3px 3px 0 0;
 }
 
-.modal.open{
-  display:grid
+/* ADMIN */
+
+.admin-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:15px;
+
+margin-bottom:20px;
 }
 
-.box{
-  width:min(520px,calc(100% - 30px));
-  max-height:90vh;
-  overflow:auto;
-  background:var(--panel2);
-  border:1px solid var(--line);
-  border-radius:22px;
-  padding:24px;
-  box-shadow:var(--shadow)
+.admin-title{
+font-size:27px;
+font-weight:800;
 }
 
-.box h2{
-  margin-top:0
+.admin-sub{
+font-size:13px;
+color:var(--muted);
 }
 
-.form{
-  display:grid;
-  gap:12px
+.admin-stats{
+display:grid;
+grid-template-columns:
+repeat(4,1fr);
+
+gap:12px;
+
+margin-bottom:20px;
 }
 
-.form label{
-  font-size:12px;
-  color:var(--muted)
+.admin-stat{
+position:relative;
+
+padding:20px;
+
+border:1px solid var(--line);
+
+background:
+linear-gradient(
+135deg,
+rgba(255,255,255,.045),
+rgba(255,255,255,.015)
+);
+
+border-radius:17px;
+
+overflow:hidden;
 }
 
-.row{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px
+.admin-stat::after{
+content:"";
+
+position:absolute;
+
+width:100px;
+height:100px;
+
+right:-40px;
+top:-40px;
+
+border-radius:50%;
+
+background:
+rgba(124,92,255,.12);
+
+filter:blur(5px);
 }
 
-.close{
-  float:right;
-  background:none;
-  border:0;
-  color:var(--muted);
-  font-size:25px
+.admin-stat strong{
+font-size:30px;
+display:block;
 }
 
-.hidden{
-  display:none!important
+.admin-stat span{
+font-size:12px;
+color:var(--muted);
 }
 
-.toast{
-  position:fixed;
-  right:22px;
-  bottom:22px;
-  z-index:200;
-  padding:12px 15px;
-  border:1px solid var(--line);
-  background:var(--panel2);
-  border-radius:12px;
-  box-shadow:var(--shadow);
-  opacity:0;
-  transform:translateY(12px);
-  transition:.25s
+.queue{
+display:grid;
+gap:12px;
 }
 
-.toast.show{
-  opacity:1;
-  transform:none
+.submission{
+display:grid;
+
+grid-template-columns:
+1fr auto;
+
+gap:18px;
+
+padding:18px;
+
+border:1px solid var(--line);
+
+border-radius:17px;
+
+background:
+rgba(255,255,255,.025);
+
+transition:.2s;
 }
 
-.empty{
-  text-align:center;
-  padding:45px;
-  color:var(--muted);
-  grid-column:1/-1
+.submission:hover{
+border-color:
+rgba(124,92,255,.35);
+
+background:
+rgba(124,92,255,.045);
+}
+
+.submission-main{
+min-width:0;
+}
+
+.submission-title{
+font-size:17px;
+font-weight:700;
+margin-bottom:5px;
+}
+
+.submission-url{
+font-size:12px;
+color:var(--accent2);
+
+overflow:hidden;
+text-overflow:ellipsis;
+white-space:nowrap;
+}
+
+.submission-description{
+font-size:13px;
+color:var(--muted);
+margin:10px 0;
 }
 
 .submitter{
-  margin-top:14px;
-  padding:12px;
-  border:1px solid rgba(25,211,255,.15);
-  background:rgba(25,211,255,.035);
-  border-radius:12px
+display:flex;
+align-items:center;
+gap:9px;
+
+margin-top:12px;
+
+font-size:12px;
+color:var(--muted);
 }
 
-.submitter strong{
-  display:block
+.avatar{
+width:30px;
+height:30px;
+
+display:grid;
+place-items:center;
+
+border-radius:50%;
+
+background:
+linear-gradient(
+135deg,
+var(--accent),
+var(--accent2)
+);
+
+font-size:11px;
+font-weight:800;
+color:white;
 }
 
-.submitter small{
-  color:var(--muted)
+.submission-actions{
+display:flex;
+align-items:center;
+gap:7px;
+}
+
+.status-badge{
+display:inline-flex;
+align-items:center;
+
+padding:5px 9px;
+
+border-radius:99px;
+
+font-size:10px;
+font-weight:700;
+
+margin-bottom:9px;
+}
+
+.pending{
+color:var(--warning);
+background:rgba(255,202,92,.1);
+}
+
+.approved{
+color:var(--good);
+background:rgba(67,230,164,.1);
+}
+
+.rejected{
+color:var(--danger);
+background:rgba(255,85,122,.1);
 }
 
 .notification{
-  padding:14px;
-  border:1px solid var(--line);
-  border-radius:13px;
-  margin-bottom:9px;
-  background:rgba(255,255,255,.025)
+display:flex;
+gap:12px;
+
+padding:14px;
+
+border-bottom:1px solid var(--line);
 }
 
-.notification.unread{
-  border-color:rgba(124,92,255,.45);
-  background:rgba(124,92,255,.07)
+.notification:last-child{
+border-bottom:0;
 }
 
-.notification small{
-  color:var(--muted)
+.notification-icon{
+width:35px;
+height:35px;
+
+display:grid;
+place-items:center;
+
+border-radius:10px;
+
+background:
+rgba(124,92,255,.12);
 }
 
-.adminHeader{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  margin-bottom:20px
+/* MODAL */
+
+.modal{
+position:fixed;
+inset:0;
+
+display:none;
+place-items:center;
+
+background:rgba(0,0,0,.65);
+
+backdrop-filter:blur(8px);
+
+z-index:100;
 }
 
-.adminHeader h2{
-  margin:0
+.modal.open{
+display:grid;
 }
 
-.statusBadge{
-  display:inline-block;
-  padding:5px 9px;
-  border-radius:99px;
-  font-size:10px;
-  text-transform:uppercase;
-  letter-spacing:.05em
+.box{
+width:min(520px,calc(100% - 30px));
+
+max-height:90vh;
+
+overflow:auto;
+
+background:var(--panel2);
+
+border:1px solid var(--line);
+
+border-radius:22px;
+
+padding:24px;
+
+box-shadow:var(--shadow);
 }
 
-.statusPending{
-  background:rgba(255,196,79,.1);
-  color:#ffd36e
+.box h2{
+margin-top:0;
 }
 
-.statusApproved{
-  background:rgba(67,230,164,.1);
-  color:var(--good)
+.form{
+display:grid;
+gap:12px;
 }
 
-.statusRejected{
-  background:rgba(255,85,122,.1);
-  color:var(--danger)
+.form label{
+font-size:12px;
+color:var(--muted);
+}
+
+.row{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+
+.close{
+float:right;
+
+background:none;
+border:0;
+
+color:var(--muted);
+
+font-size:25px;
+}
+
+.hidden{
+display:none!important;
+}
+
+.empty{
+text-align:center;
+
+padding:45px;
+
+color:var(--muted);
+
+grid-column:1/-1;
+}
+
+.toast{
+position:fixed;
+
+right:22px;
+bottom:22px;
+
+z-index:200;
+
+padding:12px 15px;
+
+border:1px solid var(--line);
+
+background:var(--panel2);
+
+border-radius:12px;
+
+box-shadow:var(--shadow);
+
+opacity:0;
+
+transform:translateY(12px);
+
+transition:.25s;
+}
+
+.toast.show{
+opacity:1;
+transform:none;
+}
+
+hr{
+border:0;
+border-top:1px solid var(--line);
+margin:22px 0;
 }
 
 @media(max-width:850px){
 
-  .side{
-    width:72px
-  }
+.side{
+width:72px;
+}
 
-  .brand{
-    font-size:0
-  }
+.brand{
+font-size:0;
+}
 
-  .brand b{
-    font-size:20px
-  }
+.brand b{
+font-size:20px;
+}
 
-  .nav button span,
-  .userbox{
-    display:none
-  }
+.nav button span,
+.userbox{
+display:none;
+}
 
-  .main{
-    margin-left:72px;
-    width:calc(100% - 72px);
-    padding:20px
-  }
+.main{
+margin-left:72px;
+width:calc(100% - 72px);
+padding:20px;
+}
 
-  .stats{
-    grid-template-columns:1fr 1fr
-  }
+.stats,
+.admin-stats{
+grid-template-columns:1fr 1fr;
+}
+
+.submission{
+grid-template-columns:1fr;
+}
 
 }
 
 @media(max-width:520px){
 
-  .stats{
-    grid-template-columns:1fr
-  }
+.stats,
+.admin-stats{
+grid-template-columns:1fr;
+}
 
-  .row{
-    grid-template-columns:1fr
-  }
+.row{
+grid-template-columns:1fr;
+}
 
-  .top{
-    align-items:flex-start;
-    flex-direction:column
-  }
+.top{
+align-items:flex-start;
+flex-direction:column;
+}
 
 }
+
+/* LOCK SCREEN */
+
+.admin-lock{
+position:fixed;
+inset:0;
+
+display:none;
+
+place-items:center;
+
+z-index:500;
+
+background:
+radial-gradient(
+circle at center,
+rgba(124,92,255,.12),
+#050711 60%
+);
+
+backdrop-filter:blur(20px);
+}
+
+.admin-lock.show{
+display:grid;
+}
+
+.lock-box{
+width:min(500px,calc(100% - 30px));
+
+padding:40px;
+
+text-align:center;
+
+border:1px solid var(--line);
+
+background:
+rgba(14,18,34,.9);
+
+border-radius:25px;
+
+box-shadow:var(--shadow);
+}
+
+.lock-icon{
+font-size:55px;
+margin-bottom:15px;
+}
+
 </style>
 </head>
 
@@ -631,608 +967,763 @@ button{
 <div class="orb o2"></div>
 <div class="orb o3"></div>
 
-<div class="cursor"></div>
-<div class="cursor-dot"></div>
-
-
 <div class="app">
 
 <aside class="side">
 
-  <div class="brand">
-    VE<b>X</b>O
-  </div>
+<div class="brand">
+VE<b>X</b>O
+</div>
 
-  <div class="nav">
+<div class="nav">
 
-    <button class="active" data-page="home">
-      ◈ <span>Dashboard</span>
-    </button>
+<button class="active" data-page="home">
+◈ <span>Dashboard</span>
+</button>
 
-    <button data-page="vault">
-      ⌘ <span>Community Vault</span>
-    </button>
+<button data-page="vault">
+⌘ <span>Community Vault</span>
+</button>
 
-    <button data-page="submit">
-      ＋ <span>Submit Link</span>
-    </button>
+<button data-page="submit">
+＋ <span>Submit Link</span>
+</button>
 
-    <button data-page="favorites">
-      ★ <span>Favorites</span>
-    </button>
+<button data-page="favorites">
+★ <span>Favorites</span>
+</button>
 
-    <!-- ADMIN ONLY -->
-    <div class="adminNav" id="adminNav">
+<button data-page="settings">
+⚙ <span>Settings</span>
+</button>
 
-      <button data-page="admin">
+<div id="adminNav" class="admin-nav">
 
-        🛡️ <span>Admin Center</span>
+<button
+class="admin-button"
+data-page="admin"
+>
+🛡 <span>Admin Center</span>
+</button>
 
-        <span
-          class="notificationBadge hidden"
-          id="notificationBadge">
-          0
-        </span>
+</div>
 
-      </button>
+</div>
 
-    </div>
+<div class="userbox" id="userBox">
 
-    <button data-page="settings">
-      ⚙ <span>Settings</span>
-    </button>
+<small>
+Not signed in
+</small>
 
-  </div>
+<br>
 
+<button
+class="btn primary"
+id="loginBtn"
+>
+Sign in
+</button>
 
-  <div class="userbox" id="userBox">
-
-    <small>Not signed in</small>
-
-    <br>
-
-    <button
-      class="btn primary"
-      id="loginBtn">
-      Sign in
-    </button>
-
-  </div>
+</div>
 
 </aside>
 
 
 <main class="main">
 
-  <div class="top">
+<div class="top">
 
-    <div>
+<div>
 
-      <h1 id="pageTitle">
-        VEXO
-      </h1>
+<h1 id="pageTitle">
+VEXO
+</h1>
 
-      <div
-        class="muted"
-        id="pageSub">
-        A futuristic community for useful links.
-      </div>
+<div
+class="muted"
+id="pageSub"
+>
+A futuristic community for useful links.
+</div>
 
-    </div>
+</div>
 
-    <div class="status">
-      ● SUPABASE ONLINE
-    </div>
+<div class="status">
+● SUPABASE ONLINE
+</div>
 
-  </div>
+</div>
 
 
-  <!-- HOME -->
+<!-- HOME -->
 
-  <section
-    id="homePage"
-    class="page">
+<section
+id="homePage"
+class="page"
+>
 
-    <div class="panel hero">
+<div class="panel hero">
 
-      <h2>
-        Discover the web.<br>
+<h2>
+Discover the web.<br>
 
-        <span style="color:var(--accent2)">
-          Build VEXO together.
-        </span>
-      </h2>
+<span style="color:var(--accent2)">
+Build VEXO together.
+</span>
 
-      <p>
-        Community-powered links, tools and resources.
-        Submit useful sites and help others discover them.
-      </p>
+</h2>
 
-      <div class="actions">
+<p>
+Community-powered links, tools and resources.
+Submit useful sites and help others discover them.
+</p>
 
-        <button
-          class="btn primary"
-          onclick="showPage('vault')">
-          Explore Vault
-        </button>
+<div class="actions">
 
-        <button
-          class="btn"
-          onclick="showPage('submit')">
-          Submit a Link
-        </button>
+<button
+class="btn primary"
+onclick="showPage('vault')"
+>
+Explore Vault
+</button>
 
-      </div>
+<button
+class="btn"
+onclick="showPage('submit')"
+>
+Submit a Link
+</button>
 
-    </div>
+</div>
 
+</div>
 
-    <div class="stats">
 
-      <div class="stat">
-        <strong id="statLinks">0</strong>
-        <span>Approved links</span>
-      </div>
+<div class="stats">
 
-      <div class="stat">
-        <strong id="statUsers">—</strong>
-        <span>Your account</span>
-      </div>
+<div class="stat">
 
-      <div class="stat">
-        <strong id="statFav">0</strong>
-        <span>Your favorites</span>
-      </div>
+<strong id="statLinks">
+0
+</strong>
 
-      <div class="stat">
-        <strong id="statAdmin">—</strong>
-        <span>Admin access</span>
-      </div>
+<span>
+Approved links
+</span>
 
-    </div>
+</div>
 
-  </section>
 
+<div class="stat">
 
-  <!-- VAULT -->
+<strong id="statUsers">
+—
+</strong>
 
-  <section
-    id="vaultPage"
-    class="page hidden">
+<span>
+Your account
+</span>
 
-    <div class="panel">
+</div>
 
-      <div class="toolbar">
 
-        <input
-          class="input search"
-          id="search"
-          placeholder="Search links, tags, categories...">
+<div class="stat">
 
-        <select
-          class="select"
-          id="category"
-          style="width:180px">
+<strong id="statFav">
+0
+</strong>
 
-          <option value="">
-            All categories
-          </option>
+<span>
+Your favorites
+</span>
 
-        </select>
+</div>
 
-        <button
-          class="btn primary"
-          onclick="showPage('submit')">
-          ＋ Submit
-        </button>
 
-      </div>
+<div class="stat">
 
-      <div
-        class="grid"
-        id="linksGrid">
-      </div>
+<strong id="statPending">
+—
+</strong>
 
-    </div>
+<span>
+Your pending submissions
+</span>
 
-  </section>
+</div>
 
+</div>
 
-  <!-- FAVORITES -->
+</section>
 
-  <section
-    id="favoritesPage"
-    class="page hidden">
 
-    <div class="panel">
+<!-- VAULT -->
 
-      <h2>
-        Your Favorites
-      </h2>
+<section
+id="vaultPage"
+class="page hidden"
+>
 
-      <div
-        class="grid"
-        id="favoritesGrid">
-      </div>
+<div class="panel">
 
-    </div>
+<div class="toolbar">
 
-  </section>
+<input
+class="input search"
+id="search"
+placeholder="Search links, tags, categories..."
+>
 
+<select
+class="select"
+id="category"
+style="width:180px"
+>
 
-  <!-- SUBMIT -->
+<option value="">
+All categories
+</option>
 
-  <section
-    id="submitPage"
-    class="page hidden">
+</select>
 
-    <div class="panel">
+<button
+class="btn primary"
+onclick="showPage('submit')"
+>
+＋ Submit
+</button>
 
-      <h2>
-        Submit a community link
-      </h2>
+</div>
 
-      <p class="muted">
-        Sign in first. New links start as pending until approved
-        by an administrator.
-      </p>
+<div
+class="grid"
+id="linksGrid"
+></div>
 
-      <form
-        id="linkForm"
-        class="form">
+</div>
 
-        <div>
+</section>
 
-          <label>
-            Title
-          </label>
 
-          <input
-            class="input"
-            id="linkTitle"
-            required
-            placeholder="Example Tool">
+<!-- FAVORITES -->
 
-        </div>
+<section
+id="favoritesPage"
+class="page hidden"
+>
 
+<div class="panel">
 
-        <div>
+<h2>
+Your Favorites
+</h2>
 
-          <label>
-            URL
-          </label>
+<div
+class="grid"
+id="favoritesGrid"
+></div>
 
-          <input
-            class="input"
-            id="linkURL"
-            required
-            type="url"
-            placeholder="https://example.com">
+</div>
 
-        </div>
+</section>
 
 
-        <div class="row">
+<!-- SUBMIT -->
 
-          <div>
+<section
+id="submitPage"
+class="page hidden"
+>
 
-            <label>
-              Category
-            </label>
+<div class="panel">
 
-            <input
-              class="input"
-              id="linkCategory"
-              placeholder="Tools">
+<h2>
+Submit a community link
+</h2>
 
-          </div>
+<p class="muted">
+Sign in first. New links start as pending until approved by a moderator.
+</p>
 
+<form
+id="linkForm"
+class="form"
+>
 
-          <div>
+<div>
 
-            <label>
-              Tags
-            </label>
+<label>
+Title
+</label>
 
-            <input
-              class="input"
-              id="linkTags"
-              placeholder="ai, web, coding">
+<input
+class="input"
+id="linkTitle"
+required
+placeholder="Example Tool"
+>
 
-          </div>
+</div>
 
-        </div>
 
+<div>
 
-        <div>
+<label>
+URL
+</label>
 
-          <label>
-            Description
-          </label>
+<input
+class="input"
+id="linkURL"
+required
+type="url"
+placeholder="https://example.com"
+>
 
-          <textarea
-            class="textarea"
-            id="linkDesc"
-            rows="4"
-            placeholder="What makes this useful?">
-          </textarea>
+</div>
 
-        </div>
 
+<div class="row">
 
-        <button
-          class="btn primary"
-          type="submit">
-          Submit for review
-        </button>
+<div>
 
-      </form>
+<label>
+Category
+</label>
 
-    </div>
+<input
+class="input"
+id="linkCategory"
+placeholder="Tools"
+>
 
-  </section>
+</div>
 
+<div>
 
-  <!-- =====================================================
-       ADMIN CENTER
-       ===================================================== -->
+<label>
+Tags
+</label>
 
-  <section
-    id="adminPage"
-    class="page hidden">
+<input
+class="input"
+id="linkTags"
+placeholder="ai, web, coding"
+>
 
-    <div class="panel">
+</div>
 
-      <div class="adminHeader">
+</div>
 
-        <div>
 
-          <h2>
-            🛡️ VEXO Admin Center
-          </h2>
+<div>
 
-          <p class="muted">
-            Administrator moderation dashboard.
-          </p>
+<label>
+Description
+</label>
 
-        </div>
+<textarea
+class="textarea"
+id="linkDesc"
+rows="4"
+placeholder="What makes this useful?"
+></textarea>
 
-        <button
-          class="btn"
-          onclick="loadAdminData()">
-          ↻ Refresh
-        </button>
+</div>
 
-      </div>
 
+<button
+class="btn primary"
+type="submit"
+>
+Submit for review
+</button>
 
-      <!-- ADMIN NOTIFICATIONS -->
+</form>
 
-      <h3>
-        🔔 Admin Notifications
-      </h3>
+</div>
 
-      <div id="adminNotifications">
-        <div class="empty">
-          Loading notifications...
-        </div>
-      </div>
+</section>
 
 
-      <hr
-        style="border:0;border-top:1px solid var(--line);margin:25px 0">
+<!-- SETTINGS -->
 
+<section
+id="settingsPage"
+class="page hidden"
+>
 
-      <!-- PENDING SUBMISSIONS -->
+<div class="panel">
 
-      <h3>
-        📥 Link Submissions
-      </h3>
+<h2>
+Settings
+</h2>
 
-      <p class="muted">
-        Every submission is shown here before it becomes public.
-      </p>
+<p class="muted">
+Choose the VEXO visual mode.
+</p>
 
-      <div
-        class="grid"
-        id="adminSubmissions">
+<div class="actions">
 
-        <div class="empty">
-          Loading submissions...
-        </div>
+<button class="btn" data-bg="grid">
+Neon Grid
+</button>
 
-      </div>
+<button class="btn" data-bg="plain">
+Clean
+</button>
 
-    </div>
+<button class="btn" data-bg="stars">
+Deep Space
+</button>
 
-  </section>
+</div>
 
+<hr>
 
-  <!-- SETTINGS -->
+<button
+class="btn danger"
+id="logoutBtn"
+>
+Sign out
+</button>
 
-  <section
-    id="settingsPage"
-    class="page hidden">
+</div>
 
-    <div class="panel">
+</section>
 
-      <h2>
-        Settings
-      </h2>
 
-      <p class="muted">
-        Choose the VEXO visual mode.
-      </p>
+<!-- ADMIN CENTER -->
 
-      <div class="actions">
+<section
+id="adminPage"
+class="page hidden"
+>
 
-        <button
-          class="btn"
-          data-bg="grid">
-          Neon Grid
-        </button>
+<div class="panel">
 
-        <button
-          class="btn"
-          data-bg="plain">
-          Clean
-        </button>
+<div class="admin-header">
 
-        <button
-          class="btn"
-          data-bg="stars">
-          Deep Space
-        </button>
+<div>
 
-      </div>
+<div class="admin-title">
+🛡 VEXO Admin Center
+</div>
 
-      <hr
-        style="border:0;border-top:1px solid var(--line);margin:22px 0">
+<div class="admin-sub">
+Moderation, submissions and community management
+</div>
 
-      <button
-        class="btn danger"
-        id="logoutBtn">
-        Sign out
-      </button>
+</div>
 
-    </div>
+<div class="status">
+ADMIN ACCESS
+</div>
 
-  </section>
+</div>
+
+
+<div class="admin-stats">
+
+<div class="admin-stat">
+
+<strong id="adminPending">
+0
+</strong>
+
+<span>
+Pending submissions
+</span>
+
+</div>
+
+
+<div class="admin-stat">
+
+<strong id="adminApproved">
+0
+</strong>
+
+<span>
+Approved links
+</span>
+
+</div>
+
+
+<div class="admin-stat">
+
+<strong id="adminRejected">
+0
+</strong>
+
+<span>
+Rejected links
+</span>
+
+</div>
+
+
+<div class="admin-stat">
+
+<strong id="adminUsers">
+0
+</strong>
+
+<span>
+Admins
+</span>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="panel">
+
+<div class="toolbar">
+
+<input
+class="input search"
+id="adminSearch"
+placeholder="Search submissions..."
+>
+
+<select
+class="select"
+id="adminStatus"
+style="width:170px"
+>
+
+<option value="pending">
+Pending
+</option>
+
+<option value="approved">
+Approved
+</option>
+
+<option value="rejected">
+Rejected
+</option>
+
+<option value="all">
+All submissions
+</option>
+
+</select>
+
+<button
+class="btn"
+onclick="loadAdminData()"
+>
+↻ Refresh
+</button>
+
+</div>
+
+<div
+id="adminQueue"
+class="queue"
+></div>
+
+</div>
+
+
+<div class="panel">
+
+<h2>
+🔔 Admin Notifications
+</h2>
+
+<div
+id="adminNotifications"
+></div>
+
+</div>
+
+</section>
+
 
 </main>
 
 </div>
 
 
-<!-- AUTH -->
+<!-- AUTH MODAL -->
 
 <div
-  class="modal"
-  id="authModal">
+class="modal"
+id="authModal"
+>
 
-  <div class="box">
+<div class="box">
 
-    <button
-      class="close"
-      onclick="closeAuth()">
-      ×
-    </button>
+<button
+class="close"
+onclick="closeAuth()"
+>
+×
+</button>
 
-    <h2 id="authTitle">
-      Sign in
-    </h2>
+<h2 id="authTitle">
+Sign in
+</h2>
 
-    <p
-      class="muted"
-      id="authSub">
-      Enter your VEXO account.
-    </p>
+<p
+class="muted"
+id="authSub"
+>
+Enter your VEXO account.
+</p>
 
+<form
+id="authForm"
+class="form"
+>
 
-    <form
-      id="authForm"
-      class="form">
+<div
+id="usernameWrap"
+class="hidden"
+>
 
-      <div
-        id="usernameWrap"
-        class="hidden">
+<label>
+Username
+</label>
 
-        <label>
-          Username
-        </label>
+<input
+class="input"
+id="username"
+maxlength="24"
+placeholder="vexo_user"
+>
 
-        <input
-          class="input"
-          id="username"
-          maxlength="24"
-          placeholder="vexo_user">
-
-      </div>
-
-
-      <div>
-
-        <label>
-          Email
-        </label>
-
-        <input
-          class="input"
-          id="email"
-          type="email"
-          required>
-
-      </div>
+</div>
 
 
-      <div>
+<div>
 
-        <label>
-          Password
-        </label>
+<label>
+Email
+</label>
 
-        <input
-          class="input"
-          id="password"
-          type="password"
-          minlength="6"
-          required>
+<input
+class="input"
+id="email"
+type="email"
+required
+>
 
-      </div>
-
-
-      <button
-        class="btn primary"
-        id="authSubmit">
-        Sign in
-      </button>
-
-    </form>
+</div>
 
 
-    <p style="text-align:center">
+<div>
 
-      <button
-        class="btn"
-        id="switchAuth">
-        Create an account
-      </button>
+<label>
+Password
+</label>
 
-    </p>
+<input
+class="input"
+id="password"
+type="password"
+minlength="6"
+required
+>
 
-  </div>
+</div>
+
+
+<button
+class="btn primary"
+id="authSubmit"
+>
+Sign in
+</button>
+
+</form>
+
+
+<p style="text-align:center">
+
+<button
+class="btn"
+id="switchAuth"
+>
+Create an account
+</button>
+
+</p>
+
+</div>
+
+</div>
+
+
+<!-- ADMIN LOCK -->
+
+<div
+class="admin-lock"
+id="adminLock"
+>
+
+<div class="lock-box">
+
+<div class="lock-icon">
+🔒
+</div>
+
+<h2>
+Admin access required
+</h2>
+
+<p class="muted">
+This area is restricted to VEXO administrators.
+</p>
+
+<button
+class="btn"
+onclick="showPage('home');closeAdminLock()"
+>
+Return to VEXO
+</button>
+
+</div>
 
 </div>
 
 
 <div
-  class="toast"
-  id="toast">
-</div>
+class="toast"
+id="toast"
+></div>
 
 
 <script>
 
-/* =========================================================
+/* =====================================================
    SUPABASE
-   ========================================================= */
+===================================================== */
 
 const SUPABASE_URL =
-  "https://jxxjvwemjvhrozuaihso.supabase.co";
+"https://jxxjvwemjvhrozuaihso.supabase.co";
 
 const SUPABASE_KEY =
-  "sb_publishable_hbQfOIYOcFnCDyn0s6GPyg_amHog7u-";
+"sb_publishable_hbQfOIYOcFnCDyn0s6GPyg_amHog7u-";
 
 const db =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
 
 
-/* =========================================================
+/* =====================================================
    STATE
-   ========================================================= */
+===================================================== */
 
 let user = null;
 
@@ -1240,1751 +1731,1881 @@ let isAdmin = false;
 
 let links = [];
 
+let allAdminLinks = [];
+
 let favorites = new Set();
 
 let authMode = "login";
 
 
-/* =========================================================
+/* =====================================================
    HELPERS
-   ========================================================= */
+===================================================== */
 
-const $ = id =>
-  document.getElementById(id);
+const $ =
+id => document.getElementById(id);
 
 
 function toast(msg){
 
-  $("toast").textContent = msg;
+$("toast").textContent = msg;
 
-  $("toast").classList.add("show");
+$("toast").classList.add("show");
 
-  setTimeout(
-    () => $("toast").classList.remove("show"),
-    2600
-  );
+setTimeout(
+() => $("toast").classList.remove("show"),
+2600
+);
+
 }
 
 
-function esc(v = ""){
+function esc(v=""){
 
-  return String(v).replace(
-    /[&<>"']/g,
-    m => ({
-      "&":"&amp;",
-      "<":"&lt;",
-      ">":"&gt;",
-      '"':"&quot;",
-      "'":"&#039;"
-    }[m])
-  );
+return String(v).replace(
+/[&<>"']/g,
+m => ({
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#039;"
+}[m])
+);
+
 }
 
 
-function formatDate(date){
-
-  if(!date) return "";
-
-  return new Date(date).toLocaleString(
-    undefined,
-    {
-      dateStyle:"medium",
-      timeStyle:"short"
-    }
-  );
-}
-
-
-/* =========================================================
+/* =====================================================
    PAGE NAVIGATION
-   ========================================================= */
+===================================================== */
 
 function showPage(name){
 
-  if(name === "admin" && !isAdmin){
+if(name === "admin" && !isAdmin){
 
-    toast("Admin access required.");
+$("adminLock").classList.add("show");
 
-    return;
-  }
+return;
 
-
-  document
-    .querySelectorAll(".page")
-    .forEach(x =>
-      x.classList.add("hidden")
-    );
-
-
-  const page =
-    $(name + "Page");
-
-  if(!page) return;
-
-  page.classList.remove("hidden");
-
-
-  document
-    .querySelectorAll(".nav button")
-    .forEach(b =>
-      b.classList.toggle(
-        "active",
-        b.dataset.page === name
-      )
-    );
-
-
-  const titles = {
-
-    home:[
-      "VEXO",
-      "A futuristic community for useful links."
-    ],
-
-    vault:[
-      "Community Vault",
-      "Discover community-submitted resources."
-    ],
-
-    submit:[
-      "Submit Link",
-      "Share something useful with the community."
-    ],
-
-    favorites:[
-      "Favorites",
-      "Your saved community links."
-    ],
-
-    admin:[
-      "Admin Center",
-      "Moderate VEXO community submissions."
-    ],
-
-    settings:[
-      "Settings",
-      "Customize your VEXO experience."
-    ]
-
-  };
-
-
-  $("pageTitle").textContent =
-    titles[name][0];
-
-  $("pageSub").textContent =
-    titles[name][1];
-
-
-  if(name === "favorites")
-    renderFavorites();
-
-
-  if(name === "admin")
-    loadAdminData();
 }
 
 
 document
-  .querySelectorAll(".nav button")
-  .forEach(b =>
-    b.onclick = () =>
-      showPage(b.dataset.page)
-  );
+.querySelectorAll(".page")
+.forEach(
+x => x.classList.add("hidden")
+);
 
 
-/* =========================================================
-   AUTH MODAL
-   ========================================================= */
+$(name + "Page")
+.classList.remove("hidden");
+
+
+document
+.querySelectorAll(".nav button")
+.forEach(
+b => b.classList.toggle(
+"active",
+b.dataset.page === name
+)
+);
+
+
+const titles = {
+
+home:[
+"VEXO",
+"A futuristic community for useful links."
+],
+
+vault:[
+"Community Vault",
+"Discover community-submitted resources."
+],
+
+submit:[
+"Submit Link",
+"Share something useful with the community."
+],
+
+favorites:[
+"Favorites",
+"Your saved community links."
+],
+
+settings:[
+"Settings",
+"Customize your VEXO experience."
+],
+
+admin:[
+"Admin Center",
+"Moderate submissions and manage the VEXO community."
+]
+
+};
+
+
+$("pageTitle").textContent =
+titles[name][0];
+
+$("pageSub").textContent =
+titles[name][1];
+
+
+if(name === "favorites")
+renderFavorites();
+
+
+if(name === "admin")
+loadAdminData();
+
+}
+
+
+document
+.querySelectorAll(".nav button")
+.forEach(
+b => b.onclick =
+() => showPage(b.dataset.page)
+);
+
+
+function closeAdminLock(){
+
+$("adminLock").classList.remove("show");
+
+}
+
+
+/* =====================================================
+   AUTH
+===================================================== */
 
 function openAuth(){
 
-  $("authModal")
-    .classList.add("open");
+$("authModal").classList.add("open");
 
 }
 
 
 function closeAuth(){
 
-  $("authModal")
-    .classList.remove("open");
+$("authModal").classList.remove("open");
 
 }
 
 
 $("loginBtn").onclick =
-  openAuth;
+openAuth;
 
 
 $("switchAuth").onclick = () => {
 
-  authMode =
-    authMode === "login"
-      ? "signup"
-      : "login";
+authMode =
+authMode === "login"
+? "signup"
+: "login";
 
 
-  $("authTitle").textContent =
-    authMode === "login"
-      ? "Sign in"
-      : "Create account";
+$("authTitle").textContent =
+authMode === "login"
+? "Sign in"
+: "Create account";
 
 
-  $("authSub").textContent =
-    authMode === "login"
-      ? "Enter your VEXO account."
-      : "Create your VEXO community account.";
+$("authSub").textContent =
+authMode === "login"
+? "Enter your VEXO account."
+: "Create your VEXO community account.";
 
 
-  $("authSubmit").textContent =
-    authMode === "login"
-      ? "Sign in"
-      : "Create account";
+$("authSubmit").textContent =
+authMode === "login"
+? "Sign in"
+: "Create account";
 
 
-  $("switchAuth").textContent =
-    authMode === "login"
-      ? "Create an account"
-      : "I already have an account";
+$("switchAuth").textContent =
+authMode === "login"
+? "Create an account"
+: "I already have an account";
 
 
-  $("usernameWrap")
-    .classList.toggle(
-      "hidden",
-      authMode === "login"
-    );
+$("usernameWrap")
+.classList.toggle(
+"hidden",
+authMode === "login"
+);
 
 };
 
 
-/* =========================================================
-   AUTH FORM
-   ========================================================= */
-
 $("authForm").onsubmit =
-  async e => {
+async e => {
 
-    e.preventDefault();
-
-
-    const email =
-      $("email").value.trim();
-
-    const password =
-      $("password").value;
-
-    const username =
-      $("username").value.trim();
+e.preventDefault();
 
 
-    let res;
+const email =
+$("email").value.trim();
+
+const password =
+$("password").value;
+
+const username =
+$("username").value.trim();
 
 
-    if(authMode === "signup"){
-
-      res =
-        await db.auth.signUp({
-
-          email,
-
-          password,
-
-          options:{
-            data:{
-              username:
-                username || undefined
-            }
-          }
-
-        });
-
-    }else{
-
-      res =
-        await db.auth.signInWithPassword({
-          email,
-          password
-        });
-
-    }
+let res;
 
 
-    if(res.error){
+if(authMode === "signup"){
 
-      toast(res.error.message);
+res =
+await db.auth.signUp({
 
-      return;
-    }
+email,
 
+password,
 
-    if(
-      authMode === "signup" &&
-      !res.data.session
-    ){
+options:{
+data:{
+username:
+username || undefined
+}
+}
 
-      toast(
-        "Account created. Check your email to confirm it."
-      );
+});
 
-    }else{
+}else{
 
-      toast(
-        "Welcome to VEXO."
-      );
+res =
+await db.auth.signInWithPassword({
+email,
+password
+});
 
-    }
-
-
-    closeAuth();
-
-    await loadSession();
-
-  };
+}
 
 
-/* =========================================================
-   LOGOUT
-   ========================================================= */
+if(res.error){
+
+toast(res.error.message);
+
+return;
+
+}
+
+
+if(
+authMode === "signup"
+&&
+!res.data.session
+){
+
+toast(
+"Account created. Check your email to confirm it."
+);
+
+}else{
+
+toast("Welcome to VEXO.");
+
+}
+
+
+closeAuth();
+
+await loadSession();
+
+};
+
 
 $("logoutBtn").onclick =
-  async () => {
+async () => {
 
-    await db.auth.signOut();
+await db.auth.signOut();
 
-    toast("Signed out.");
+isAdmin = false;
 
-    await loadSession();
+toast("Signed out.");
 
-    showPage("home");
+await loadSession();
 
-  };
+showPage("home");
+
+};
 
 
-/* =========================================================
-   SESSION + ADMIN CHECK
-   ========================================================= */
+/* =====================================================
+   ADMIN CHECK
+===================================================== */
+
+async function checkAdmin(){
+
+if(!user){
+
+isAdmin = false;
+
+$("adminNav")
+.classList.remove("show");
+
+return false;
+
+}
+
+
+const {data,error} =
+await db
+.from("user_roles")
+.select("role")
+.eq("user_id",user.id)
+.eq("role","admin")
+.maybeSingle();
+
+
+if(error){
+
+console.error(
+"Admin check:",
+error
+);
+
+isAdmin = false;
+
+$("adminNav")
+.classList.remove("show");
+
+return false;
+
+}
+
+
+isAdmin =
+!!data;
+
+
+if(isAdmin){
+
+$("adminNav")
+.classList.add("show");
+
+}else{
+
+$("adminNav")
+.classList.remove("show");
+
+}
+
+
+return isAdmin;
+
+}
+
+
+/* =====================================================
+   SESSION
+===================================================== */
 
 async function loadSession(){
 
-  const {
-    data
-  } =
-    await db.auth.getSession();
+const {data} =
+await db.auth.getSession();
 
 
-  user =
-    data.session?.user || null;
+user =
+data.session?.user || null;
 
 
-  /*
-   * IMPORTANT:
-   * The database decides whether this account is admin.
-   */
-
-  isAdmin = false;
+await checkAdmin();
 
 
-  if(user){
+if(user){
 
-    const {
-      data:adminResult,
-      error:adminError
-    } =
-      await db.rpc("is_admin");
-
-
-    if(
-      !adminError &&
-      adminResult === true
-    ){
-
-      isAdmin = true;
-
-    }
+const {data:p} =
+await db
+.from("profiles")
+.select("username")
+.eq("id",user.id)
+.maybeSingle();
 
 
-    const {
-      data:p
-    } =
-      await db
-        .from("profiles")
-        .select("username")
-        .eq("id",user.id)
-        .maybeSingle();
+const displayName =
+p?.username ||
+user.email?.split("@")[0] ||
+"VEXO user";
 
 
-    const displayName =
-      p?.username ||
-      user.email?.split("@")[0] ||
-      "VEXO user";
+$("userBox").innerHTML = `
+
+<small>
+${isAdmin ? "Administrator" : "Signed in as"}
+</small>
+
+<br>
+
+<strong>
+${esc(displayName)}
+</strong>
+
+`;
+
+$("statUsers").textContent =
+isAdmin
+? "ADMIN"
+: "YOU";
 
 
-    $("userBox").innerHTML = `
+}else{
 
-      <small>
-        Signed in as
-      </small>
+$("userBox").innerHTML = `
 
-      <br>
+<small>
+Not signed in
+</small>
 
-      <strong>
-        ${esc(displayName)}
-      </strong>
+<br>
 
-      ${
-        isAdmin
-          ? `
-            <br>
-            <small style="color:var(--accent2)">
-              🛡️ Administrator
-            </small>
-          `
-          : ""
-      }
+<button
+class="btn primary"
+id="loginBtn"
+>
+Sign in
+</button>
 
-    `;
+`;
 
+$("loginBtn").onclick =
+openAuth;
 
-    $("statUsers").textContent =
-      "YOU";
-
-
-    $("statAdmin").textContent =
-      isAdmin ? "YES" : "NO";
-
-
-  }else{
-
-    $("userBox").innerHTML = `
-
-      <small>
-        Not signed in
-      </small>
-
-      <br>
-
-      <button
-        class="btn primary"
-        id="loginBtn">
-        Sign in
-      </button>
-
-    `;
-
-
-    $("loginBtn").onclick =
-      openAuth;
-
-
-    $("statUsers").textContent =
-      "—";
-
-
-    $("statAdmin").textContent =
-      "—";
-
-  }
-
-
-  /*
-   * Show Admin Center ONLY to admins.
-   */
-
-  $("adminNav")
-    .classList.toggle(
-      "visible",
-      isAdmin
-    );
-
-
-  if(!isAdmin){
-
-    $("notificationBadge")
-      .classList.add("hidden");
-
-  }
-
-
-  await loadFavorites();
-
-  await loadLinks();
-
-
-  if(isAdmin){
-
-    await updateNotificationBadge();
-
-  }
+$("statUsers").textContent =
+"—";
 
 }
 
 
-/* =========================================================
+await loadFavorites();
+
+await loadLinks();
+
+await loadPendingCount();
+
+
+if(isAdmin){
+
+await loadAdminData();
+
+}
+
+}
+
+
+/* =====================================================
    FAVORITES
-   ========================================================= */
+===================================================== */
 
 async function loadFavorites(){
 
-  if(!user){
+if(!user){
 
-    favorites =
-      new Set();
+favorites =
+new Set();
 
-    $("statFav").textContent =
-      "0";
+$("statFav").textContent =
+"0";
 
-    return;
-
-  }
-
-
-  const {
-    data,
-    error
-  } =
-    await db
-      .from("favorites")
-      .select("link_id")
-      .eq("user_id",user.id);
-
-
-  if(error){
-
-    console.error(error);
-
-    return;
-
-  }
-
-
-  favorites =
-    new Set(
-      (data || [])
-        .map(x => x.link_id)
-    );
-
-
-  $("statFav").textContent =
-    favorites.size;
+return;
 
 }
 
 
-async function toggleFavorite(id){
-
-  if(!user){
-
-    openAuth();
-
-    toast(
-      "Sign in to favorite links."
-    );
-
-    return;
-
-  }
+const {data,error} =
+await db
+.from("favorites")
+.select("link_id")
+.eq("user_id",user.id);
 
 
-  if(favorites.has(id)){
+if(error){
 
-    await db
-      .from("favorites")
-      .delete()
-      .eq("link_id",id)
-      .eq("user_id",user.id);
+console.error(error);
 
-    favorites.delete(id);
-
-  }else{
-
-    const {
-      error
-    } =
-      await db
-        .from("favorites")
-        .insert({
-          link_id:id,
-          user_id:user.id
-        });
-
-
-    if(error){
-
-      toast(error.message);
-
-      return;
-
-    }
-
-
-    favorites.add(id);
-
-  }
-
-
-  $("statFav").textContent =
-    favorites.size;
-
-
-  renderLinks();
-
-  renderFavorites();
+return;
 
 }
 
 
-/* =========================================================
-   LOAD LINKS
-   ========================================================= */
+favorites =
+new Set(
+(data || []).map(
+x => x.link_id
+)
+);
+
+
+$("statFav").textContent =
+favorites.size;
+
+}
+
+
+/* =====================================================
+   LINKS
+===================================================== */
 
 async function loadLinks(){
 
-  const {
-    data,
-    error
-  } =
-    await db
-      .from("links")
-      .select("*")
-      .eq("status","approved")
-      .order(
-        "created_at",
-        {
-          ascending:false
-        }
-      );
+const {data,error} =
+await db
+.from("links")
+.select("*")
+.eq("status","approved")
+.order(
+"created_at",
+{ascending:false}
+);
 
 
-  if(error){
+if(error){
 
-    toast(error.message);
+toast(error.message);
 
-    return;
+return;
 
-  }
-
-
-  links =
-    data || [];
+}
 
 
-  $("statLinks").textContent =
-    links.length;
+links =
+data || [];
 
 
-  buildCategories();
+$("statLinks").textContent =
+links.length;
 
-  renderLinks();
+
+buildCategories();
+
+renderLinks();
 
 }
 
 
 function buildCategories(){
 
-  const cats =
-    [
-      ...new Set(
-        links.map(
-          x => x.category || "General"
-        )
-      )
-    ].sort();
+const cats =
+[
+...new Set(
+links.map(
+x => x.category || "General"
+)
+)
+].sort();
 
 
-  $("category").innerHTML =
-    `
-      <option value="">
-        All categories
-      </option>
-
-      ${
-        cats
-          .map(
-            c =>
-              `<option value="${esc(c)}">
-                ${esc(c)}
-              </option>`
-          )
-          .join("")
-      }
-    `;
+$("category").innerHTML =
+`
+<option value="">
+All categories
+</option>
+`
++
+cats
+.map(
+c =>
+`<option>${esc(c)}</option>`
+)
+.join("");
 
 }
 
 
 function filteredLinks(){
 
-  const q =
-    $("search")
-      .value
-      .toLowerCase();
+const q =
+$("search")
+.value
+.toLowerCase();
 
 
-  const cat =
-    $("category").value;
+const cat =
+$("category").value;
 
 
-  return links.filter(x =>
-
-    (
-      !cat ||
-      (x.category || "General") === cat
-    )
-
-    &&
-
-    (
-      !q ||
-
-      [
-        x.title,
-        x.url,
-        x.description,
-        x.category,
-        ...(x.tags || [])
-      ]
-      .join(" ")
-      .toLowerCase()
-      .includes(q)
-
-    )
-
-  );
+return links.filter(
+x =>
+(
+!cat ||
+(x.category || "General")
+=== cat
+)
+&&
+(
+!q ||
+[
+x.title,
+x.url,
+x.description,
+x.category,
+...(x.tags || [])
+]
+.join(" ")
+.toLowerCase()
+.includes(q)
+)
+);
 
 }
 
 
-/* =========================================================
-   PUBLIC LINK CARD
-   ========================================================= */
-
 function card(x){
 
-  const tags =
-    (x.tags || [])
-      .map(
-        t =>
-          `<span class="tag">
-            #${esc(t)}
-          </span>`
-      )
-      .join("");
+const tags =
+(x.tags || [])
+.map(
+t =>
+`<span class="tag">
+#${esc(t)}
+</span>`
+)
+.join("");
 
 
-  const fav =
-    favorites.has(x.id);
+const fav =
+favorites.has(x.id);
 
 
-  return `
+return `
 
-    <article class="card">
+<article class="card">
 
-      <div
-        style="
-          display:flex;
-          justify-content:space-between;
-          align-items:center
-        ">
+<div
+style="
+display:flex;
+justify-content:space-between
+"
+>
 
-        <span class="tag">
-          ${esc(x.category || "General")}
-        </span>
+<span class="tag">
+${esc(x.category || "General")}
+</span>
 
-        <button
-          class="btn"
-          onclick="toggleFavorite('${x.id}')">
+<button
+class="btn"
+onclick="toggleFavorite('${x.id}')"
+>
+${fav ? "★" : "☆"}
+</button>
 
-          ${fav ? "★" : "☆"}
+</div>
 
-        </button>
+<h3>
+${esc(x.title)}
+</h3>
 
-      </div>
+<p>
+${esc(x.description || "No description")}
+</p>
 
+<div class="cardurl">
+${esc(x.url)}
+</div>
 
-      <h3>
-        ${esc(x.title)}
-      </h3>
+<div>
+${tags}
+</div>
 
+<div
+class="actions"
+style="margin-top:13px"
+>
 
-      <p>
-        ${esc(
-          x.description ||
-          "No description"
-        )}
-      </p>
+<button
+class="btn primary"
+onclick="openLink('${x.id}')"
+>
+Open
+</button>
 
+<button
+class="btn"
+onclick="vote('${x.id}',1)"
+>
+▲
+</button>
 
-      <div class="cardurl">
-        ${esc(x.url)}
-      </div>
+<button
+class="btn"
+onclick="vote('${x.id}',-1)"
+>
+▼
+</button>
 
+</div>
 
-      <div>
-        ${tags}
-      </div>
+</article>
 
-
-      <div
-        class="actions"
-        style="margin-top:13px">
-
-        <button
-          class="btn primary"
-          onclick="openLink('${x.id}')">
-          Open
-        </button>
-
-        <button
-          class="btn"
-          onclick="vote('${x.id}',1)">
-          ▲
-        </button>
-
-        <button
-          class="btn"
-          onclick="vote('${x.id}',-1)">
-          ▼
-        </button>
-
-      </div>
-
-    </article>
-
-  `;
+`;
 
 }
 
 
 function renderLinks(){
 
-  const arr =
-    filteredLinks();
+const arr =
+filteredLinks();
 
 
-  $("linksGrid").innerHTML =
-    arr.length
-
-      ? arr.map(card).join("")
-
-      : `
-        <div class="empty">
-          No approved links match your search.
-        </div>
-      `;
+$("linksGrid").innerHTML =
+arr.length
+?
+arr.map(card).join("")
+:
+`
+<div class="empty">
+No approved links match your search.
+</div>
+`;
 
 }
 
 
 function renderFavorites(){
 
-  const arr =
-    links.filter(
-      x => favorites.has(x.id)
-    );
+const arr =
+links.filter(
+x => favorites.has(x.id)
+);
 
 
-  $("favoritesGrid").innerHTML =
-    arr.length
-
-      ? arr.map(card).join("")
-
-      : `
-        <div class="empty">
-          You have no favorites yet.
-        </div>
-      `;
+$("favoritesGrid").innerHTML =
+arr.length
+?
+arr.map(card).join("")
+:
+`
+<div class="empty">
+You have no favorites yet.
+</div>
+`;
 
 }
 
 
 $("search").oninput =
-  renderLinks;
-
+renderLinks;
 
 $("category").onchange =
-  renderLinks;
+renderLinks;
 
 
-/* =========================================================
+/* =====================================================
    OPEN LINK
-   ========================================================= */
+===================================================== */
 
 async function openLink(id){
 
-  const x =
-    links.find(
-      a => a.id === id
-    );
+const x =
+links.find(
+a => a.id === id
+);
 
 
-  if(!x) return;
+if(!x)
+return;
 
 
-  window.open(
-    x.url,
-    "_blank",
-    "noopener,noreferrer"
-  );
+window.open(
+x.url,
+"_blank",
+"noopener,noreferrer"
+);
 
 
-  await db
-    .from("links")
-    .update({
-      views:(x.views || 0) + 1
-    })
-    .eq("id",id);
+await db
+.from("links")
+.update({
+views:(x.views || 0) + 1
+})
+.eq("id",id);
 
 }
 
 
-/* =========================================================
-   VOTING
-   ========================================================= */
+/* =====================================================
+   FAVORITE
+===================================================== */
+
+async function toggleFavorite(id){
+
+if(!user){
+
+openAuth();
+
+toast(
+"Sign in to favorite links."
+);
+
+return;
+
+}
+
+
+if(
+favorites.has(id)
+){
+
+await db
+.from("favorites")
+.delete()
+.eq("link_id",id)
+.eq("user_id",user.id);
+
+favorites.delete(id);
+
+}else{
+
+const {error} =
+await db
+.from("favorites")
+.insert({
+link_id:id,
+user_id:user.id
+});
+
+
+if(error){
+
+toast(error.message);
+
+return;
+
+}
+
+
+favorites.add(id);
+
+}
+
+
+$("statFav").textContent =
+favorites.size;
+
+
+renderLinks();
+
+renderFavorites();
+
+}
+
+
+/* =====================================================
+   VOTES
+===================================================== */
 
 async function vote(id,value){
 
-  if(!user){
+if(!user){
 
-    openAuth();
+openAuth();
 
-    toast(
-      "Sign in to vote."
-    );
+toast(
+"Sign in to vote."
+);
 
-    return;
-
-  }
-
-
-  const {
-    data:old
-  } =
-    await db
-      .from("votes")
-      .select("id,vote")
-      .eq("link_id",id)
-      .eq("user_id",user.id)
-      .maybeSingle();
-
-
-  if(old?.vote === value){
-
-    await db
-      .from("votes")
-      .delete()
-      .eq("id",old.id);
-
-  }else if(old){
-
-    await db
-      .from("votes")
-      .update({
-        vote:value
-      })
-      .eq("id",old.id);
-
-  }else{
-
-    await db
-      .from("votes")
-      .insert({
-        link_id:id,
-        user_id:user.id,
-        vote:value
-      });
-
-  }
-
-
-  toast("Vote saved.");
+return;
 
 }
 
 
-/* =========================================================
+const {data:old} =
+await db
+.from("votes")
+.select("id,vote")
+.eq("link_id",id)
+.eq("user_id",user.id)
+.maybeSingle();
+
+
+if(old?.vote === value){
+
+await db
+.from("votes")
+.delete()
+.eq("id",old.id);
+
+}else if(old){
+
+await db
+.from("votes")
+.update({
+vote:value
+})
+.eq("id",old.id);
+
+}else{
+
+await db
+.from("votes")
+.insert({
+link_id:id,
+user_id:user.id,
+vote:value
+});
+
+}
+
+
+toast("Vote saved.");
+
+}
+
+
+/* =====================================================
    SUBMIT LINK
-   ========================================================= */
+===================================================== */
 
 $("linkForm").onsubmit =
-  async e => {
+async e => {
 
-    e.preventDefault();
-
-
-    if(!user){
-
-      openAuth();
-
-      toast(
-        "Sign in before submitting."
-      );
-
-      return;
-
-    }
+e.preventDefault();
 
 
-    const title =
-      $("linkTitle")
-        .value
-        .trim();
+if(!user){
+
+openAuth();
+
+toast(
+"Sign in before submitting."
+);
+
+return;
+
+}
 
 
-    const url =
-      $("linkURL")
-        .value
-        .trim();
+const title =
+$("linkTitle").value.trim();
+
+const url =
+$("linkURL").value.trim();
+
+const category =
+$("linkCategory").value.trim()
+|| "General";
+
+const tags =
+$("linkTags")
+.value
+.split(",")
+.map(x => x.trim().toLowerCase())
+.filter(Boolean);
+
+const description =
+$("linkDesc").value.trim();
 
 
-    const category =
-      $("linkCategory")
-        .value
-        .trim()
-        || "General";
+const {data:newLink,error} =
+await db
+.from("links")
+.insert({
+
+user_id:user.id,
+
+title,
+
+url,
+
+category,
+
+tags,
+
+description,
+
+status:"pending"
+
+})
+.select()
+.single();
 
 
-    const tags =
-      $("linkTags")
-        .value
-        .split(",")
-        .map(
-          x =>
-            x.trim()
-             .toLowerCase()
-        )
-        .filter(Boolean);
+if(error){
+
+toast(error.message);
+
+return;
+
+}
 
 
-    const description =
-      $("linkDesc")
-        .value
-        .trim();
+/* ============================================
+   SEND NOTIFICATION TO EVERY ADMIN
+============================================ */
+
+const {data:admins} =
+await db
+.from("user_roles")
+.select("user_id")
+.eq("role","admin");
 
 
-    /*
-     * The database policy forces:
-     *
-     * user_id = current user
-     * status = pending
-     *
-     * So users cannot submit something directly as approved.
-     */
+if(admins?.length){
 
-    const {
-      error
-    } =
-      await db
-        .from("links")
-        .insert({
+const notifications =
+admins.map(admin => ({
 
-          user_id:user.id,
+user_id:
+admin.user_id,
 
-          title,
+type:
+"submission",
 
-          url,
+title:
+"New link submitted",
 
-          category,
+message:
+`${title} was submitted for moderation.`,
 
-          tags,
+link_id:
+newLink.id
 
-          description,
-
-          status:"pending"
-
-        });
+}));
 
 
-    if(error){
-
-      toast(
-        error.message
-      );
-
-      return;
-
-    }
+const {error:notifError} =
+await db
+.from("notifications")
+.insert(notifications);
 
 
-    e.target.reset();
+if(notifError){
+
+console.error(
+"Notification error:",
+notifError
+);
+
+}
+
+}
 
 
-    toast(
-      "Submitted! All administrators have been notified."
-    );
+e.target.reset();
 
 
-    showPage("home");
+toast(
+"Submitted! All admins have been notified."
+);
 
-  };
+
+await loadPendingCount();
+
+showPage("home");
+
+};
 
 
-/* =========================================================
-   ADMIN CENTER
-   ========================================================= */
+/* =====================================================
+   USER PENDING COUNT
+===================================================== */
+
+async function loadPendingCount(){
+
+if(!user){
+
+$("statPending").textContent =
+"—";
+
+return;
+
+}
+
+
+const {count} =
+await db
+.from("links")
+.select(
+"id",
+{
+count:"exact",
+head:true
+}
+)
+.eq("user_id",user.id)
+.eq("status","pending");
+
+
+$("statPending").textContent =
+count || 0;
+
+}
+
+
+/* =====================================================
+   ADMIN DATA
+===================================================== */
 
 async function loadAdminData(){
 
-  if(!isAdmin){
+if(!isAdmin){
 
-    toast(
-      "Admin access required."
-    );
+$("adminLock")
+.classList.add("show");
 
-    return;
-
-  }
-
-
-  await loadAdminNotifications();
-
-  await loadAdminSubmissions();
+return;
 
 }
 
 
-/* =========================================================
-   ADMIN SUBMISSIONS
-   ========================================================= */
+/* ---------------------------------------------
+   ALL LINKS
+--------------------------------------------- */
 
-async function loadAdminSubmissions(){
-
-  const container =
-    $("adminSubmissions");
-
-
-  container.innerHTML = `
-    <div class="empty">
-      Loading submissions...
-    </div>
-  `;
+const {data,error} =
+await db
+.from("links")
+.select("*")
+.order(
+"created_at",
+{ascending:false}
+);
 
 
-  const {
-    data,
-    error
-  } =
-    await db.rpc(
-      "get_admin_submissions"
-    );
+if(error){
 
+console.error(error);
 
-  if(error){
+toast(error.message);
 
-    console.error(error);
-
-    container.innerHTML = `
-      <div class="empty">
-        ${esc(error.message)}
-      </div>
-    `;
-
-    return;
-
-  }
-
-
-  if(!data?.length){
-
-    container.innerHTML = `
-      <div class="empty">
-        No submissions yet.
-      </div>
-    `;
-
-    return;
-
-  }
-
-
-  container.innerHTML =
-    data.map(
-      x => adminSubmissionCard(x)
-    ).join("");
+return;
 
 }
 
 
-function adminSubmissionCard(x){
-
-  const statusClass =
-    x.status === "approved"
-      ? "statusApproved"
-      : x.status === "rejected"
-        ? "statusRejected"
-        : "statusPending";
+allAdminLinks =
+data || [];
 
 
-  const tags =
-    (x.tags || [])
-      .map(
-        t =>
-          `<span class="tag">
-            #${esc(t)}
-          </span>`
-      )
-      .join("");
+/* ---------------------------------------------
+   STATS
+--------------------------------------------- */
+
+const pending =
+allAdminLinks.filter(
+x => x.status === "pending"
+).length;
 
 
-  return `
-
-    <article class="card">
-
-      <div
-        style="
-          display:flex;
-          justify-content:space-between;
-          gap:10px;
-          align-items:center
-        ">
-
-        <span class="tag">
-          ${esc(
-            x.category ||
-            "General"
-          )}
-        </span>
-
-        <span
-          class="statusBadge ${statusClass}">
-
-          ${esc(x.status)}
-
-        </span>
-
-      </div>
+const approved =
+allAdminLinks.filter(
+x => x.status === "approved"
+).length;
 
 
-      <h3>
-        ${esc(x.title)}
-      </h3>
+const rejected =
+allAdminLinks.filter(
+x => x.status === "rejected"
+).length;
 
 
-      <p>
-        ${esc(
-          x.description ||
-          "No description"
-        )}
-      </p>
+$("adminPending").textContent =
+pending;
 
 
-      <div class="cardurl">
-        ${esc(x.url)}
-      </div>
+$("adminApproved").textContent =
+approved;
 
 
-      <div>
-        ${tags}
-      </div>
+$("adminRejected").textContent =
+rejected;
 
 
-      <!-- WHO SUBMITTED IT -->
+/* ---------------------------------------------
+   ADMIN COUNT
+--------------------------------------------- */
 
-      <div class="submitter">
-
-        <small>
-          SUBMITTED BY
-        </small>
-
-        <strong>
-          ${esc(
-            x.submitter_username ||
-            "Unknown user"
-          )}
-        </strong>
-
-        <small>
-          ${esc(
-            x.submitter_email ||
-            "No email available"
-          )}
-        </small>
-
-        <br>
-
-        <small>
-          ${esc(
-            formatDate(
-              x.created_at
-            )
-          )}
-        </small>
-
-      </div>
+const {count:adminCount} =
+await db
+.from("user_roles")
+.select(
+"user_id",
+{
+count:"exact",
+head:true
+}
+)
+.eq("role","admin");
 
 
-      ${
-        x.status === "pending"
-
-        ? `
-
-          <div
-            class="actions"
-            style="margin-top:14px">
-
-            <button
-              class="btn good"
-              onclick="
-                moderateLink(
-                  '${x.id}',
-                  'approved'
-                )
-              ">
-              ✓ Approve
-            </button>
-
-            <button
-              class="btn danger"
-              onclick="
-                moderateLink(
-                  '${x.id}',
-                  'rejected'
-                )
-              ">
-              ✕ Reject
-            </button>
-
-          </div>
-
-        `
-
-        : ""
-
-      }
+$("adminUsers").textContent =
+adminCount || 0;
 
 
-      ${
-        x.status === "approved"
+await renderAdminQueue();
 
-        ? `
-
-          <div
-            class="actions"
-            style="margin-top:14px">
-
-            <button
-              class="btn danger"
-              onclick="
-                moderateLink(
-                  '${x.id}',
-                  'rejected'
-                )
-              ">
-              Remove
-            </button>
-
-          </div>
-
-        `
-
-        : ""
-
-      }
-
-    </article>
-
-  `;
+await loadAdminNotifications();
 
 }
 
 
-/* =========================================================
-   ADMIN MODERATION
-   ========================================================= */
+/* =====================================================
+   ADMIN QUEUE
+===================================================== */
 
-async function moderateLink(
-  id,
-  status
-){
+async function renderAdminQueue(){
 
-  if(!isAdmin){
-
-    toast(
-      "Admin access required."
-    );
-
-    return;
-
-  }
+const search =
+$("adminSearch")
+.value
+.toLowerCase();
 
 
-  const {
-    error
-  } =
-    await db.rpc(
-      "admin_set_link_status",
-      {
-        p_link_id:id,
-        p_status:status
-      }
-    );
+const status =
+$("adminStatus")
+.value;
 
 
-  if(error){
+let arr =
+allAdminLinks.filter(x => {
 
-    toast(
-      error.message
-    );
-
-    return;
-
-  }
+const statusMatch =
+status === "all"
+||
+x.status === status;
 
 
-  toast(
-    status === "approved"
-      ? "Link approved."
-      : "Link rejected."
-  );
+const searchMatch =
+!search
+||
+[
+x.title,
+x.url,
+x.description,
+x.category
+]
+.join(" ")
+.toLowerCase()
+.includes(search);
 
 
-  await loadAdminData();
+return statusMatch &&
+searchMatch;
 
-  await loadLinks();
+});
+
+
+if(!arr.length){
+
+$("adminQueue").innerHTML =
+`
+<div class="empty">
+No submissions found.
+</div>
+`;
+
+return;
 
 }
 
 
-/* =========================================================
+/* ---------------------------------------------
+   LOAD SUBMITTER PROFILES
+--------------------------------------------- */
+
+const ids =
+[
+...new Set(
+arr
+.map(x => x.user_id)
+.filter(Boolean)
+)
+];
+
+
+let profiles = [];
+
+
+if(ids.length){
+
+const {data} =
+await db
+.from("profiles")
+.select("id,username")
+.in("id",ids);
+
+
+profiles =
+data || [];
+
+}
+
+
+const profileMap =
+new Map(
+profiles.map(
+p => [p.id,p]
+)
+);
+
+
+/* ---------------------------------------------
+   RENDER
+--------------------------------------------- */
+
+$("adminQueue").innerHTML =
+arr.map(x => {
+
+const profile =
+profileMap.get(x.user_id);
+
+
+const submitter =
+profile?.username
+||
+"Unknown user";
+
+
+const initial =
+submitter
+.charAt(0)
+.toUpperCase();
+
+
+const statusClass =
+x.status === "approved"
+? "approved"
+: x.status === "rejected"
+? "rejected"
+: "pending";
+
+
+const date =
+x.created_at
+?
+new Date(
+x.created_at
+).toLocaleString()
+:
+"Unknown date";
+
+
+return `
+
+<div class="submission">
+
+<div class="submission-main">
+
+<span
+class="status-badge ${statusClass}"
+>
+${esc(x.status || "pending").toUpperCase()}
+</span>
+
+<div class="submission-title">
+${esc(x.title)}
+</div>
+
+<div class="submission-url">
+${esc(x.url)}
+</div>
+
+<div class="submission-description">
+${esc(
+x.description ||
+"No description provided."
+)}
+</div>
+
+
+<div class="submitter">
+
+<div class="avatar">
+${esc(initial)}
+</div>
+
+<div>
+
+<strong>
+${esc(submitter)}
+</strong>
+
+<br>
+
+<span>
+Submitted ${esc(date)}
+</span>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="submission-actions">
+
+${
+x.status === "pending"
+?
+`
+
+<button
+class="btn success"
+onclick="approveLink('${x.id}')"
+>
+✓ Approve
+</button>
+
+<button
+class="btn danger"
+onclick="rejectLink('${x.id}')"
+>
+✕ Reject
+</button>
+
+`
+:
+""
+}
+
+
+${
+x.status === "approved"
+?
+`
+
+<button
+class="btn danger"
+onclick="deleteLink('${x.id}')"
+>
+🗑 Remove
+</button>
+
+`
+:
+""
+}
+
+
+</div>
+
+</div>
+
+`;
+
+}).join("");
+
+}
+
+
+/* =====================================================
+   APPROVE
+===================================================== */
+
+async function approveLink(id){
+
+if(!isAdmin)
+return;
+
+
+const {data:link} =
+await db
+.from("links")
+.select("id,title,user_id")
+.eq("id",id)
+.single();
+
+
+const {error} =
+await db
+.from("links")
+.update({
+status:"approved"
+})
+.eq("id",id);
+
+
+if(error){
+
+toast(error.message);
+
+return;
+
+}
+
+
+/* Notify submitter */
+
+if(link?.user_id){
+
+await db
+.from("notifications")
+.insert({
+
+user_id:link.user_id,
+
+type:"approved",
+
+title:"Your link was approved",
+
+message:
+`Your submission "${link.title}" was approved.`,
+
+link_id:id
+
+});
+
+}
+
+
+toast("Link approved.");
+
+await loadAdminData();
+
+await loadLinks();
+
+}
+
+
+/* =====================================================
+   REJECT
+===================================================== */
+
+async function rejectLink(id){
+
+if(!isAdmin)
+return;
+
+
+const {data:link} =
+await db
+.from("links")
+.select("id,title,user_id")
+.eq("id",id)
+.single();
+
+
+const {error} =
+await db
+.from("links")
+.update({
+status:"rejected"
+})
+.eq("id",id);
+
+
+if(error){
+
+toast(error.message);
+
+return;
+
+}
+
+
+if(link?.user_id){
+
+await db
+.from("notifications")
+.insert({
+
+user_id:link.user_id,
+
+type:"rejected",
+
+title:"Your link was rejected",
+
+message:
+`Your submission "${link.title}" was rejected by a moderator.`,
+
+link_id:id
+
+});
+
+}
+
+
+toast("Link rejected.");
+
+await loadAdminData();
+
+}
+
+
+/* =====================================================
+   DELETE
+===================================================== */
+
+async function deleteLink(id){
+
+if(!isAdmin)
+return;
+
+
+if(
+!confirm(
+"Remove this link permanently?"
+)
+)
+return;
+
+
+const {error} =
+await db
+.from("links")
+.delete()
+.eq("id",id);
+
+
+if(error){
+
+toast(error.message);
+
+return;
+
+}
+
+
+toast("Link removed.");
+
+await loadAdminData();
+
+await loadLinks();
+
+}
+
+
+/* =====================================================
    ADMIN NOTIFICATIONS
-   ========================================================= */
+===================================================== */
 
 async function loadAdminNotifications(){
 
-  if(!isAdmin)
-    return;
+if(!isAdmin)
+return;
 
 
-  const {
-    data,
-    error
-  } =
-    await db
-      .from("notifications")
-      .select("*")
-      .order(
-        "created_at",
-        {
-          ascending:false
-        }
-      )
-      .limit(30);
+const {data,error} =
+await db
+.from("notifications")
+.select("*")
+.eq("user_id",user.id)
+.order(
+"created_at",
+{ascending:false}
+)
+.limit(20);
 
 
-  if(error){
+if(error){
 
-    console.error(error);
+console.error(error);
 
-    $("adminNotifications").innerHTML = `
-      <div class="empty">
-        ${esc(error.message)}
-      </div>
-    `;
-
-    return;
-
-  }
-
-
-  if(!data?.length){
-
-    $("adminNotifications").innerHTML = `
-      <div class="empty">
-        No admin notifications yet.
-      </div>
-    `;
-
-    return;
-
-  }
-
-
-  $("adminNotifications").innerHTML =
-    data.map(
-      n => `
-
-        <div
-          class="
-            notification
-            ${n.read_at ? "" : "unread"}
-          ">
-
-          <strong>
-            ${esc(n.title)}
-          </strong>
-
-          <p>
-            ${esc(n.message || "")}
-          </p>
-
-          <small>
-            ${esc(
-              formatDate(
-                n.created_at
-              )
-            )}
-          </small>
-
-          ${
-            !n.read_at
-              ? `
-
-                <br>
-
-                <button
-                  class="btn"
-                  style="margin-top:8px"
-                  onclick="
-                    markNotificationRead(
-                      '${n.id}'
-                    )
-                  ">
-                  Mark as read
-                </button>
-
-              `
-              : ""
-          }
-
-        </div>
-
-      `
-    )
-    .join("");
+return;
 
 }
 
 
-/* =========================================================
-   NOTIFICATION BADGE
-   ========================================================= */
+if(!data?.length){
 
-async function updateNotificationBadge(){
+$("adminNotifications").innerHTML =
+`
+<div class="empty">
+No notifications yet.
+</div>
+`;
 
-  if(!isAdmin){
-
-    $("notificationBadge")
-      .classList.add("hidden");
-
-    return;
-
-  }
-
-
-  const {
-    data,
-    error
-  } =
-    await db
-      .from("notifications")
-      .select("id")
-      .is("read_at",null);
-
-
-  if(error){
-
-    console.error(error);
-
-    return;
-
-  }
-
-
-  const count =
-    data?.length || 0;
-
-
-  $("notificationBadge")
-    .textContent = count;
-
-
-  $("notificationBadge")
-    .classList.toggle(
-      "hidden",
-      count === 0
-    );
+return;
 
 }
 
 
-async function markNotificationRead(id){
+$("adminNotifications").innerHTML =
+data.map(n => `
 
-  const {
-    error
-  } =
-    await db
-      .from("notifications")
-      .update({
-        read_at:new Date().toISOString()
-      })
-      .eq("id",id)
-      .eq("user_id",user.id);
+<div class="notification">
 
+<div class="notification-icon">
+${n.type === "submission" ? "📥" : "🔔"}
+</div>
 
-  if(error){
+<div>
 
-    toast(
-      error.message
-    );
+<strong>
+${esc(n.title)}
+</strong>
 
-    return;
+<div
+class="muted"
+style="font-size:12px;margin-top:4px"
+>
+${esc(n.message || "")}
+</div>
 
-  }
+<div
+class="muted"
+style="font-size:10px;margin-top:5px"
+>
+${new Date(n.created_at).toLocaleString()}
+</div>
 
+</div>
 
-  await loadAdminNotifications();
+</div>
 
-  await updateNotificationBadge();
+`).join("");
+
 
 }
 
 
-/* =========================================================
-   SETTINGS / BACKGROUNDS
-   ========================================================= */
+/* =====================================================
+   ADMIN SEARCH
+===================================================== */
+
+$("adminSearch").oninput =
+renderAdminQueue;
+
+
+$("adminStatus").onchange =
+renderAdminQueue;
+
+
+/* =====================================================
+   BACKGROUND SETTINGS
+===================================================== */
 
 document
-  .querySelectorAll("[data-bg]")
-  .forEach(
-    b =>
-      b.onclick = () => {
+.querySelectorAll("[data-bg]")
+.forEach(
+b =>
+b.onclick = () => {
 
-        const v =
-          b.dataset.bg;
-
-
-        localStorage.setItem(
-          "vexo-bg",
-          v
-        );
+const v =
+b.dataset.bg;
 
 
-        $("grid").style.display =
-          v === "plain"
-            ? "none"
-            : "block";
+localStorage.setItem(
+"vexo-bg",
+v
+);
 
 
-        document
-          .querySelectorAll(".orb")
-          .forEach(
-            o =>
-              o.style.display =
-                v === "plain"
-                  ? "none"
-                  : "block"
-          );
+$("grid").style.display =
+v === "plain"
+? "none"
+: "block";
 
 
-        if(v === "stars"){
+document
+.querySelectorAll(".orb")
+.forEach(
+o =>
+o.style.display =
+v === "plain"
+? "none"
+: "block"
+);
 
-          $("scene").style.background =
 
-            "radial-gradient(circle at 20% 20%,rgba(124,92,255,.2),transparent 25%)," +
+if(v === "stars"){
 
-            "radial-gradient(circle at 80% 60%,rgba(25,211,255,.14),transparent 25%)," +
+$("scene").style.background =
+`
+radial-gradient(
+circle at 20% 20%,
+rgba(124,92,255,.2),
+transparent 25%
+),
+radial-gradient(
+circle at 80% 60%,
+rgba(25,211,255,.14),
+transparent 25%
+),
+#03040a
+`;
 
-            "#03040a";
+$("grid").style.opacity =
+".18";
 
-          $("grid").style.opacity =
-            ".18";
+}else if(v === "grid"){
 
-        }
+$("scene").style.background =
+`
+radial-gradient(
+circle at 50% 20%,
+rgba(124,92,255,.15),
+transparent 35%
+),
+linear-gradient(
+120deg,
+#050711,
+#0a0d1c 55%,
+#070914
+)
+`;
 
-        else if(v === "grid"){
+$("grid").style.opacity =
+"1";
 
-          $("scene").style.background =
+}else{
 
-            "radial-gradient(circle at 50% 20%,rgba(124,92,255,.15),transparent 35%)," +
+$("scene").style.background =
+"#070914";
 
-            "linear-gradient(120deg,#050711,#0a0d1c 55%,#070914)";
+}
 
-          $("grid").style.opacity =
-            "1";
-
-        }
-
-        else{
-
-          $("scene").style.background =
-            "#070914";
-
-        }
-
-      }
-  );
+}
+);
 
 
 const saved =
-  localStorage.getItem(
-    "vexo-bg"
-  ) || "grid";
+localStorage.getItem("vexo-bg")
+|| "grid";
 
 
 document
-  .querySelector(
-    `[data-bg="${saved}"]`
-  )
-  ?.click();
+.querySelector(
+`[data-bg="${saved}"]`
+)
+?.click();
 
 
-/* =========================================================
-   CUSTOM CURSOR
-   ========================================================= */
+/* =====================================================
+   CURSOR
+===================================================== */
 
-let mx = 0;
-let my = 0;
-let cx = 0;
-let cy = 0;
+let mx=0;
+let my=0;
+
+let cx=0;
+let cy=0;
 
 
 document.addEventListener(
-  "mousemove",
-  e => {
+"mousemove",
+e => {
 
-    mx = e.clientX;
-    my = e.clientY;
+mx=e.clientX;
+my=e.clientY;
 
-  }
+}
 );
 
 
 function cursorLoop(){
 
-  cx +=
-    (mx - cx) * .18;
+cx +=
+(mx-cx)*.18;
 
-  cy +=
-    (my - cy) * .18;
-
-
-  document
-    .querySelector(".cursor")
-    .style.left =
-      cx + "px";
+cy +=
+(my-cy)*.18;
 
 
-  document
-    .querySelector(".cursor")
-    .style.top =
-      cy + "px";
-
-
-  document
-    .querySelector(".cursor-dot")
-    .style.left =
-      mx + "px";
-
-
-  document
-    .querySelector(".cursor-dot")
-    .style.top =
-      my + "px";
-
-
-  requestAnimationFrame(
-    cursorLoop
-  );
+requestAnimationFrame(
+cursorLoop
+);
 
 }
 
@@ -2992,53 +3613,22 @@ function cursorLoop(){
 cursorLoop();
 
 
-document.addEventListener(
-  "mouseover",
-  e => {
-
-    if(
-      e.target.closest(
-        "button,a,input,textarea,select"
-      )
-    ){
-
-      document
-        .querySelector(".cursor")
-        .style.transform =
-          "translate(-50%,-50%) scale(1.35)";
-
-    }else{
-
-      document
-        .querySelector(".cursor")
-        .style.transform =
-          "translate(-50%,-50%) scale(1)";
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   REALTIME AUTH
-   ========================================================= */
+/* =====================================================
+   AUTH STATE
+===================================================== */
 
 db.auth.onAuthStateChange(
-  (_event,_session) => {
-
-    setTimeout(
-      loadSession,
-      0
-    );
-
-  }
+() =>
+setTimeout(
+loadSession,
+0
+)
 );
 
 
-/* =========================================================
+/* =====================================================
    START
-   ========================================================= */
+===================================================== */
 
 loadSession();
 
