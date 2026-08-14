@@ -266,6 +266,34 @@ hr{border:0;border-top:1px solid var(--line);margin:22px 0;}
 .count-stats{grid-template-columns:1fr 1fr;}
 }
 @media(pointer:coarse){body,button{cursor:auto;}.cursor,.cursor-ring{display:none;}}
+
+/* ═══ SETTINGS ADDITIONS (new, appended — nothing above was modified) ═══ */
+.set-head{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(138,151,181,.55);margin:20px 0 10px;}
+.set-head:first-child{margin-top:0;}
+.swatches{display:flex;flex-wrap:wrap;gap:9px;}
+.swatch-btn{width:36px;height:36px;border-radius:11px;border:2px solid rgba(148,163,184,.28);transition:.2s;position:relative;}
+.swatch-btn:hover{transform:translateY(-2px) scale(1.06);}
+.swatch-btn.active{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.14),0 0 16px var(--accent);}
+.settings-list{display:grid;gap:9px;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.03);}
+.toggle-row strong{font-size:13.5px;font-weight:600;}
+.toggle-row .muted-sm{font-size:11.5px;margin-top:2px;}
+.toggle-row .select{width:180px;flex:none;}
+.switch{position:relative;display:inline-block;width:44px;height:25px;flex:none;}
+.switch input{opacity:0;width:0;height:0;}
+.switch i{position:absolute;inset:0;border-radius:99px;background:rgba(255,255,255,.12);border:1px solid var(--line2);transition:.25s;}
+.switch i::after{content:"";position:absolute;left:3px;top:3px;width:17px;height:17px;border-radius:50%;background:#fff;transition:.25s;}
+.switch input:checked + i{background:var(--grad);border-color:transparent;}
+.switch input:checked + i::after{transform:translateX(19px);}
+body.compact .panel{padding:15px;}
+body.compact .card,body.compact .tool-card{padding:13px 14px;gap:7px;}
+body.compact .stat,body.compact .admin-stat{padding:13px;}
+body.compact .stat strong{font-size:21px;}
+body.compact .submission{padding:13px;}
+body.compact .home-grid{gap:14px;}
+body.no-motion *{animation:none!important;transition:none!important;}
+body.no-cursor,body.no-cursor button{cursor:auto!important;}
+body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 </style>
 </head>
 <body>
@@ -404,11 +432,41 @@ hr{border:0;border-top:1px solid var(--line);margin:22px 0;}
 <section id="settingsPage" class="page hidden">
 <div class="panel">
 <div class="panel-head"><div><h3>Settings</h3><div class="muted-sm">Choose the VEXO visual mode.</div></div></div>
+
+<div class="set-head">Background</div>
 <div class="actions">
 <button class="btn" data-bg="grid">▦ Neon Grid</button>
 <button class="btn" data-bg="plain">▢ Clean</button>
 <button class="btn" data-bg="stars">✦ Deep Space</button>
 </div>
+
+<div class="set-head">Accent color</div>
+<div class="swatches" id="accentSwatches"></div>
+
+<div class="set-head">Layout &amp; behavior</div>
+<div class="settings-list">
+<div class="toggle-row"><div><strong>Compact mode</strong><div class="muted-sm">Tighter padding and denser cards</div></div><label class="switch"><input type="checkbox" id="setCompact"><i></i></label></div>
+<div class="toggle-row"><div><strong>Animations</strong><div class="muted-sm">Enable motion effects and transitions</div></div><label class="switch"><input type="checkbox" id="setMotion" checked><i></i></label></div>
+<div class="toggle-row"><div><strong>Custom cursor</strong><div class="muted-sm">Show the neon cursor and ring</div></div><label class="switch"><input type="checkbox" id="setCursor" checked><i></i></label></div>
+<div class="toggle-row"><div><strong>Status indicator</strong><div class="muted-sm">Show the SUPABASE ONLINE pill</div></div><label class="switch"><input type="checkbox" id="setStatus" checked><i></i></label></div>
+<div class="toggle-row"><div><strong>Landing page</strong><div class="muted-sm">Opened when you load VEXO</div></div>
+<select class="select" id="setLanding">
+<option value="home">Dashboard</option>
+<option value="vault">Community Vault</option>
+<option value="favorites">Favorites</option>
+<option value="tools">Toolbox</option>
+</select>
+</div>
+</div>
+
+<div class="set-head">Backup</div>
+<div class="actions">
+<button class="btn" id="exportSettings">⇩ Export settings</button>
+<button class="btn" id="importSettings">⇧ Import settings</button>
+<button class="btn danger" id="resetSettings">↺ Reset all</button>
+<input type="file" id="importFile" accept="application/json,.json" class="hidden">
+</div>
+
 <hr>
 <button class="btn danger" id="logoutBtn">Sign out</button>
 </div>
@@ -1161,8 +1219,8 @@ async function renderAdminQueue(){
     const profile = profileMap.get(x.user_id);
     const submitter = profile?.username || "Unknown user";
     const initial = submitter.charAt(0).toUpperCase();
-    const statusClass = x.status === "approved" ? "approved" : x.status === "rejected" ? "rejected" : "pending";
-    const date = x.created_at ? new Date(x.created_at).toLocaleString() : "Unknown date";
+    const statusClass = x.status === "approved" ? "approved" : x.status === "rejected"
+const date = x.created_at ? new Date(x.created_at).toLocaleString() : "Unknown date";
     return `
     <div class="submission">
       <div class="avatar">${esc(initial)}</div>
@@ -1290,6 +1348,3 @@ db.auth.onAuthStateChange(() => setTimeout(loadSession, 0));
 /* START */
 loadSession();
 </script>
-
-</body>
-</html>
