@@ -3,1491 +3,182 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>VEXO — Community</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%237c5cff'/><text x='50' y='68' font-size='52' font-family='Arial' font-weight='bold' fill='white' text-anchor='middle'>V</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<title>VEXO — Community Tools</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{
---bg:#06090f;--bg2:#0a0f1c;--card:#0e1626;--surface:rgba(17,24,43,.72);
---line:rgba(148,163,184,.11);--line2:rgba(148,163,184,.18);
---text:#e8eefb;--muted:#8a97b5;
---accent:#7c5cff;--accent2:#19d3ff;--pink:#ff3f9d;
---accent-rgb:124,92,255;--accent2-rgb:25,211,255;--pink-rgb:255,63,157;
---green:#34d399;--red:#fb7185;--amber:#fbbf24;
---grad:linear-gradient(135deg,#7c5cff,#4c8dff 55%,#19d3ff);
---shadow:0 20px 60px rgba(0,0,0,.45);--r:16px;
-}
-*{box-sizing:border-box;}
-html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);background:var(--bg);overflow-x:hidden;}
-body{cursor:none;}
-button,input,textarea,select{font:inherit;}
-button{cursor:none;}
-button:disabled{opacity:.5;}
-::-webkit-scrollbar{width:9px;height:9px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:rgba(var(--accent-rgb),.28);border-radius:99px;border:2px solid var(--bg);}
-::-webkit-scrollbar-thumb:hover{background:rgba(var(--accent-rgb),.45);}
-
-/* background layers */
-#scene{position:fixed;inset:0;z-index:-3;background:radial-gradient(circle at 50% 20%,rgba(var(--accent-rgb),.16),transparent 35%),linear-gradient(120deg,#050711,#0a0d1c 55%,#070914);}
-#grid{position:fixed;inset:-20%;z-index:-2;background-image:linear-gradient(rgba(var(--accent-rgb),.08) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--accent2-rgb),.07) 1px,transparent 1px);background-size:55px 55px;transform:perspective(600px) rotateX(58deg) translateY(20%);animation:drift 18s linear infinite;mask-image:linear-gradient(transparent,#000 25%,#000 70%,transparent);}
-.orb{position:fixed;width:260px;height:260px;border-radius:50%;filter:blur(45px);opacity:.16;z-index:-1;animation:float 12s ease-in-out infinite;}
-.o1{background:var(--accent);left:8%;top:15%;}
-.o2{background:var(--accent2);right:7%;top:42%;animation-delay:-4s;}
-.o3{background:var(--pink);left:45%;bottom:-80px;animation-delay:-8s;}
-@keyframes drift{to{transform:perspective(600px) rotateX(58deg) translateY(30%);}}
-@keyframes float{50%{transform:translate(40px,-35px) scale(1.15);}}
-
-/* cursor */
-.cursor,.cursor-ring{position:fixed;left:0;top:0;border-radius:50%;pointer-events:none;z-index:9999;}
-.cursor{width:9px;height:9px;background:#fff;box-shadow:0 0 12px rgba(var(--accent2-rgb),.9),0 0 30px rgba(var(--accent-rgb),.5);}
-.cursor-ring{width:36px;height:36px;border:1.5px solid rgba(var(--accent2-rgb),.55);}
-html.cursor-off,html.cursor-off *{cursor:auto!important;}
-
-/* layout */
-.app{display:flex;min-height:100vh;}
-.side{width:264px;position:fixed;inset:0 auto 0 0;padding:24px 18px;display:flex;flex-direction:column;background:rgba(8,12,22,.82);backdrop-filter:blur(24px);border-right:1px solid var(--line);z-index:20;}
-.brand{display:flex;align-items:center;gap:12px;padding:6px 8px 26px;font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;letter-spacing:.16em;}
-.brand .logo{width:36px;height:36px;border-radius:11px;background:var(--grad);display:grid;place-items:center;font-size:17px;color:#fff;box-shadow:0 0 22px rgba(var(--accent-rgb),.5);}
-.brand b{color:var(--accent2);}
-.nav{display:grid;gap:4px;}
-.nav-label{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(138,151,181,.55);padding:14px 13px 6px;}
-.nav button{position:relative;display:flex;align-items:center;gap:12px;width:100%;padding:11px 13px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--muted);font-size:13.5px;font-weight:600;text-align:left;transition:.2s;}
-.nav button::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:0;border-radius:3px;background:var(--grad);transition:.25s;}
-.nav button:hover{color:#fff;background:rgba(255,255,255,.04);}
-.nav button.active{color:#fff;background:linear-gradient(90deg,rgba(var(--accent-rgb),.2),rgba(var(--accent2-rgb),.06));border-color:rgba(var(--accent-rgb),.22);}
-.nav button.active::before{height:20px;}
-.nav .ic{width:22px;text-align:center;font-size:15px;flex:none;}
-.admin-nav{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);}
-.admin-nav.show{display:grid;gap:4px;}
-.admin-button{background:linear-gradient(135deg,rgba(var(--accent-rgb),.16),rgba(var(--accent2-rgb),.08))!important;border-color:rgba(var(--accent-rgb),.28)!important;color:#fff!important;}
-
-.userbox{margin-top:auto;display:flex;align-items:center;gap:12px;padding:13px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.03);}
-.userbox .avatar{width:40px;height:40px;border-radius:12px;background:var(--grad);display:grid;place-items:center;font-size:15px;font-weight:800;color:#fff;flex:none;box-shadow:0 6px 18px rgba(var(--accent-rgb),.35);}
-.userbox .ub-info{min-width:0;flex:1;}
-.userbox .ub-info strong{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.userbox .ub-info small{display:block;color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-
-.main{margin-left:264px;width:calc(100% - 264px);padding:26px 34px 60px;}
-.top{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:26px;}
-.crumbs{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
-.crumbs .sep{color:rgba(138,151,181,.4);}
-.crumbs .cur{color:var(--accent2);}
-.top h1{margin:0;font-size:27px;font-weight:800;letter-spacing:-.02em;}
-.top-right{display:flex;align-items:center;gap:12px;}
-.icon-btn{position:relative;width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--muted);display:grid;place-items:center;font-size:16px;transition:.2s;}
-.icon-btn:hover{color:#fff;border-color:rgba(var(--accent-rgb),.5);transform:translateY(-1px);}
-.badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--grad);color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center;box-shadow:0 0 10px rgba(var(--accent-rgb),.6);}
-.status{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--green);padding:8px 13px;border:1px solid rgba(52,211,153,.28);border-radius:99px;background:rgba(52,211,153,.07);}
-.status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green);animation:pulse 2s ease-in-out infinite;}
-@keyframes pulse{50%{opacity:.45;}}
-
-.panel{background:linear-gradient(180deg,rgba(17,24,43,.74),rgba(13,18,32,.74));border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);backdrop-filter:blur(18px);padding:22px;margin-bottom:20px;}
-.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;}
-.panel-head h3{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em;}
-.muted{color:var(--muted);}
-.muted-sm{color:var(--muted);font-size:12px;}
-
-/* hero */
-.hero{display:flex;align-items:center;justify-content:space-between;gap:30px;padding:32px;position:relative;overflow:hidden;}
-.hero-left{max-width:580px;}
-.eyebrow{font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--accent2);}
-.hero h2{margin:10px 0 14px;font-size:clamp(28px,4.5vw,52px);font-weight:800;line-height:1.06;letter-spacing:-.02em;}
-.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
-.hero p{color:var(--muted);margin:0 0 22px;font-size:14.5px;line-height:1.6;}
-.hero-art{position:relative;width:240px;height:240px;flex:none;display:grid;place-items:center;}
-.art-core{width:86px;height:86px;border-radius:26px;background:var(--grad);display:grid;place-items:center;font-family:'Space Grotesk',sans-serif;font-size:36px;font-weight:700;color:#fff;box-shadow:0 0 55px rgba(var(--accent-rgb),.55);z-index:2;}
-.art-ring{position:absolute;border-radius:50%;border:1.5px dashed rgba(var(--accent-rgb),.4);animation:spin 26s linear infinite;}
-.r1{width:175px;height:175px;}
-.r2{width:240px;height:240px;border-color:rgba(var(--accent2-rgb),.25);animation-direction:reverse;animation-duration:38s;}
-.art-dot{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--accent2);box-shadow:0 0 14px var(--accent2);z-index:2;}
-.d1{top:20%;left:10%;}
-.d2{bottom:16%;right:6%;background:var(--pink);box-shadow:0 0 14px var(--pink);}
-.d3{top:6%;right:28%;width:8px;height:8px;background:#fff;}
-@keyframes spin{to{transform:rotate(360deg);}}
-
-/* stats */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
-.stat{display:flex;align-items:center;gap:14px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--card);position:relative;overflow:hidden;transition:.25s;}
-.stat::after{content:"";position:absolute;width:90px;height:90px;right:-45px;top:-45px;border-radius:50%;background:rgba(var(--accent-rgb),.08);filter:blur(4px);}
-.stat:hover{transform:translateY(-3px);border-color:rgba(var(--accent-rgb),.4);}
-.stat .ico{width:46px;height:46px;border-radius:13px;background:rgba(var(--accent-rgb),.13);display:grid;place-items:center;font-size:20px;flex:none;}
-.stat strong{display:block;font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.1;}
-.stat span{color:var(--muted);font-size:12px;}
-.stat small{color:var(--green);font-size:11px;font-weight:600;}
-
-/* home grid */
-.home-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;}
-.bars{display:grid;gap:14px;}
-.bar-row{display:grid;grid-template-columns:minmax(0,1fr) 1fr auto;gap:12px;align-items:center;}
-.bar-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.bar-track{height:8px;border-radius:99px;background:rgba(255,255,255,.05);overflow:hidden;}
-.bar-fill{height:100%;border-radius:99px;background:var(--grad);box-shadow:0 0 12px rgba(var(--accent-rgb),.5);transition:width .8s cubic-bezier(.22,1,.36,1);}
-.bar-val{font-size:12px;color:var(--muted);min-width:30px;text-align:right;}
-.feed{display:grid;gap:4px;}
-.feed-item{display:flex;align-items:flex-start;gap:12px;padding:10px 8px;border-radius:12px;transition:.2s;}
-.feed-item:hover{background:rgba(255,255,255,.035);}
-.feed-dot{width:8px;height:8px;border-radius:50%;background:var(--accent2);box-shadow:0 0 10px var(--accent2);margin-top:6px;flex:none;}
-.feed-body{min-width:0;flex:1;}
-.feed-body a{display:block;font-size:13.5px;font-weight:600;color:var(--text);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.feed-body a:hover{color:var(--accent2);}
-.feed-body small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px;}
-
-/* buttons */
-.actions{display:flex;flex-wrap:wrap;gap:9px;}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;transition:.2s;}
-.btn:hover{border-color:rgba(var(--accent-rgb),.55);background:rgba(var(--accent-rgb),.09);transform:translateY(-1px);}
-.btn.primary{background:var(--grad);border:0;color:#fff;box-shadow:0 8px 24px rgba(var(--accent-rgb),.35);}
-.btn.primary:hover{filter:brightness(1.12);}
-.btn.danger{color:var(--red);background:rgba(251,113,133,.08);border-color:rgba(251,113,133,.28);}
-.btn.success{color:var(--green);background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.28);}
-.btn.warning{color:var(--amber);background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.28);}
-.btn.mini{padding:6px 10px;font-size:12px;border-radius:8px;}
-.btn.on{border-color:rgba(var(--accent-rgb),.6);background:rgba(var(--accent-rgb),.12);color:#fff;}
-
-/* inputs */
-.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
-.input,.textarea,.select{width:100%;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--text);border-radius:11px;padding:11px 13px;font-size:13.5px;outline:none;transition:.2s;}
-.input::placeholder,.textarea::placeholder{color:#5b6884;}
-.input:focus,.textarea:focus,.select:focus{border-color:rgba(var(--accent-rgb),.65);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.13);}
-.select option{background:#0e1626;color:var(--text);}
-.search{flex:1;min-width:220px;}
-.form{display:grid;gap:14px;}
-.form label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;letter-spacing:.04em;}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-
-/* cards */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
-.card{position:relative;display:flex;flex-direction:column;gap:10px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--card);overflow:hidden;transition:.25s;}
-.card::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:var(--grad);opacity:0;transition:.25s;}
-.card:hover{transform:translateY(-4px);border-color:rgba(var(--accent-rgb),.4);box-shadow:0 18px 40px rgba(0,0,0,.35);}
-.card:hover::before{opacity:1;}
-.card-top{display:flex;justify-content:space-between;align-items:center;gap:10px;}
-.cat{font-size:10.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:5px 10px;border-radius:99px;background:rgba(var(--accent2-rgb),.09);color:var(--accent2);}
-.fav{background:none;border:0;color:#5b6884;font-size:18px;line-height:1;padding:4px;transition:.2s;}
-.fav:hover{color:var(--amber);transform:scale(1.2);}
-.fav.on{color:var(--amber);text-shadow:0 0 12px rgba(251,191,36,.6);}
-.card h4{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em;}
-.card h4 a{color:var(--text);text-decoration:none;}
-.card h4 a:hover{color:var(--accent2);}
-.card p{margin:0;color:var(--muted);font-size:13px;line-height:1.55;min-height:38px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.tags{display:flex;flex-wrap:wrap;gap:5px;min-height:22px;}
-.tag{display:inline-block;padding:4px 9px;border-radius:99px;background:rgba(var(--accent-rgb),.1);color:#b9a8ff;font-size:10.5px;font-weight:600;}
-.card-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto;padding-top:4px;}
-.views{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;}
-.mini{color:var(--muted);font-size:11px;}
-.card-actions{display:flex;gap:8px;margin-top:2px;}
-
-/* tools */
-.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;}
-.tool-card{display:flex;flex-direction:column;gap:10px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--card);transition:.25s;}
-.tool-card:hover{border-color:rgba(var(--accent-rgb),.4);transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.3);}
-.tool-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
-.tool-head h4{margin:0;font-size:15px;font-weight:700;letter-spacing:-.01em;}
-.ta-sm{min-height:78px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.5;}
-.tool-out{background:rgba(0,0,0,.38);color:var(--accent2);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;}
-.col-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
-.col-row .input{flex:1;min-width:150px;}
-.check{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap;}
-.check input{accent-color:var(--accent);width:14px;height:14px;}
-.count-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-.count-stats div{text-align:center;padding:8px 4px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.03);}
-.count-stats strong{display:block;font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;}
-.count-stats span{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
-.swatch{width:38px;height:38px;border-radius:10px;border:1px solid var(--line2);background:#7c5cff;flex:none;}
-
-/* proxy */
-.proxy-wrap{border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:#fff;}
-.proxy-wrap iframe{display:block;width:100%;height:72vh;min-height:480px;border:0;background:#fff;}
-.note{margin-top:12px;line-height:1.6;}
-.note code{background:rgba(var(--accent-rgb),.12);padding:2px 6px;border-radius:6px;font-size:11.5px;color:#b9a8ff;}
-
-/* settings */
-.settings-section h4{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(138,151,181,.6);margin:20px 0 4px;}
-.settings-section:first-of-type h4{margin-top:0;}
-.set-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid var(--line);}
-.set-row:last-child{border-bottom:0;}
-.set-info{min-width:0;}
-.set-info strong{display:block;font-size:13.5px;}
-.set-info span{display:block;color:var(--muted);font-size:12px;margin-top:2px;}
-.swatches{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.swatch-btn{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.15);padding:0;transition:.2s;flex:none;}
-.swatch-btn:hover{transform:scale(1.15);}
-.swatch-btn.on{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.35),0 0 14px rgba(255,255,255,.25);}
-.custom-color{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.15);background:none;padding:0;flex:none;}
-.custom-color::-webkit-color-swatch-wrapper{padding:2px;}
-.custom-color::-webkit-color-swatch{border-radius:50%;border:0;}
-.custom-color::-moz-color-swatch{border-radius:50%;border:0;}
-.switch{position:relative;display:inline-flex;width:44px;height:24px;flex:none;}
-.switch input{position:absolute;inset:0;opacity:0;margin:0;z-index:2;cursor:pointer;}
-.switch .knob{position:absolute;inset:0;border-radius:99px;background:rgba(255,255,255,.07);border:1px solid var(--line2);transition:.2s;pointer-events:none;}
-.switch .knob::before{content:"";position:absolute;width:18px;height:18px;left:2px;top:2px;border-radius:50%;background:var(--muted);transition:.2s;}
-.switch input:checked + .knob{background:var(--grad);border-color:transparent;}
-.switch input:checked + .knob::before{transform:translateX(19px);background:#fff;box-shadow:0 0 10px rgba(255,255,255,.6);}
-
-/* admin */
-.admin-header{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px;}
-.admin-title{font-size:27px;font-weight:800;letter-spacing:-.02em;}
-.admin-sub{font-size:13px;color:var(--muted);}
-.admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
-.admin-stat{position:relative;padding:20px;border:1px solid var(--line);border-radius:16px;background:var(--card);overflow:hidden;transition:.25s;}
-.admin-stat::after{content:"";position:absolute;width:110px;height:110px;right:-45px;top:-45px;border-radius:50%;background:rgba(var(--accent-rgb),.12);filter:blur(5px);}
-.admin-stat:hover{transform:translateY(-3px);border-color:rgba(var(--accent-rgb),.4);}
-.admin-stat strong{display:block;font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;letter-spacing:-.02em;}
-.admin-stat span{font-size:12px;color:var(--muted);}
-.queue{display:grid;gap:12px;}
-.q-item{display:grid;grid-template-columns:44px 1fr auto;gap:16px;align-items:center;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--card);transition:.2s;}
-.q-item:hover{border-color:rgba(var(--accent-rgb),.4);background:linear-gradient(90deg,rgba(var(--accent-rgb),.05),transparent);}
-.q-avatar{width:44px;height:44px;border-radius:13px;background:var(--grad);color:#fff;font-weight:800;font-size:16px;display:grid;place-items:center;flex:none;box-shadow:0 6px 18px rgba(var(--accent-rgb),.35);}
-.q-main{min-width:0;display:grid;gap:3px;}
-.q-main strong{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.q-main small{font-size:12px;color:var(--accent2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:99px;font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap;}
-.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}
-.pill.pending{color:var(--amber);background:rgba(251,191,36,.1);}
-.pill.approved{color:var(--green);background:rgba(52,211,153,.1);}
-.pill.rejected{color:var(--red);background:rgba(251,113,133,.1);}
-.notif-item{display:flex;gap:13px;padding:14px 6px;border-bottom:1px solid var(--line);align-items:flex-start;}
-.notif-item:last-child{border-bottom:0;}
-.notif-badge{width:38px;height:38px;border-radius:11px;background:rgba(var(--accent-rgb),.13);display:grid;place-items:center;font-size:11px;font-weight:800;color:#b9a8ff;flex:none;}
-.notif-badge.success{background:rgba(52,211,153,.12);color:var(--green);}
-.notif-badge.warning{background:rgba(251,191,36,.12);color:var(--amber);}
-.notif-item div{min-width:0;flex:1;}
-.notif-item strong{display:block;font-size:13.5px;}
-.notif-item small{display:block;color:var(--muted);font-size:12px;margin-top:2px;}
-
-/* misc */
-.empty{text-align:center;padding:45px 20px;color:var(--muted);grid-column:1/-1;border:1.5px dashed var(--line2);border-radius:14px;}
-.empty-icon{font-size:30px;margin-bottom:10px;opacity:.6;}
-.empty p{margin:0;font-size:13.5px;}
-.modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(2,4,10,.7);backdrop-filter:blur(10px);z-index:100;}
-.modal.open{display:grid;}
-.box{width:min(520px,calc(100% - 30px));max-height:90vh;overflow:auto;background:linear-gradient(180deg,#131b32,#0d1424);border:1px solid var(--line2);border-radius:22px;padding:26px;box-shadow:var(--shadow);}
-.box h2{margin:0 0 6px;font-size:22px;letter-spacing:-.02em;}
-.close{float:right;background:none;border:0;color:var(--muted);font-size:26px;line-height:1;transition:.2s;}
-.close:hover{color:#fff;transform:rotate(90deg);}
-.admin-lock{position:fixed;inset:0;display:none;place-items:center;z-index:500;background:radial-gradient(circle at center,rgba(var(--accent-rgb),.13),#050711 60%);backdrop-filter:blur(20px);}
-.admin-lock.show{display:grid;}
-.lock-box{width:min(480px,calc(100% - 30px));padding:40px;text-align:center;border:1px solid var(--line2);background:rgba(13,20,36,.92);border-radius:24px;box-shadow:var(--shadow);}
-.lock-icon{width:78px;height:78px;margin:0 auto 18px;border-radius:22px;background:var(--grad);display:grid;place-items:center;font-size:22px;font-weight:800;color:#fff;box-shadow:0 0 40px rgba(var(--accent-rgb),.5);}
-.toast{position:fixed;right:22px;bottom:22px;z-index:300;display:flex;align-items:center;gap:10px;padding:13px 17px;border-radius:13px;background:#131c33;border:1px solid var(--line2);box-shadow:var(--shadow);font-size:13.5px;font-weight:600;opacity:0;transform:translateY(14px);transition:.25s;max-width:min(360px,calc(100vw - 44px));}
-.toast.show{opacity:1;transform:none;}
-.toast-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);flex:none;}
-
-hr{border:0;border-top:1px solid var(--line);margin:22px 0;}
-.hidden{display:none!important;}
-.page{animation:fadeUp .35s ease;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
-
-/* settings-driven overrides */
-.no-motion *, .no-motion *::before, .no-motion *::after{animation:none!important;transition:none!important;}
-body.compact .side{padding:16px 12px;}
-body.compact .brand{padding-bottom:16px;}
-body.compact .main{padding:16px 20px 40px;}
-body.compact .top{margin-bottom:16px;}
-body.compact .panel{padding:16px;margin-bottom:14px;}
-body.compact .hero{padding:22px;}
-body.compact .stat{padding:13px;gap:11px;}
-body.compact .admin-stat{padding:15px;}
-body.compact .card,body.compact .tool-card{padding:14px;gap:8px;}
-body.compact .q-item{padding:14px;}
-
-@media(max-width:1080px){.home-grid{grid-template-columns:1fr;}}
-@media(max-width:920px){
-.side{width:78px;padding:20px 10px;}
-.brand{justify-content:center;padding-bottom:20px;}
-.brand .word{display:none;}
-.nav button{justify-content:center;padding:11px 0;}
-.nav button .lbl{display:none;}
-.nav button::before{display:none;}
-.nav-label{display:none;}
-.userbox{display:none;}
-.main{margin-left:78px;width:calc(100% - 78px);padding:20px;}
-.stats,.admin-stats{grid-template-columns:1fr 1fr;}
-.q-item{grid-template-columns:1fr;}
-.hero-art{display:none;}
-.proxy-wrap iframe{height:60vh;min-height:380px;}
-}
-@media(max-width:560px){
-.stats,.admin-stats,.row{grid-template-columns:1fr;}
-.top{align-items:flex-start;flex-direction:column;}
-.top-right{width:100%;justify-content:space-between;}
-.count-stats{grid-template-columns:1fr 1fr;}
-}
-@media(pointer:coarse){body,button{cursor:auto;}.cursor,.cursor-ring{display:none;}}
+:root{--bg:#070914;--panel:rgba(13,17,32,.76);--panel2:rgba(18,23,42,.92);--text:#eef2ff;--muted:#8d96b3;--line:rgba(255,255,255,.09);--accent:#7c5cff;--accent2:#19d3ff;--good:#43e6a4;--danger:#ff557a;--shadow:0 20px 70px rgba(0,0,0,.35)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);background:var(--bg);overflow-x:hidden}
+body{cursor:none}.cursor,.cursor-dot{position:fixed;pointer-events:none;z-index:99999;border-radius:50%;transform:translate(-50%,-50%);mix-blend-mode:screen}.cursor{width:30px;height:30px;border:1px solid rgba(124,92,255,.75);transition:width .15s,height .15s,border-color .15s}.cursor-dot{width:5px;height:5px;background:var(--accent2)}
+button,input,textarea,select{font:inherit}button{cursor:none}
+#scene{position:fixed;inset:0;z-index:-3;background:radial-gradient(circle at 50% 20%,rgba(124,92,255,.15),transparent 35%),linear-gradient(120deg,#050711,#0a0d1c 55%,#070914)}
+#grid{position:fixed;inset:-20%;z-index:-2;background-image:linear-gradient(rgba(124,92,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(25,211,255,.07) 1px,transparent 1px);background-size:55px 55px;transform:perspective(600px) rotateX(58deg) translateY(20%);animation:drift 18s linear infinite;mask-image:linear-gradient(transparent,#000 25%,#000 70%,transparent)}
+.orb{position:fixed;width:260px;height:260px;border-radius:50%;filter:blur(45px);opacity:.18;z-index:-1;animation:float 12s ease-in-out infinite}.o1{background:#7c5cff;left:8%;top:15%}.o2{background:#19d3ff;right:7%;top:42%;animation-delay:-4s}.o3{background:#ff3f9d;left:45%;bottom:-80px;animation-delay:-8s}
+@keyframes drift{to{transform:perspective(600px) rotateX(58deg) translateY(30%)}}@keyframes float{50%{transform:translate(40px,-35px) scale(1.15)}}@keyframes pulse{50%{opacity:.55}}
+.app{display:flex;min-height:100vh}.side{width:250px;position:fixed;inset:0 auto 0 0;padding:22px 16px;background:rgba(6,8,18,.72);backdrop-filter:blur(22px);border-right:1px solid var(--line);z-index:20}.brand{font-size:25px;font-weight:900;letter-spacing:.18em;padding:8px 10px 28px}.brand b{color:var(--accent2)}.nav{display:grid;gap:7px}.nav button{border:1px solid transparent;background:transparent;color:var(--muted);padding:12px 13px;border-radius:12px;text-align:left}.nav button:hover,.nav button.active{background:rgba(124,92,255,.12);border-color:rgba(124,92,255,.22);color:#fff}.userbox{position:absolute;bottom:18px;left:16px;right:16px;padding:13px;border:1px solid var(--line);background:var(--panel);border-radius:15px}.userbox small{color:var(--muted)}.main{margin-left:250px;width:calc(100% - 250px);padding:28px 34px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:30px}.top h1{margin:0;font-size:30px}.status{font-size:12px;color:var(--good);padding:8px 11px;border:1px solid rgba(67,230,164,.25);border-radius:99px;background:rgba(67,230,164,.06)}
+.panel{background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(20px);border-radius:20px;padding:22px;margin-bottom:20px}.hero{padding:30px}.hero h2{font-size:clamp(30px,5vw,58px);line-height:1;margin:0 0 14px}.hero p,.muted{color:var(--muted)}.actions{display:flex;flex-wrap:wrap;gap:9px}.btn{border:1px solid var(--line);background:rgba(255,255,255,.045);color:#fff;border-radius:11px;padding:10px 14px}.btn:hover{border-color:rgba(124,92,255,.6);transform:translateY(-1px)}.primary{background:linear-gradient(135deg,var(--accent),#4c8dff);border:0}.danger{color:#fff;background:rgba(255,85,122,.12);border-color:rgba(255,85,122,.25)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{padding:18px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025)}.stat strong{display:block;font-size:25px}.stat span{color:var(--muted);font-size:12px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}.input,.textarea,.select{width:100%;border:1px solid var(--line);background:rgba(0,0,0,.22);color:#fff;border-radius:11px;padding:11px 12px;outline:none}.input:focus,.textarea:focus{border-color:rgba(124,92,255,.7)}.search{flex:1;min-width:220px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:13px}.card{padding:18px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.025);transition:.2s}.card:hover{transform:translateY(-3px);border-color:rgba(124,92,255,.35);box-shadow:0 15px 45px rgba(0,0,0,.2)}.card h3{margin:10px 0 7px}.card p{color:var(--muted);font-size:13px;min-height:38px}.tag{display:inline-block;padding:5px 8px;border-radius:99px;background:rgba(25,211,255,.08);color:var(--accent2);font-size:10px;margin:3px 3px 0 0}.cardurl{font-size:11px;color:#aab2d0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:8px 0 12px}.modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);z-index:100}.modal.open{display:grid}.box{width:min(520px,calc(100% - 30px));max-height:90vh;overflow:auto;background:var(--panel2);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:var(--shadow)}.box h2{margin-top:0}.form{display:grid;gap:12px}.form label{font-size:12px;color:var(--muted)}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.close{float:right;background:none;border:0;color:var(--muted);font-size:25px}.hidden{display:none!important}.toast{position:fixed;right:22px;bottom:22px;z-index:200;padding:12px 15px;border:1px solid var(--line);background:var(--panel2);border-radius:12px;box-shadow:var(--shadow);opacity:0;transform:translateY(12px);transition:.25s}.toast.show{opacity:1;transform:none}.empty{text-align:center;padding:45px;color:var(--muted);grid-column:1/-1}
+@media(max-width:850px){.side{width:72px}.brand{font-size:0}.brand b{font-size:20px}.nav button span,.userbox{display:none}.main{margin-left:72px;width:calc(100% - 72px);padding:20px}.stats{grid-template-columns:1fr 1fr}}@media(max-width:520px){.stats{grid-template-columns:1fr}.row{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body>
-
-<div id="scene"></div>
-<div id="grid"></div>
-<div class="orb o1"></div>
-<div class="orb o2"></div>
-<div class="orb o3"></div>
-
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
+<div id="scene"></div><div id="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+<div class="cursor"></div><div class="cursor-dot"></div>
 
 <div class="app">
-
 <aside class="side">
-<div class="brand"><span class="logo">V</span><span class="word">VE<b>X</b>O</span></div>
-
-<div class="nav">
-<button class="active" data-page="home"><span class="ic">◈</span><span class="lbl">Dashboard</span></button>
-<button data-page="vault"><span class="ic">⌘</span><span class="lbl">Community Vault</span></button>
-<button data-page="submit"><span class="ic">＋</span><span class="lbl">Submit Link</span></button>
-<button data-page="favorites"><span class="ic">★</span><span class="lbl">Favorites</span></button>
-<button data-page="settings"><span class="ic">⚙</span><span class="lbl">Settings</span></button>
-
-<div class="nav-label">Tools</div>
-<button data-page="tools"><span class="ic">▦</span><span class="lbl">Toolbox</span></button>
-<button data-page="proxy"><span class="ic">⇄</span><span class="lbl">Web Proxy</span></button>
-
-<div id="adminNav" class="admin-nav">
-<button class="admin-button" data-page="admin"><span class="ic">◆</span><span class="lbl">Admin Center</span></button>
-</div>
-</div>
-
-<div class="userbox">
-<div class="avatar" id="userAvatar">?</div>
-<div class="ub-info">
-<small id="userEmail">Not signed in</small>
-<strong id="userName">Guest</strong>
-</div>
-<button class="btn primary mini" id="loginBtn">Sign in</button>
-</div>
+  <div class="brand">VE<b>X</b>O</div>
+  <div class="nav">
+    <button class="active" data-page="home">◈ <span>Dashboard</span></button>
+    <button data-page="vault">⌘ <span>Community Vault</span></button>
+    <button data-page="submit">＋ <span>Submit Link</span></button>
+    <button data-page="favorites">★ <span>Favorites</span></button>
+    <button data-page="settings">⚙ <span>Settings</span></button>
+  </div>
+  <div class="userbox" id="userBox"><small>Not signed in</small><br><button class="btn primary" id="loginBtn">Sign in</button></div>
 </aside>
 
 <main class="main">
+  <div class="top"><div><h1 id="pageTitle">VEXO</h1><div class="muted" id="pageSub">A futuristic community for useful links.</div></div><div class="status">● SUPABASE ONLINE</div></div>
 
-<div class="top">
-<div>
-<div class="crumbs"><span>VEXO</span><span class="sep">/</span><span class="cur" id="crumbPage">Dashboard</span></div>
-<h1 id="pageTitle">VEXO</h1>
-<div class="muted" id="pageSub">A futuristic community for useful links.</div>
-</div>
-<div class="top-right">
-<button class="icon-btn" id="bellBtn" title="Notifications" aria-label="Notifications">
-<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-<span class="badge hidden" id="bellBadge">0</span>
-</button>
-<span class="status">SUPABASE ONLINE</span>
-</div>
-</div>
+  <section id="homePage" class="page">
+    <div class="panel hero">
+      <h2>Discover the web.<br><span style="color:var(--accent2)">Build VEXO together.</span></h2>
+      <p>Community-powered links, tools and resources. Submit useful sites and help others discover them.</p>
+      <div class="actions"><button class="btn primary" onclick="showPage('vault')">Explore Vault</button><button class="btn" onclick="showPage('submit')">Submit a Link</button></div>
+    </div>
+    <div class="stats"><div class="stat"><strong id="statLinks">0</strong><span>Approved links</span></div><div class="stat"><strong id="statUsers">—</strong><span>Your account</span></div><div class="stat"><strong id="statFav">0</strong><span>Your favorites</span></div><div class="stat"><strong>LIVE</strong><span>Community sync</span></div></div>
+  </section>
 
-<!-- HOME -->
-<section id="homePage" class="page">
-<div class="panel hero">
-<div class="hero-left">
-<span class="eyebrow">Welcome to the VEXO network</span>
-<h2>Discover the web.<br><span class="grad">Build VEXO together.</span></h2>
-<p>Community-powered links, tools and resources. Submit useful sites and help others discover them.</p>
-<div class="actions">
-<button class="btn primary" onclick="showPage('vault')">⌘ Explore Vault</button>
-<button class="btn" onclick="showPage('submit')">＋ Submit a Link</button>
-</div>
-</div>
-<div class="hero-art">
-<span class="art-dot d1"></span><span class="art-dot d2"></span><span class="art-dot d3"></span>
-<div class="art-ring r2"></div><div class="art-ring r1"></div>
-<div class="art-core">V</div>
-</div>
-</div>
+  <section id="vaultPage" class="page hidden">
+    <div class="panel">
+      <div class="toolbar"><input class="input search" id="search" placeholder="Search links, tags, categories..."><select class="select" id="category" style="width:180px"><option value="">All categories</option></select><button class="btn primary" onclick="showPage('submit')">＋ Submit</button></div>
+      <div class="grid" id="linksGrid"></div>
+    </div>
+  </section>
 
-<div class="stats">
-<div class="stat"><div class="ico">◉</div><div><strong id="statLinks">0</strong><span>Approved links</span><small id="statNote1">No views yet</small></div></div>
-<div class="stat"><div class="ico">◔</div><div><strong id="statUsers">—</strong><span>Your account</span><small id="statNote2">Guest session</small></div></div>
-<div class="stat"><div class="ico">★</div><div><strong id="statFav">0</strong><span>Your favorites</span><small id="statNote3">Saved links</small></div></div>
-<div class="stat"><div class="ico">◷</div><div><strong id="statPending">—</strong><span>Pending submissions</span><small id="statNote4">Awaiting review</small></div></div>
-</div>
+  <section id="favoritesPage" class="page hidden"><div class="panel"><h2>Your Favorites</h2><div class="grid" id="favoritesGrid"></div></div></section>
 
-<div class="home-grid">
-<div class="panel">
-<div class="panel-head"><h3>Top Links</h3><span class="muted-sm">by views</span></div>
-<div class="bars" id="topLinksBar"></div>
-</div>
-<div class="panel">
-<div class="panel-head"><h3>Recently Added</h3><span class="muted-sm">latest first</span></div>
-<div class="feed" id="recentLinks"></div>
-</div>
-</div>
-</section>
+  <section id="submitPage" class="page hidden"><div class="panel"><h2>Submit a community link</h2><p class="muted">Sign in first. New links start as pending until approved by a moderator.</p><form id="linkForm" class="form"><div><label>Title</label><input class="input" id="linkTitle" required placeholder="Example Tool"></div><div><label>URL</label><input class="input" id="linkURL" required type="url" placeholder="https://example.com"></div><div class="row"><div><label>Category</label><input class="input" id="linkCategory" placeholder="Tools"></div><div><label>Tags</label><input class="input" id="linkTags" placeholder="ai, web, coding"></div></div><div><label>Description</label><textarea class="textarea" id="linkDesc" rows="4" placeholder="What makes this useful?"></textarea></div><button class="btn primary" type="submit">Submit for review</button></form></div></section>
 
-<!-- VAULT -->
-<section id="vaultPage" class="page hidden">
-<div class="panel">
-<div class="panel-head"><div><h3>Community Vault</h3><div class="muted-sm">Discover community-submitted resources.</div></div></div>
-<div class="toolbar">
-<input class="input search" id="search" placeholder="Search links, tags, categories...">
-<select class="select" id="category" style="width:190px"><option value="">All categories</option></select>
-<button class="btn primary" onclick="showPage('submit')">＋ Submit</button>
-</div>
-<div class="grid" id="linksGrid"></div>
-</div>
-</section>
+  <section id="settingsPage" class="page hidden"><div class="panel"><h2>Settings</h2><p class="muted">Choose the VEXO visual mode.</p><div class="actions"><button class="btn" data-bg="grid">Neon Grid</button><button class="btn" data-bg="plain">Clean</button><button class="btn" data-bg="stars">Deep Space</button></div><hr style="border:0;border-top:1px solid var(--line);margin:22px 0"><button class="btn danger" id="logoutBtn">Sign out</button></div></section>
+</main></div>
 
-<!-- FAVORITES -->
-<section id="favoritesPage" class="page hidden">
-<div class="panel">
-<div class="panel-head"><div><h3>Your Favorites</h3><div class="muted-sm">Links you've saved for later.</div></div></div>
-<div class="grid" id="favoritesGrid"></div>
-</div>
-</section>
-
-<!-- SUBMIT -->
-<section id="submitPage" class="page hidden">
-<div class="panel">
-<div class="panel-head"><div><h3>Submit a community link</h3><div class="muted-sm">Sign in first. New links start as pending until approved by a moderator.</div></div></div>
-<form id="linkForm" class="form">
-<div><label>Title</label><input class="input" id="linkTitle" required placeholder="Example Tool"></div>
-<div><label>URL</label><input class="input" id="linkURL" required type="url" placeholder="https://example.com"></div>
-<div class="row">
-<div><label>Category</label><input class="input" id="linkCategory" placeholder="Tools"></div>
-<div><label>Tags</label><input class="input" id="linkTags" placeholder="ai, web, coding"></div>
-</div>
-<div><label>Description</label><textarea class="textarea" id="linkDesc" rows="4" placeholder="What makes this useful?"></textarea></div>
-<button class="btn primary" type="submit">Submit for review</button>
-</form>
-</div>
-</section>
-
-<!-- SETTINGS -->
-<section id="settingsPage" class="page hidden">
-<div class="panel">
-<div class="panel-head"><div><h3>Settings</h3><div class="muted-sm">Tune the VEXO experience. Everything is stored locally in your browser.</div></div></div>
-
-<div class="settings-section">
-<h4>Appearance</h4>
-
-<div class="set-row">
-<div class="set-info"><strong>Background</strong><span>Choose the VEXO visual mode.</span></div>
-<div class="actions">
-<button class="btn mini" data-bg="grid">▦ Neon Grid</button>
-<button class="btn mini" data-bg="plain">▢ Clean</button>
-<button class="btn mini" data-bg="stars">✦ Deep Space</button>
-</div>
-</div>
-
-<div class="set-row">
-<div class="set-info"><strong>Accent color</strong><span>Recolors buttons, links, glows and highlights.</span></div>
-<div class="swatches" id="accentSwatches">
-<button class="swatch-btn" data-accent="violet" style="background:#7c5cff" title="Violet"></button>
-<button class="swatch-btn" data-accent="cyan" style="background:#0ea5e9" title="Cyan"></button>
-<button class="swatch-btn" data-accent="emerald" style="background:#10b981" title="Emerald"></button>
-<button class="swatch-btn" data-accent="amber" style="background:#f59e0b" title="Amber"></button>
-<button class="swatch-btn" data-accent="rose" style="background:#f43f5e" title="Rose"></button>
-<button class="swatch-btn" data-accent="ice" style="background:#38bdf8" title="Ice"></button>
-<input type="color" class="custom-color" id="accentCustom" title="Custom color">
-</div>
-</div>
-
-<div class="set-row">
-<div class="set-info"><strong>Ambient orbs</strong><span>Floating glow orbs in the background.</span></div>
-<label class="switch"><input type="checkbox" id="setOrbs"><span class="knob"></span></label>
-</div>
-</div>
-
-<div class="settings-section">
-<h4>Interface</h4>
-
-<div class="set-row">
-<div class="set-info"><strong>Custom cursor</strong><span>Neon dot with a trailing ring.</span></div>
-<label class="switch"><input type="checkbox" id="setCursor"><span class="knob"></span></label>
-</div>
-
-<div class="set-row">
-<div class="set-info"><strong>Animations</strong><span>Page transitions, hover lifts and glows.</span></div>
-<label class="switch"><input type="checkbox" id="setMotion"><span class="knob"></span></label>
-</div>
-
-<div class="set-row">
-<div class="set-info"><strong>Compact mode</strong><span>Denser spacing throughout the app.</span></div>
-<label class="switch"><input type="checkbox" id="setCompact"><span class="knob"></span></label>
-</div>
-</div>
-
-<div class="settings-section">
-<h4>Data</h4>
-
-<div class="set-row">
-<div class="set-info"><strong>Auto-refresh</strong><span>Periodically reload links and admin data.</span></div>
-<select class="select" id="setRefresh" style="width:130px">
-<option value="off">Off</option>
-<option value="60">Every 1 min</option>
-<option value="300">Every 5 min</option>
-</select>
-</div>
-
-<div class="set-row">
-<div class="set-info"><strong>Startup page</strong><span>Page shown when the app loads.</span></div>
-<select class="select" id="setLanding" style="width:170px">
-<option value="home">Dashboard</option>
-<option value="vault">Community Vault</option>
-<option value="tools">Toolbox</option>
-<option value="proxy">Web Proxy</option>
-</select>
-</div>
-</div>
-
-<hr>
-
-<div class="settings-section">
-<h4>Danger zone</h4>
-<div class="set-row">
-<div class="set-info"><strong>Reset settings</strong><span>Restore all defaults and reload.</span></div>
-<button class="btn danger" onclick="resetSettings()">Reset</button>
-</div>
-</div>
-
-<hr>
-
-<button class="btn danger" id="logoutBtn">Sign out</button>
-</div>
-</section>
-
-<!-- TOOLS -->
-<section id="toolsPage" class="page hidden">
-<div class="panel">
-<div class="panel-head"><div><h3>Toolbox</h3><div class="muted-sm">Handy client-side utilities — nothing leaves your browser.</div></div></div>
-<div class="tools-grid">
-
-<div class="tool-card">
-<div class="tool-head"><h4>Base64</h4><span class="cat">codec</span></div>
-<textarea class="input ta-sm" id="b64In" placeholder="Text or Base64..."></textarea>
-<div class="actions">
-<button class="btn mini primary" onclick="runB64('enc')">Encode</button>
-<button class="btn mini" onclick="runB64('dec')">Decode</button>
-<button class="btn mini" onclick="copyToClipboard($('b64Out').value,'Output')">Copy</button>
-</div>
-<textarea class="input ta-sm tool-out" id="b64Out" readonly placeholder="Output..."></textarea>
-</div>
-
-<div class="tool-card">
-<div class="tool-head"><h4>URL Codec</h4><span class="cat">codec</span></div>
-<input class="input" id="urlIn" placeholder="https://example.com/a b?q=hello world">
-<div class="actions">
-<button class="btn mini primary" onclick="runUrl('enc')">Encode</button>
-<button class="btn mini" onclick="runUrl('dec')">Decode</button>
-<button class="btn mini" onclick="copyToClipboard($('urlOut').value,'Output')">Copy</button>
-</div>
-<input class="input tool-out" id="urlOut" readonly placeholder="Encoded / decoded URL...">
-</div>
-
-<div class="tool-card">
-<div class="tool-head"><h4>JSON Formatter</h4><span class="cat">dev</span></div>
-<textarea class="input ta-sm" id="jsonIn" placeholder='{"hello":"world"}'></textarea>
-<div class="actions">
-<button class="btn mini primary" onclick="runJson()">Format</button>
-<button class="btn mini" onclick="copyToClipboard($('jsonOut').value,'JSON')">Copy</button>
-</div>
-<textarea class="input ta-sm tool-out" id="jsonOut" readonly placeholder="Formatted JSON..."></textarea>
-</div>
-
-<div class="tool-card">
-<div class="tool-head"><h4>Hash Generator</h4><span class="cat">crypto</span></div>
-<div class="col-row">
-<select class="select" id="hashSel" style="width:110px"><option value="SHA-1">SHA-1</option><option value="SHA-256" selected>SHA-256</option><option value="SHA-512">SHA-512</option></select>
-<button class="btn mini primary" onclick="runHash()">Hash</button>
-<button class="btn mini" onclick="copyToClipboard($('hashOut').value,'Hash')">Copy</button>
-</div>
-<input class="input" id="hashIn" placeholder="Text to hash...">
-<input class="input tool-out" id="hashOut" readonly placeholder="Hex digest...">
-</div>
-
-<div class="tool-card">
-<div class="tool-head"><h4>UUID Generator</h4><span class="cat">dev</span></div>
-<input class="input tool-out" id="uuidOut" readonly placeholder="Click generate...">
-<div class="actions">
-<button class="btn mini primary" onclick="genUuid()">Generate</button>
-<button class="btn mini" onclick="copyToClipboard($('uuidOut').value,'UUID')">Copy</button>
-</div>
-</div>
-
-<div class="tool-card">
-<div class="tool-head"><h4>Password Generator</h4><span class="cat">secure</span></div>
-<div class="col-row">
-<select class="select" id="passLen" style="width:110px"><option value="12" selected>12 chars</option><option value="16">16 chars</option><option value="20">20 chars</option><option value="24">24 chars</option></select>
-<label class="check"><input type="checkbox" id="passSym" checked> Symbols</label>
-<button class="btn mini primary" onclick="genPass()">Generate</button>
-<button class="btn mini" onclick="copyToClipboard($('passOut').value,'Password')">Copy</button>
-</div>
-<input class="input tool-out" id="passOut" readonly placeholder="Generated password...">
-</div>
-
-<div class="tool-card">
-<div class="tool-head"><h4>Text Counter</h4><span class="cat">live</span></div>
-<textarea class="input ta-sm" id="countIn" placeholder="Start typing..." oninput="countText()"></textarea>
-<div class="count-stats">
-<div><strong id="countChars">0</strong><span>chars</span></div>
-<div><strong id="countWords">0</strong><span>words</span></div>
-<div><strong id="countLines">0</strong><span>lines</span></div>
-<div><strong id="countBytes">0</strong><span>bytes</span></div>
-</div>
-</div>
-
-<div class="tool-card">
-<div class="tool-head"><h4>Timestamp Converter</h4><span class="cat">dev</span></div>
-<div class="col-row">
-<input class="input" id="tsIn" placeholder="Unix seconds or ms...">
-<button class="btn mini primary" onclick="tsConvert()">Convert</button>
-<button class="btn mini" onclick="tsNow()">Now</button>
-</div>
-<input class="input tool-out" id="tsOut" readonly placeholder="Human-readable date...">
-</div>
-
-<div class="tool-card">
-<div class="tool-head"><h4>Color Converter</h4><span class="cat">design</span></div>
-<div class="col-row">
-<input class="input" id="colIn" placeholder="#7c5cff or rgb(124,92,255)">
-<span class="swatch" id="colSwatch"></span>
-</div>
-<div class="actions">
-<button class="btn mini primary" onclick="colConvert()">Convert</button>
-<button class="btn mini" onclick="copyToClipboard($('colOut').value,'Color')">Copy</button>
-</div>
-<input class="input tool-out" id="colOut" readonly placeholder="Converted value...">
-</div>
-
-<div class="tool-card">
-<div class="tool-head"><h4>Case Converter</h4><span class="cat">text</span></div>
-<div class="col-row">
-<select class="select" id="caseSel" style="width:135px">
-<option value="upper">UPPER CASE</option>
-<option value="lower">lower case</option>
-<option value="title">Title Case</option>
-<option value="sentence">Sentence case</option>
-<option value="snake">snake_case</option>
-<option value="kebab">kebab-case</option>
-<option value="camel">camelCase</option>
-</select>
-<button class="btn mini primary" onclick="caseConvert()">Convert</button>
-<button class="btn mini" onclick="copyToClipboard($('caseOut').value,'Output')">Copy</button>
-</div>
-<textarea class="input ta-sm" id="caseIn" placeholder="Paste text here..."></textarea>
-<textarea class="input ta-sm tool-out" id="caseOut" readonly placeholder="Converted text..."></textarea>
-</div>
-
-</div>
-</div>
-</section>
-
-<!-- PROXY -->
-<section id="proxyPage" class="page hidden">
-<div class="panel">
-<div class="panel-head"><div><h3>Web Proxy</h3><div class="muted-sm">Browse <b style="color:var(--accent2)" id="proxyHost">truf.remiosenifoundation.org</b> right inside VEXO.</div></div></div>
-<div class="toolbar">
-<input class="input search" id="proxyUrl" value="https://truf.remiosenifoundation.org/">
-<button class="btn primary" onclick="loadProxy()">↻ Load</button>
-<button class="btn" onclick="openProxyNewTab()">Open ↗</button>
-<button class="btn" onclick="resetProxy()" title="Reset to default">⌂</button>
-</div>
-<div class="proxy-wrap">
-<iframe id="proxyFrame" src="https://truf.remiosenifoundation.org/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads" loading="lazy"></iframe>
-</div>
-<p class="muted-sm note">Note: if the page looks blank, the target may send <code>X-Frame-Options</code> or CSP <code>frame-ancestors</code> headers that block embedding — use <b>Open ↗</b> in that case.</p>
-</div>
-</section>
-
-<!-- ADMIN -->
-<section id="adminPage" class="page hidden">
-<div class="panel">
-<div class="admin-header">
-<div><div class="admin-title">VEXO Admin Center</div><div class="admin-sub">Moderation, submissions and community management</div></div>
-<span class="status">ADMIN ACCESS</span>
-</div>
-<div class="admin-stats">
-<div class="admin-stat"><strong id="adminPending">0</strong><span>Pending submissions</span></div>
-<div class="admin-stat"><strong id="adminApproved">0</strong><span>Approved links</span></div>
-<div class="admin-stat"><strong id="adminRejected">0</strong><span>Rejected links</span></div>
-<div class="admin-stat"><strong id="adminUsers">0</strong><span>Admins</span></div>
-</div>
-</div>
-
-<div class="panel">
-<div class="panel-head"><div><h3>Moderation Queue</h3><div class="muted-sm">Review, approve or reject community submissions.</div></div></div>
-<div class="toolbar">
-<input class="input search" id="adminSearch" placeholder="Search submissions...">
-<select class="select" id="adminStatus" style="width:180px">
-<option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="all">All submissions</option>
-</select>
-<button class="btn" onclick="loadAdminData()">↻ Refresh</button>
-</div>
-<div id="adminQueue" class="queue"></div>
-</div>
-
-<div class="panel">
-<div class="panel-head"><div><h3>Admin Notifications</h3><div class="muted-sm">Latest activity across VEXO.</div></div></div>
-<div id="adminNotifications"></div>
-</div>
-</section>
-
-</main>
-</div>
-
-<!-- AUTH MODAL -->
-<div class="modal" id="authModal">
-<div class="box">
-<button class="close" onclick="closeAuth()">×</button>
-<h2 id="authTitle">Sign in</h2>
-<p class="muted" id="authSub">Enter your VEXO account.</p>
-<form id="authForm" class="form">
-<div id="usernameWrap" class="hidden"><label>Username</label><input class="input" id="username" maxlength="24" placeholder="vexo_user"></div>
-<div><label>Email</label><input class="input" id="email" type="email" required></div>
-<div><label>Password</label><input class="input" id="password" type="password" minlength="6" required></div>
-<button class="btn primary" id="authSubmit">Sign in</button>
-</form>
-<p style="text-align:center"><button class="btn" id="switchAuth">Create an account</button></p>
-</div>
-</div>
-
-<!-- ADMIN LOCK -->
-<div class="admin-lock" id="adminLock">
-<div class="lock-box">
-<div class="lock-icon">LOCK</div>
-<h2>Admin access required</h2>
-<p class="muted">This area is restricted to VEXO administrators.</p>
-<button class="btn" onclick="closeAdminLock()">Return to VEXO</button>
-</div>
-</div>
-
+<div class="modal" id="authModal"><div class="box"><button class="close" onclick="closeAuth()">×</button><h2 id="authTitle">Sign in</h2><p class="muted" id="authSub">Enter your VEXO account.</p><form id="authForm" class="form"><div id="usernameWrap" class="hidden"><label>Username</label><input class="input" id="username" maxlength="24" placeholder="vexo_user"></div><div><label>Email</label><input class="input" id="email" type="email" required></div><div><label>Password</label><input class="input" id="password" type="password" minlength="6" required></div><button class="btn primary" id="authSubmit">Sign in</button></form><p style="text-align:center"><button class="btn" id="switchAuth">Create an account</button></p></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
-/* SUPABASE */
-const SUPABASE_URL = "https://jxxjvwemjvhrozuaihso.supabase.co";
-const SUPABASE_KEY = "sb_publishable_hbQfOIYOcFnCDyn0s6GPyg_amHog7u-";
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL="https://jxxjvwemjvhrozuaihso.supabase.co";
+const SUPABASE_KEY="sb_publishable_hbQfOIYOcFnCDyn0s6GPyg_amHog7u-";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let user=null, links=[], favorites=new Set(), authMode="login";
 
-/* STATE */
-let user = null, isAdmin = false, links = [], myPendingLinks = [], allAdminLinks = [], favorites = new Set(), authMode = "login", refreshTimer = null;
-
-/* HELPERS */
-const $ = id => document.getElementById(id);
-
-function toast(msg){
-  const t = $("toast");
-  t.innerHTML = `<span class="toast-dot"></span><span>${esc(msg)}</span>`;
-  t.classList.add("show");
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove("show"), 2600);
-}
-
-function esc(v=""){
-  return String(v).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-}
-
-function emptyState(msg, icon="·"){
-  return `<div class="empty"><div class="empty-icon">${icon}</div><p>${msg}</p></div>`;
-}
-
-function shortDate(iso){
-  if(!iso) return "Unknown date";
-  return new Date(iso).toLocaleDateString(undefined, {month:"short",day:"numeric"});
-}
-
-function copyToClipboard(val, label){
-  if(!val){ toast("Nothing to copy."); return; }
-  const done = () => toast(label + " copied to clipboard");
-  if(navigator.clipboard && window.isSecureContext){
-    navigator.clipboard.writeText(val).then(done).catch(() => fallbackCopy(val, done));
-  } else {
-    fallbackCopy(val, done);
-  }
-}
-
-function fallbackCopy(val, done){
-  const ta = document.createElement("textarea");
-  ta.value = val;
-  ta.style.position = "fixed";
-  ta.style.opacity = "0";
-  document.body.appendChild(ta);
-  ta.select();
-  try { document.execCommand("copy"); done(); } catch(e){ toast("Copy failed."); }
-  ta.remove();
-}
-
-/* PAGE NAVIGATION */
+const $=id=>document.getElementById(id);
+function toast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2600)}
+function esc(v=""){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function showPage(name){
-  if(name === "admin" && !isAdmin){ $("adminLock").classList.add("show"); return; }
-  document.querySelectorAll(".page").forEach(x => x.classList.add("hidden"));
-  $(name + "Page").classList.remove("hidden");
-  document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.page === name));
-  const titles = {
-    home:["VEXO","A futuristic community for useful links."],
-    vault:["Community Vault","Discover community-submitted resources."],
-    submit:["Submit Link","Share something useful with the community."],
-    favorites:["Favorites","Your saved community links."],
-    settings:["Settings","Customize your VEXO experience."],
-    tools:["Toolbox","Handy client-side utilities for everyday tasks."],
-    proxy:["Web Proxy","Browse through the VEXO network."],
-    admin:["Admin Center","Moderate submissions and manage the VEXO community."]
-  };
-  const t = titles[name] || titles.home;
-  $("pageTitle").textContent = t[0];
-  $("pageSub").textContent = t[1];
-  $("crumbPage").textContent = t[0];
-  if(name === "favorites") renderFavorites();
-  if(name === "admin" && isAdmin) loadAdminData();
+  document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));
+  $(name+"Page").classList.remove("hidden");
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
+  const titles={home:["VEXO","A futuristic community for useful links."],vault:["Community Vault","Discover community-submitted resources."],submit:["Submit Link","Share something useful with the community."],favorites:["Favorites","Your saved community links."],settings:["Settings","Customize your VEXO experience."]};
+  $("pageTitle").textContent=titles[name][0];$("pageSub").textContent=titles[name][1];
+  if(name==="favorites")renderFavorites();
 }
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
 
-document.querySelectorAll(".nav button").forEach(b => b.onclick = () => showPage(b.dataset.page));
+function openAuth(){ $("authModal").classList.add("open") }
+function closeAuth(){ $("authModal").classList.remove("open") }
+$("loginBtn").onclick=openAuth;
+$("switchAuth").onclick=()=>{authMode=authMode==="login"?"signup":"login";$("authTitle").textContent=authMode==="login"?"Sign in":"Create account";$("authSub").textContent=authMode==="login"?"Enter your VEXO account.":"Create your VEXO community account.";$("authSubmit").textContent=authMode==="login"?"Sign in":"Create account";$("switchAuth").textContent=authMode==="login"?"Create an account":"I already have an account";$("usernameWrap").classList.toggle("hidden",authMode==="login")};
 
-function closeAdminLock(){ $("adminLock").classList.remove("show"); showPage("home"); }
-
-/* AUTH */
-function openAuth(){ $("authModal").classList.add("open"); }
-function closeAuth(){ $("authModal").classList.remove("open"); }
-$("loginBtn").onclick = openAuth;
-
-$("switchAuth").onclick = () => {
-  authMode = authMode === "login" ? "signup" : "login";
-  $("authTitle").textContent = authMode === "login" ? "Sign in" : "Create account";
-  $("authSub").textContent = authMode === "login" ? "Enter your VEXO account." : "Create your VEXO community account.";
-  $("authSubmit").textContent = authMode === "login" ? "Sign in" : "Create account";
-  $("switchAuth").textContent = authMode === "login" ? "Create an account" : "I already have an account";
-  $("usernameWrap").classList.toggle("hidden", authMode === "login");
+$("authForm").onsubmit=async e=>{
+ e.preventDefault();
+ const email=$("email").value.trim(),password=$("password").value,username=$("username").value.trim();
+ let res;
+ if(authMode==="signup") res=await db.auth.signUp({email,password,options:{data:{username:username||undefined}}});
+ else res=await db.auth.signInWithPassword({email,password});
+ if(res.error){toast(res.error.message);return}
+ if(authMode==="signup"&&!res.data.session) toast("Account created. Check your email to confirm it.");
+ else toast("Welcome to VEXO.");
+ closeAuth(); await loadSession();
 };
 
-$("authForm").onsubmit = async e => {
-  e.preventDefault();
-  const email = $("email").value.trim();
-  const password = $("password").value;
-  const username = $("username").value.trim();
-  let res;
-  if(authMode === "signup"){
-    res = await db.auth.signUp({email, password, options:{data:{username: username || undefined}}});
-  } else {
-    res = await db.auth.signInWithPassword({email, password});
-  }
-  if(res.error){ toast(res.error.message); return; }
-  if(authMode === "signup" && !res.data.session){
-    toast("Account created. Check your email to confirm it.");
-  } else {
-    toast("Welcome to VEXO.");
-  }
-  closeAuth();
-  await loadSession();
-  await loadLinks();
-};
+$("logoutBtn").onclick=async()=>{await db.auth.signOut();toast("Signed out.");await loadSession();showPage("home")};
 
-$("logoutBtn").onclick = async () => {
-  await db.auth.signOut();
-  isAdmin = false;
-  toast("Signed out.");
-  await loadSession();
-  showPage("home");
-};
-
-/* SESSION + ADMIN CHECK */
 async function loadSession(){
-  const {data:{session}} = await db.auth.getSession();
-  user = session ? session.user : null;
-  if(user){
-    const name = (user.user_metadata && user.user_metadata.username) || String(user.email || "user").split("@")[0];
-    $("userEmail").textContent = user.email || "Signed in";
-    $("userName").textContent = name;
-    $("userAvatar").textContent = (String(user.email || "V"))[0].toUpperCase();
-    $("loginBtn").classList.add("hidden");
-    $("logoutBtn").classList.remove("hidden");
-    $("statNote2").textContent = "Signed in";
-  } else {
-    $("userEmail").textContent = "Not signed in";
-    $("userName").textContent = "Guest";
-    $("userAvatar").textContent = "G";
-    $("loginBtn").classList.remove("hidden");
-    $("logoutBtn").classList.add("hidden");
-    $("statNote2").textContent = "Guest session";
-  }
-  await checkAdmin();
+ const {data}=await db.auth.getSession();user=data.session?.user||null;
+ if(user){
+   const {data:p}=await db.from("profiles").select("username").eq("id",user.id).maybeSingle();
+   $("userBox").innerHTML=`<small>Signed in as</small><br><strong>${esc(p?.username||user.email?.split("@")[0]||"VEXO user")}</strong>`;
+   $("statUsers").textContent="YOU";
+ }else{
+   $("userBox").innerHTML='<small>Not signed in</small><br><button class="btn primary" id="loginBtn">Sign in</button>';$("loginBtn").onclick=openAuth;$("statUsers").textContent="—";
+ }
+ await loadFavorites();await loadLinks();
 }
 
-async function checkAdmin(){
-  if(!user){
-    isAdmin = false;
-    $("adminNav").classList.remove("show");
-    $("bellBadge").classList.add("hidden");
-    return false;
-  }
-
-  try {
-    const { data, error } = await db
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if(error){
-      console.error("Admin check:", error);
-      isAdmin = false;
-      $("adminNav").classList.remove("show");
-      $("bellBadge").classList.add("hidden");
-      return false;
-    }
-
-    isAdmin = data?.role === "admin";
-
-    $("adminNav").classList.toggle("show", isAdmin);
-    $("bellBadge").classList.toggle("hidden", !isAdmin);
-
-    if(isAdmin){
-      await loadAdminData();
-      await loadAdminNotifications();
-    }
-
-    return isAdmin;
-
-  } catch(err) {
-    console.error("Admin check failed:", err);
-    isAdmin = false;
-    $("adminNav").classList.remove("show");
-    $("bellBadge").classList.add("hidden");
-    return false;
-  }
+async function loadFavorites(){
+ if(!user){favorites=new Set();$("statFav").textContent="0";return}
+ const {data,error}=await db.from("favorites").select("link_id").eq("user_id",user.id);
+ if(error){console.error(error);return} favorites=new Set((data||[]).map(x=>x.link_id));$("statFav").textContent=favorites.size;
 }
 
-db.auth.onAuthStateChange(() => loadSession());
-
-/* ================= SETTINGS ENGINE ================= */
-const SETTINGS_KEY = "vexo-settings";
-const SETTINGS_DEFAULTS = {
-  bg: "grid", accent: "violet", customAccent: "#7c5cff",
-  orbs: true, cursor: true, motion: true, compact: false,
-  refresh: "off", landing: "home"
-};
-const ACCENTS = {
-  violet:{a:"#7c5cff", a2:"#19d3ff", p:"#ff3f9d", rgb:"124,92,255"},
-  cyan:{a:"#0ea5e9", a2:"#22d3ee", p:"#f43f5e", rgb:"14,165,233"},
-  emerald:{a:"#10b981", a2:"#34d399", p:"#f59e0b", rgb:"16,185,129"},
-  amber:{a:"#f59e0b", a2:"#fbbf24", p:"#ef4444", rgb:"245,158,11"},
-  rose:{a:"#f43f5e", a2:"#fb7185", p:"#8b5cf6", rgb:"244,63,94"},
-  ice:{a:"#38bdf8", a2:"#818cf8", p:"#2dd4bf", rgb:"56,189,248"}
-};
-
-let settings = loadSettings();
-
-function loadSettings(){
-  try{
-    const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "null");
-    if(saved) return Object.assign({}, SETTINGS_DEFAULTS, saved);
-    const legacy = localStorage.getItem("vexo-bg");
-    if(legacy) return Object.assign({}, SETTINGS_DEFAULTS, {bg: legacy});
-  }catch(e){}
-  return Object.assign({}, SETTINGS_DEFAULTS);
-}
-
-function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
-
-function hexToRgb(hex){
-  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || "");
-  return m ? `${parseInt(m[1],16)},${parseInt(m[2],16)},${parseInt(m[3],16)}` : "124,92,255";
-}
-
-function applySettings(){
-  const root = document.documentElement.style;
-  $("grid").style.display = settings.bg === "grid" ? "block" : "none";
-  $("scene").style.backgroundImage =
-    settings.bg === "stars"
-      ? `radial-gradient(circle at 50% 20%,rgba(var(--accent-rgb),.14),transparent 40%),radial-gradient(1px 1px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 80% 20%,#fff,transparent),radial-gradient(1.5px 1.5px at 35% 70%,#fff,transparent),radial-gradient(1px 1px at 65% 60%,#fff,transparent),radial-gradient(1.5px 1.5px at 90% 80%,#fff,transparent),linear-gradient(120deg,#04060f,#0a0d1c 55%,#070914)`
-      : settings.bg === "plain"
-        ? "linear-gradient(120deg,#06080f,#0a0d1c 55%,#070914)"
-        : "radial-gradient(circle at 50% 20%,rgba(var(--accent-rgb),.16),transparent 35%),linear-gradient(120deg,#050711,#0a0d1c 55%,#070914)";
-  const acc = settings.accent === "custom"
-    ? {a:settings.customAccent, a2:settings.customAccent, p:settings.customAccent, rgb:hexToRgb(settings.customAccent)}
-    : ACCENTS[settings.accent];
-  if(acc){
-    root.setProperty("--accent", acc.a);
-    root.setProperty("--accent2", acc.a2);
-    root.setProperty("--pink", acc.p);
-    root.setProperty("--accent-rgb", acc.rgb);
-    root.setProperty("--accent2-rgb", hexToRgb(acc.a2));
-    root.setProperty("--pink-rgb", hexToRgb(acc.p));
-  }
-  document.querySelectorAll(".orb").forEach(o => o.style.display = settings.orbs ? "block" : "none");
-  document.documentElement.classList.toggle("cursor-off", !settings.cursor || !window.matchMedia("(hover:hover)").matches);
-  document.body.classList.toggle("no-motion", !settings.motion);
-  document.body.classList.toggle("compact", settings.compact);
-  $("setOrbs").checked = settings.orbs;
-  $("setCursor").checked = settings.cursor;
-  $("setMotion").checked = settings.motion;
-  $("setCompact").checked = settings.compact;
-  $("setRefresh").value = settings.refresh;
-  $("setLanding").value = settings.landing;
-  document.querySelectorAll("[data-bg]").forEach(b => b.classList.toggle("on", b.dataset.bg === settings.bg));
-  document.querySelectorAll("[data-accent]").forEach(b => b.classList.toggle("on", b.dataset.accent === settings.accent));
-}
-
-function setSetting(key, val){
-  settings[key] = val;
-  saveSettings();
-  applySettings();
-  if(key === "refresh") restartAutoRefresh();
-}
-
-document.querySelectorAll("[data-bg]").forEach(b => b.onclick = () => { setSetting("bg", b.dataset.bg); toast("Background: " + b.textContent.trim()); });
-document.querySelectorAll("[data-accent]").forEach(b => b.onclick = () => { setSetting("accent", b.dataset.accent); toast("Accent color applied"); });
-$("accentCustom").oninput = e => { settings.accent = "custom"; settings.customAccent = e.target.value; saveSettings(); applySettings(); };
-$("setOrbs").onchange = e => setSetting("orbs", e.target.checked);
-$("setCursor").onchange = e => setSetting("cursor", e.target.checked);
-$("setMotion").onchange = e => setSetting("motion", e.target.checked);
-$("setCompact").onchange = e => setSetting("compact", e.target.checked);
-$("setRefresh").onchange = e => setSetting("refresh", e.target.value);
-$("setLanding").onchange = e => setSetting("landing", e.target.value);
-
-function resetSettings(){
-  localStorage.removeItem(SETTINGS_KEY);
-  settings = Object.assign({}, SETTINGS_DEFAULTS);
-  applySettings();
-  toast("Settings reset to defaults.");
-  location.reload();
-}
-
-function restartAutoRefresh(){
-  if(refreshTimer){ clearInterval(refreshTimer); refreshTimer = null; }
-  if(settings.refresh !== "off"){
-    refreshTimer = setInterval(() => {
-      loadLinks();
-      if(isAdmin) loadAdminData();
-    }, settings.refresh * 1000);
-  }
-}
-
-/* ================= DATA LAYER ================= */
 async function loadLinks(){
-  const {data:approvedData, error:approvedError} = await db.from("links")
-    .select("*, profiles(username)")
-    .eq("status","approved")
-    .order("created_at",{ascending:false});
-
-  if(approvedError){
-    console.error("load approved links:", approvedError);
-    links = [];
-  } else {
-    links = approvedData || [];
-  }
-
-  myPendingLinks = [];
-
-  if(user){
-    const {data:pendingData, error:pendingError} = await db.from("links")
-      .select("*, profiles(username)")
-      .eq("user_id", user.id)
-      .eq("status","pending")
-      .order("created_at",{ascending:false});
-
-    if(pendingError){
-      console.error("load pending links:", pendingError);
-    } else {
-      myPendingLinks = pendingData || [];
-    }
-  }
-
-  renderLinks();
-  renderStats();
-  renderTopLinks();
-  renderRecent();
+ const {data,error}=await db.from("links").select("*").eq("status","approved").order("created_at",{ascending:false});
+ if(error){toast(error.message);return} links=data||[];$("statLinks").textContent=links.length;buildCategories();renderLinks();
 }
-
-function renderLinks(){
-  const q = ($("search").value || "").toLowerCase();
-  const cat = $("category").value;
-
-  // Approved links are public. A signed-in user also sees their own pending
-  // submissions so they can confirm that the submission was received.
-  const visible = [...myPendingLinks, ...links];
-
-  const list = visible.filter(l =>
-    (!q || (l.title||"").toLowerCase().includes(q) ||
-      (l.description||"").toLowerCase().includes(q) ||
-      (l.tags||"").toLowerCase().includes(q) ||
-      (l.category||"").toLowerCase().includes(q)) &&
-    (!cat || l.category === cat)
-  );
-
-  $("linksGrid").innerHTML = list.length
-    ? list.map(linkCard).join("")
-    : emptyState(user && myPendingLinks.length
-        ? "No links match your search."
-        : "No approved links yet. Submit a link to get started.","⌕");
-
-  if(!$("category").dataset.built){
-    const cats = [...new Set(visible.map(l => l.category).filter(Boolean))].sort();
-    cats.forEach(c => $("category").insertAdjacentHTML("beforeend", `<option value="${esc(c)}">${esc(c)}</option>`));
-    $("category").dataset.built = "1";
-  }
+function buildCategories(){const cats=[...new Set(links.map(x=>x.category||"General"))].sort();$("category").innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option>${esc(c)}</option>`).join("")}
+function filteredLinks(){
+ const q=$("search").value.toLowerCase(),cat=$("category").value;
+ return links.filter(x=>(!cat||(x.category||"General")===cat)&&(!q||[x.title,x.url,x.description,x.category,...(x.tags||[])].join(" ").toLowerCase().includes(q)));
 }
-
-function linkCard(l){
-  const fav = favorites.has(l.id);
-  const votes = Array.isArray(l.votes) ? l.votes.length : (l.votes || 0);
-  const v = l.views || 0;
-  const pending = l.status === "pending";
-
-  return `
-  <article class="card">
-    <div class="card-top">
-      <span class="cat">${esc(l.category || "General")}</span>
-      <div style="display:flex;align-items:center;gap:8px">
-        ${pending ? '<span class="pill pending">pending</span>' : ''}
-        <button class="fav ${fav ? "on" : ""}" data-id="${l.id}" title="Toggle favorite">${fav ? "★" : "☆"}</button>
-      </div>
-    </div>
-    <h4><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.title)}</a></h4>
-    <p>${esc(l.description || "No description provided.")}</p>
-    <div class="tags">${(l.tags || "").split(",").filter(Boolean).slice(0,4).map(t => `<span class="tag">#${esc(t.trim())}</span>`).join("") || ""}</div>
-    <div class="card-foot">
-      <span class="views">${pending ? "◷ Awaiting review" : `◉ ${v} view${v === 1 ? "" : "s"}`}</span>
-      <span class="mini">by ${esc((l.profiles && l.profiles.username) || "anonymous")} · ${shortDate(l.created_at)}</span>
-    </div>
-    <div class="card-actions">
-      <button class="btn mini" onclick="window.open('${esc(l.url)}','_blank')">Visit ↗</button>
-      ${pending ? '<span class="btn mini" style="pointer-events:none">Waiting for approval</span>' : `<button class="btn mini ${votes ? "primary" : ""}" data-vote="${l.id}">▲ ${votes}</button>`}
-    </div>
-  </article>`;
+function card(x){
+ const tags=(x.tags||[]).map(t=>`<span class="tag">#${esc(t)}</span>`).join("");
+ const fav=favorites.has(x.id);
+ return `<article class="card"><div style="display:flex;justify-content:space-between"><span class="tag">${esc(x.category||"General")}</span><button class="btn" onclick="toggleFavorite('${x.id}')">${fav?"★":"☆"}</button></div><h3>${esc(x.title)}</h3><p>${esc(x.description||"No description")}</p><div class="cardurl">${esc(x.url)}</div><div>${tags}</div><div class="actions" style="margin-top:13px"><button class="btn primary" onclick="openLink('${x.id}')">Open</button><button class="btn" onclick="vote('${x.id}',1)">▲</button><button class="btn" onclick="vote('${x.id}',-1)">▼</button></div></article>`;
 }
+function renderLinks(){const arr=filteredLinks();$("linksGrid").innerHTML=arr.length?arr.map(card).join(""):'<div class="empty">No approved links match your search.</div>'}
+function renderFavorites(){const arr=links.filter(x=>favorites.has(x.id));$("favoritesGrid").innerHTML=arr.length?arr.map(card).join(""):'<div class="empty">You have no favorites yet.</div>'}
+$("search").oninput=renderLinks;$("category").onchange=renderLinks;
 
-async function voteLink(id){
-  if(!user){ toast("Sign in to vote."); return; }
-  const {data:ex, error:exErr} = await db.from("votes").select("id").eq("link_id", id).eq("user_id", user.id).maybeSingle();
-  if(exErr){ console.error(exErr); return; }
-  if(ex){
-    await db.from("votes").delete().eq("id", ex.id);
-  } else {
-    await db.from("votes").insert({link_id:id, user_id:user.id});
-  }
-  await loadLinks();
-}
-
+async function openLink(id){const x=links.find(a=>a.id===id);if(!x)return;window.open(x.url,"_blank","noopener,noreferrer");await db.from("links").update({views:(x.views||0)+1}).eq("id",id)}
 async function toggleFavorite(id){
-  if(!user){ toast("Sign in to save favorites."); return; }
-  if(favorites.has(id)){
-    await db.from("favorites").delete().eq("link_id", id).eq("user_id", user.id);
-    favorites.delete(id);
-    toast("Removed from favorites.");
-  } else {
-    await db.from("favorites").insert({link_id:id, user_id:user.id});
-    favorites.add(id);
-    toast("Added to favorites.");
-  }
-  renderLinks();
-  if(!$("favoritesPage").classList.contains("hidden")) renderFavorites();
+ if(!user){openAuth();toast("Sign in to favorite links.");return}
+ if(favorites.has(id)){await db.from("favorites").delete().eq("link_id",id).eq("user_id",user.id);favorites.delete(id)}
+ else {const {error}=await db.from("favorites").insert({link_id:id,user_id:user.id});if(error){toast(error.message);return}favorites.add(id)}
+ $("statFav").textContent=favorites.size;renderLinks();renderFavorites();
 }
-
-document.addEventListener("click", e => {
-  const fav = e.target.closest(".fav");
-  if(fav) toggleFavorite(fav.dataset.id);
-  const vote = e.target.closest("[data-vote]");
-  if(vote) voteLink(vote.dataset.id);
-});
-
-async function renderFavorites(){
-  if(!user){ $("favoritesGrid").innerHTML = emptyState("Sign in to see your favorites.","☆"); return; }
-  const {data, error} = await db.from("favorites")
-    .select("id, link_id, links(*)")
-    .eq("user_id", user.id)
-    .order("created_at",{ascending:false});
-  if(error){ console.error(error); return; }
-  favorites = new Set((data || []).map(f => f.link_id));
-  const items = (data || []).map(f => f.links).filter(Boolean);
-  $("favoritesGrid").innerHTML = items.length
-    ? items.map(linkCard).join("")
-    : emptyState("No favorites yet. Tap the ☆ on any link.","☆");
-  renderStats();
+async function vote(id,value){
+ if(!user){openAuth();toast("Sign in to vote.");return}
+ const {data:old}=await db.from("votes").select("id,vote").eq("link_id",id).eq("user_id",user.id).maybeSingle();
+ if(old?.vote===value) await db.from("votes").delete().eq("id",old.id);
+ else if(old) await db.from("votes").update({vote:value}).eq("id",old.id);
+ else await db.from("votes").insert({link_id:id,user_id:user.id,vote:value});
+ toast("Vote saved.");
 }
-
-function renderStats(){
-  $("statLinks").textContent = links.length;
-  $("statFav").textContent = favorites.size;
-
-  if(user){
-    $("statUsers").textContent = "1";
-    $("statNote2").textContent = "Signed in";
-    $("statPending").textContent = myPendingLinks.length;
-    $("statNote4").textContent = myPendingLinks.length
-      ? "Awaiting review"
-      : "No pending submissions";
-  } else {
-    $("statUsers").textContent = "Guest";
-    $("statNote2").textContent = "Guest session";
-    $("statPending").textContent = "0";
-    $("statNote4").textContent = "Sign in to submit";
-  }
-}
-
-function renderTopLinks(){
-  const top = [...links].sort((a,b) => (b.views||0) - (a.views||0)).slice(0,6);
-  const max = Math.max(1, ...top.map(l => l.views||0));
-  $("topLinksBar").innerHTML = top.length
-    ? top.map(l => {
-        const h = Math.round(((l.views||0)/max)*100);
-        return `<div class="bar-row">
-          <span class="bar-name">${esc(l.title)}</span>
-          <div class="bar-track"><div class="bar-fill" style="width:${h}%"></div></div>
-          <span class="bar-val">${l.views||0}</span>
-        </div>`;
-      }).join("")
-    : emptyState("No links yet.","◉");
-}
-
-function renderRecent(){
-  const recent = links.slice(0,5);
-  $("recentLinks").innerHTML = recent.length
-    ? recent.map(l => `
-      <div class="feed-item">
-        <span class="feed-dot"></span>
-        <div class="feed-body">
-          <a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.title)}</a>
-          <small>${esc(l.category||"General")} · by ${esc((l.profiles&&l.profiles.username)||"anonymous")} · ${shortDate(l.created_at)}</small>
-        </div>
-      </div>`).join("")
-    : emptyState("No links yet.","◷");
-}
-
-/* SUBMIT */
-$("linkForm").onsubmit = async e => {
-  e.preventDefault();
-  if(!user){ toast("Sign in to submit a link."); openAuth(); return; }
-  const {error} = await db.from("links").insert({
-    title: $("linkTitle").value.trim(),
-    url: $("linkURL").value.trim(),
-    category: $("linkCategory").value.trim() || "General",
-    tags: $("linkTags").value.trim(),
-    description: $("linkDesc").value.trim(),
-    user_id: user.id,
-    status: "pending",
-    views: 0
-  });
-  if(error){ toast(error.message); return; }
-  toast("Submitted! Your link is now waiting for moderator approval.");
-  e.target.reset();
-  await loadLinks();
-  showPage("vault");
+$("linkForm").onsubmit=async e=>{
+ e.preventDefault();
+ if(!user){openAuth();toast("Sign in before submitting.");return}
+ const title=$("linkTitle").value.trim(),url=$("linkURL").value.trim(),category=$("linkCategory").value.trim()||"General",tags=$("linkTags").value.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean),description=$("linkDesc").value.trim();
+ const {error}=await db.from("links").insert({user_id:user.id,title,url,category,tags,description,status:"pending"});
+ if(error){toast(error.message);return}
+ e.target.reset();toast("Submitted! Your link is pending moderation.");showPage("home");
 };
 
-$("search").addEventListener("input", renderLinks);
-$("category").addEventListener("change", renderLinks);
-
-/* ================= ADMIN ================= */
-async function loadAdminData(){
-  if(!isAdmin) return;
-  const {data, error} = await db.from("links").select("*, profiles(username)").order("created_at",{ascending:false});
-  if(error){ console.error(error); return; }
-  allAdminLinks = data || [];
-  renderAdminQueue();
-  renderAdminStats();
-}
-
-function renderAdminStats(){
-  const counts = allAdminLinks.reduce((a, l) => {
-    a[l.status] = (a[l.status] || 0) + 1;
-    return a;
-  }, {});
-
-  $("adminPending").textContent = counts.pending || 0;
-  $("adminApproved").textContent = counts.approved || 0;
-  $("adminRejected").textContent = counts.rejected || 0;
-
-  $("adminUsers").textContent = isAdmin ? "✓" : "0";
-}
-
-function renderAdminQueue(){
-  const q = ($("adminSearch").value||"").toLowerCase();
-  const st = $("adminStatus").value;
-  const list = allAdminLinks.filter(l =>
-    (st === "all" || l.status === st) &&
-    (!q || (l.title||"").toLowerCase().includes(q) || (l.url||"").toLowerCase().includes(q)));
-  $("adminQueue").innerHTML = list.length
-    ? list.map(l => `
-      <div class="q-item">
-        <div class="q-avatar">${esc((l.profiles&&l.profiles.username)||"A")[0].toUpperCase()}</div>
-        <div class="q-main">
-          <strong>${esc(l.title)}</strong>
-          <small>${esc(l.url)}</small>
-          <small class="mini">by ${esc((l.profiles&&l.profiles.username)||"anonymous")} · ${shortDate(l.created_at)}</small>
-        </div>
-        <span class="pill ${l.status}">${esc(l.status)}</span>
-        <div class="actions">
-          ${l.status !== "approved" ? `<button class="btn mini primary" onclick="adminAction('${l.id}','approved')">Approve</button>` : ""}
-          ${l.status !== "rejected" ? `<button class="btn mini danger" onclick="adminAction('${l.id}','rejected')">Reject</button>` : ""}
-          <button class="btn mini" onclick="adminAction('${l.id}','delete')">Delete</button>
-        </div>
-      </div>`).join("")
-    : emptyState("No submissions match.","·");
-}
-
-async function adminAction(id, action){
-  if(action === "delete"){
-    if(!confirm("Delete this link permanently?")) return;
-    const {error} = await db.from("links").delete().eq("id", id);
-    if(error){ toast(error.message); return; }
-    toast("Link deleted.");
-  } else {
-    const {error} = await db.from("links").update({status: action}).eq("id", id);
-    if(error){ toast(error.message); return; }
-    toast(action === "approved" ? "Link approved." : "Link rejected.");
-  }
-  await loadAdminData();
-  await loadLinks();
-}
-
-$("adminSearch").addEventListener("input", renderAdminQueue);
-$("adminStatus").addEventListener("change", renderAdminQueue);
-
-async function loadAdminNotifications(){
-  $("adminNotifications").innerHTML = emptyState(
-    "Admin notifications are not configured yet.",
-    "·"
-  );
-}
-
-/* ================= TOOLBOX ================= */
-function runB64(mode){
-  const v = $("b64In").value;
-  try{
-    $("b64Out").value = mode === "enc"
-      ? btoa(unescape(encodeURIComponent(v)))
-      : decodeURIComponent(escape(atob(v.trim())));
-  }catch(e){ toast("Invalid input for " + mode + "ode."); }
-}
-function runUrl(mode){
-  const v = $("urlIn").value;
-  $("urlOut").value = mode === "enc" ? encodeURIComponent(v) : decodeURIComponent(v);
-}
-function runJson(){
-  try{
-    $("jsonOut").value = JSON.stringify(JSON.parse($("jsonIn").value), null, 2);
-    toast("JSON formatted.");
-  }catch(e){ toast("Invalid JSON."); }
-}
-async function runHash(){
-  const v = $("hashIn").value;
-  if(!v){ toast("Enter text to hash."); return; }
-  const buf = await crypto.subtle.digest($("hashSel").value, new TextEncoder().encode(v));
-  $("hashOut").value = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
-}
-function genUuid(){
-  $("uuidOut").value = crypto.randomUUID ? crypto.randomUUID()
-    : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
-        const r = crypto.getRandomValues(new Uint8Array(1))[0] & 15;
-        const v = c === "x" ? r : (r & 3 | 8);
-        return v.toString(16);
-      });
-}
-function genPass(){
-  const len = +$("passLen").value;
-  const sym = $("passSym").checked;
-  const sets = ["ABCDEFGHJKLMNPQRSTUVWXYZ","abcdefghijkmnopqrstuvwxyz","0123456789", sym ? "!@#$%^&*()-_=+[]{}" : ""].filter(Boolean);
-  const all = sets.join("");
-  const arr = new Uint32Array(len);
-  crypto.getRandomValues(arr);
-  let out = "";
-  for(let i=0;i<len;i++) out += all[arr[i] % all.length];
-  sets.forEach((s,i) => { out = out.slice(0, out.length - 1 - i) + s[arr[out.length-1-i] % s.length]; });
-  $("passOut").value = out;
-}
-function countText(){
-  const v = $("countIn").value;
-  $("countChars").textContent = v.length;
-  $("countWords").textContent = v.trim() ? v.trim().split(/\s+/).length : 0;
-  $("countLines").textContent = v ? v.split("\n").length : 0;
-  $("countBytes").textContent = new Blob([v]).size;
-}
-function tsConvert(){
-  const raw = $("tsIn").value.trim();
-  if(!raw){ toast("Enter a timestamp."); return; }
-  const n = +raw;
-  const ms = raw.length > 11 ? n : n * 1000;
-  $("tsOut").value = isNaN(ms) ? "Invalid timestamp." : new Date(ms).toLocaleString();
-}
-function tsNow(){ $("tsIn").value = Math.floor(Date.now()/1000); tsConvert(); }
-function colConvert(){
-  const v = $("colIn").value.trim();
-  const hex = /^#([a-f\d]{3}|[a-f\d]{6})$/i;
-  const rgb = /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/i;
-  let out = "";
-  if(hex.test(v)){
-    let h = v.slice(1);
-    if(h.length === 3) h = h.split("").map(c => c+c).join("");
-    const n = parseInt(h,16);
-    out = `rgb(${(n>>16)&255}, ${(n>>8)&255}, ${n&255})`;
-  } else if(rgb.test(v)){
-    const m = rgb.exec(v);
-    out = "#" + [m[1],m[2],m[3]].map(x => (+x).toString(16).padStart(2,"0")).join("");
-  } else {
-    toast("Enter #hex or rgb(r,g,b).");
-    return;
-  }
-  $("colOut").value = out;
-  $("colSwatch").style.background = v;
-}
-function caseConvert(){
-  const v = $("caseIn").value;
-  const t = $("caseSel").value;
-  let out = v;
-  if(t === "upper") out = v.toUpperCase();
-  else if(t === "lower") out = v.toLowerCase();
-  else if(t === "title") out = v.replace(/\w\S*/g, w => w[0].toUpperCase() + w.slice(1).toLowerCase());
-  else if(t === "sentence") out = v.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, c => c.toUpperCase());
-  else if(t === "snake") out = v.trim().toLowerCase().replace(/[^a-z0-9]+/g,"_");
-  else if(t === "kebab") out = v.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-");
-  else if(t === "camel") out = v.trim().toLowerCase().replace(/[^a-z0-9]+(\w)/g, (_,c) => c.toUpperCase());
-  $("caseOut").value = out;
-}
-
-/* ================= PROXY ================= */
-function loadProxy(){
-  const url = $("proxyUrl").value.trim();
-  if(!/^https?:\/\//i.test(url)){ toast("Enter a full URL (https://...)."); return; }
-  $("proxyFrame").src = url;
-  try{ $("proxyHost").textContent = new URL(url).host; }catch(e){}
-  toast("Loading " + url);
-}
-function openProxyNewTab(){
-  const url = $("proxyUrl").value.trim();
-  if(url) window.open(url, "_blank", "noopener");
-}
-function resetProxy(){
-  const def = "https://truf.remiosenifoundation.org/";
-  $("proxyUrl").value = def;
-  $("proxyFrame").src = def;
-  $("proxyHost").textContent = "truf.remiosenifoundation.org";
-  toast("Proxy reset.");
-}
-$("proxyUrl").addEventListener("keydown", e => { if(e.key === "Enter") loadProxy(); });
-
-/* ================= CURSOR ================= */
-const curDot = document.querySelector(".cursor");
-const curRing = document.querySelector(".cursor-ring");
-let mx=0, my=0, rx=0, ry=0;
-
-document.addEventListener("mousemove", e => {
-  mx = e.clientX; my = e.clientY;
-  curDot.style.transform = `translate(${mx-4.5}px, ${my-4.5}px)`;
+document.querySelectorAll("[data-bg]").forEach(b=>b.onclick=()=>{
+ const v=b.dataset.bg;localStorage.setItem("vexo-bg",v);
+ $("grid").style.display=v==="plain"?"none":"block";
+ document.querySelectorAll(".orb").forEach(o=>o.style.display=v==="plain"?"none":"block");
+ if(v==="stars"){$("scene").style.background="radial-gradient(circle at 20% 20%,rgba(124,92,255,.2),transparent 25%),radial-gradient(circle at 80% 60%,rgba(25,211,255,.14),transparent 25%),#03040a";$("grid").style.opacity=".18"}
+ else if(v==="grid"){$("scene").style.background="radial-gradient(circle at 50% 20%,rgba(124,92,255,.15),transparent 35%),linear-gradient(120deg,#050711,#0a0d1c 55%,#070914)";$("grid").style.opacity="1"}
+ else {$("scene").style.background="#070914"}
 });
-(function cursorLoop(){
-  rx += (mx - rx) * 0.09;
-  ry += (my - ry) * 0.09;
-  curRing.style.transform = `translate(${rx-18}px, ${ry-18}px)`;
-  requestAnimationFrame(cursorLoop);
-})();
+const saved=localStorage.getItem("vexo-bg")||"grid";document.querySelector(`[data-bg="${saved}"]`)?.click();
 
-/* ================= INIT ================= */
-window.addEventListener("load", async () => {
-  applySettings();
-  await loadSession();
-  await loadLinks();
-  if(user){
-    const {data} = await db.from("favorites").select("link_id").eq("user_id", user.id);
-    favorites = new Set((data||[]).map(f => f.link_id));
-    renderStats();
-  }
-  const valid = ["home","vault","favorites","submit","settings","tools","proxy","admin"];
-  showPage(valid.includes(settings.landing) ? settings.landing : "home");
-  restartAutoRefresh();
-});
+let mx=0,my=0,cx=0,cy=0;document.addEventListener("mousemove",e=>{mx=e.clientX;my=e.clientY});function cursorLoop(){cx+=(mx-cx)*.18;cy+=(my-cy)*.18;document.querySelector(".cursor").style.left=cx+"px";document.querySelector(".cursor").style.top=cy+"px";document.querySelector(".cursor-dot").style.left=mx+"px";document.querySelector(".cursor-dot").style.top=my+"px";requestAnimationFrame(cursorLoop)}cursorLoop();
+document.addEventListener("mouseover",e=>{if(e.target.closest("button,a,input,textarea,select"))document.querySelector(".cursor").style.transform="translate(-50%,-50%) scale(1.35)";else document.querySelector(".cursor").style.transform="translate(-50%,-50%) scale(1)"});
+
+db.auth.onAuthStateChange((_event,_session)=>setTimeout(loadSession,0));
+loadSession();
 </script>
 </body>
 </html>
