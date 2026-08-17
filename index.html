@@ -1347,4 +1347,369 @@ db.auth.onAuthStateChange(() => setTimeout(loadSession, 0));
 
 /* START */
 loadSession();
+  /* ═══ VEXO SETTINGS ENGINE — APPENDED ═══ */
+
+(() => {
+  const SETTINGS_KEY = "vexo-settings";
+
+  const defaults = {
+    bg: "grid",
+    accent: "#7c5cff",
+    accent2: "#19d3ff",
+    pink: "#ff3f9d",
+    compact: false,
+    motion: true,
+    cursor: true,
+    status: true,
+    landing: "home"
+  };
+
+  const accents = [
+    {name:"Violet",  accent:"#7c5cff", accent2:"#19d3ff", pink:"#ff3f9d"},
+    {name:"Blue",    accent:"#3b82f6", accent2:"#22d3ee", pink:"#818cf8"},
+    {name:"Cyan",    accent:"#06b6d4", accent2:"#67e8f9", pink:"#22d3ee"},
+    {name:"Green",   accent:"#22c55e", accent2:"#34d399", pink:"#84cc16"},
+    {name:"Red",     accent:"#ef4444", accent2:"#fb7185", pink:"#f43f5e"},
+    {name:"Orange",  accent:"#f97316", accent2:"#fb923c", pink:"#f59e0b"},
+    {name:"Pink",    accent:"#ec4899", accent2:"#f472b6", pink:"#e879f9"},
+    {name:"White",   accent:"#e5e7eb", accent2:"#94a3b8", pink:"#cbd5e1"}
+  ];
+
+  let settings = {...defaults};
+
+  function loadSettings(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY));
+      if(saved && typeof saved === "object"){
+        settings = {...defaults, ...saved};
+      }
+    }catch(e){
+      settings = {...defaults};
+    }
+  }
+
+  function saveSettings(){
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  }
+
+  function applyAccent(){
+    document.documentElement.style.setProperty("--accent", settings.accent);
+    document.documentElement.style.setProperty("--accent2", settings.accent2);
+    document.documentElement.style.setProperty("--pink", settings.pink);
+
+    document.documentElement.style.setProperty(
+      "--grad",
+      `linear-gradient(135deg,${settings.accent},#4c8dff 55%,${settings.accent2})`
+    );
+
+    document.querySelectorAll(".swatch-btn").forEach(btn => {
+      btn.classList.toggle(
+        "active",
+        btn.dataset.accent === settings.accent
+      );
+    });
+  }
+
+  function applyBackground(){
+    const value = settings.bg;
+
+    const grid = $("grid");
+    const scene = $("scene");
+    const orbs = document.querySelectorAll(".orb");
+
+    if(!grid || !scene) return;
+
+    grid.style.display = value === "plain" ? "none" : "block";
+
+    orbs.forEach(o => {
+      o.style.display = value === "plain" ? "none" : "block";
+    });
+
+    if(value === "stars"){
+      scene.style.background =
+        "radial-gradient(circle at 20% 20%,rgba(124,92,255,.2),transparent 25%)," +
+        "radial-gradient(circle at 80% 60%,rgba(25,211,255,.14),transparent 25%),#03040a";
+
+      grid.style.opacity = ".18";
+
+    }else if(value === "grid"){
+      scene.style.background =
+        "radial-gradient(circle at 50% 20%,rgba(124,92,255,.15),transparent 35%)," +
+        "linear-gradient(120deg,#050711,#0a0d1c 55%,#070914)";
+
+      grid.style.opacity = "1";
+
+    }else{
+      scene.style.background = "#070914";
+      grid.style.opacity = "0";
+    }
+
+    document.querySelectorAll("[data-bg]").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.bg === value);
+    });
+  }
+
+  function applyCompact(){
+    document.body.classList.toggle("compact", settings.compact);
+
+    const el = $("setCompact");
+    if(el) el.checked = settings.compact;
+  }
+
+  function applyMotion(){
+    document.body.classList.toggle("no-motion", !settings.motion);
+
+    const el = $("setMotion");
+    if(el) el.checked = settings.motion;
+  }
+
+  function applyCursor(){
+    document.body.classList.toggle("no-cursor", !settings.cursor);
+
+    const el = $("setCursor");
+    if(el) el.checked = settings.cursor;
+  }
+
+  function applyStatus(){
+    document.querySelectorAll(".status").forEach(el => {
+      el.style.display = settings.status ? "" : "none";
+    });
+
+    const el = $("setStatus");
+    if(el) el.checked = settings.status;
+  }
+
+  function applyLanding(){
+    const el = $("setLanding");
+    if(el) el.value = settings.landing;
+  }
+
+  function applyAll(){
+    applyAccent();
+    applyBackground();
+    applyCompact();
+    applyMotion();
+    applyCursor();
+    applyStatus();
+    applyLanding();
+  }
+
+  /* ACCENT SWATCHES */
+
+  function buildSwatches(){
+    const container = $("accentSwatches");
+    if(!container) return;
+
+    container.innerHTML = "";
+
+    accents.forEach(color => {
+      const btn = document.createElement("button");
+
+      btn.type = "button";
+      btn.className = "swatch-btn";
+      btn.title = color.name;
+
+      btn.dataset.accent = color.accent;
+
+      btn.style.background =
+        `linear-gradient(135deg,${color.accent},${color.accent2})`;
+
+      btn.onclick = () => {
+        settings.accent = color.accent;
+        settings.accent2 = color.accent2;
+        settings.pink = color.pink;
+
+        saveSettings();
+        applyAccent();
+
+        toast(`${color.name} accent selected`);
+      };
+
+      container.appendChild(btn);
+    });
+
+    applyAccent();
+  }
+
+  /* BACKGROUND */
+
+  document.querySelectorAll("[data-bg]").forEach(btn => {
+    btn.onclick = () => {
+      settings.bg = btn.dataset.bg;
+
+      saveSettings();
+      applyBackground();
+
+      toast(
+        settings.bg === "grid"
+          ? "Neon Grid enabled"
+          : settings.bg === "plain"
+          ? "Clean background enabled"
+          : "Deep Space enabled"
+      );
+    };
+  });
+
+  /* COMPACT */
+
+  $("setCompact")?.addEventListener("change", e => {
+    settings.compact = e.target.checked;
+
+    saveSettings();
+    applyCompact();
+
+    toast(
+      settings.compact
+        ? "Compact mode enabled"
+        : "Compact mode disabled"
+    );
+  });
+
+  /* MOTION */
+
+  $("setMotion")?.addEventListener("change", e => {
+    settings.motion = e.target.checked;
+
+    saveSettings();
+    applyMotion();
+
+    toast(
+      settings.motion
+        ? "Animations enabled"
+        : "Animations disabled"
+    );
+  });
+
+  /* CURSOR */
+
+  $("setCursor")?.addEventListener("change", e => {
+    settings.cursor = e.target.checked;
+
+    saveSettings();
+    applyCursor();
+
+    toast(
+      settings.cursor
+        ? "Custom cursor enabled"
+        : "Custom cursor disabled"
+    );
+  });
+
+  /* STATUS */
+
+  $("setStatus")?.addEventListener("change", e => {
+    settings.status = e.target.checked;
+
+    saveSettings();
+    applyStatus();
+
+    toast(
+      settings.status
+        ? "Status indicator enabled"
+        : "Status indicator disabled"
+    );
+  });
+
+  /* LANDING PAGE */
+
+  $("setLanding")?.addEventListener("change", e => {
+    settings.landing = e.target.value;
+
+    saveSettings();
+
+    toast("Landing page saved");
+  });
+
+  /* EXPORT */
+
+  $("exportSettings")?.addEventListener("click", () => {
+    const data = JSON.stringify(settings, null, 2);
+
+    const blob = new Blob([data], {
+      type: "application/json"
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "vexo-settings.json";
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(url);
+
+    toast("Settings exported");
+  });
+
+  /* IMPORT */
+
+  $("importSettings")?.addEventListener("click", () => {
+    $("importFile")?.click();
+  });
+
+  $("importFile")?.addEventListener("change", async e => {
+    const file = e.target.files?.[0];
+
+    if(!file) return;
+
+    try{
+      const text = await file.text();
+      const imported = JSON.parse(text);
+
+      if(!imported || typeof imported !== "object"){
+        throw new Error("Invalid settings file");
+      }
+
+      settings = {
+        ...defaults,
+        ...imported
+      };
+
+      saveSettings();
+      applyAll();
+
+      toast("Settings imported");
+
+    }catch(err){
+      console.error(err);
+      toast("Invalid settings file");
+    }
+
+    e.target.value = "";
+  });
+
+  /* RESET */
+
+  $("resetSettings")?.addEventListener("click", () => {
+    if(!confirm("Reset all VEXO settings?")) return;
+
+    settings = {...defaults};
+
+    saveSettings();
+    applyAll();
+
+    toast("Settings reset");
+  });
+
+  /* START */
+
+  loadSettings();
+  buildSwatches();
+  applyAll();
+
+  /* OPEN SAVED LANDING PAGE */
+
+  setTimeout(() => {
+    if(
+      settings.landing &&
+      document.getElementById(settings.landing + "Page")
+    ){
+      showPage(settings.landing);
+    }
+  }, 50);
+
+})();
 </script>
