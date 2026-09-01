@@ -322,7 +322,6 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 <div class="nav-label">Tools</div>
 <button data-page="tools"><span class="ic">▦</span><span class="lbl">Toolbox</span></button>
 <button data-page="proxy"><span class="ic">⇄</span><span class="lbl">Web Proxy</span></button>
-<button data-page="filesharing"><span class="ic">⇄</span><span class="lbl">File Sharing</span></button>
 
 <div id="adminNav" class="admin-nav">
 <button class="admin-button" data-page="admin"><span class="ic">◆</span><span class="lbl">Admin Center</span></button>
@@ -616,22 +615,7 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 </div>
 </section>
 
-  <!-- PROXY -->
-<section id="proxyPage" class="page hidden">
-<div class="panel">
-<div class="panel-head"><div><h3>Web Proxy</h3><div class="muted-sm">Browse <b style="color:var(--accent2)" id="proxyHost">https://vexo-sirramenboi.github.io/Vexo-File-Sharing/</b> right inside VEXO.</div></div></div>
-<div class="toolbar">
-<input class="input search" id="proxyUrl" value="https://vexo-sirramenboi.github.io/Vexo-File-Sharing/">
-<button class="btn primary" onclick="loadProxy()">↻ Load</button>
-<button class="btn" onclick="openProxyNewTab()">Open ↗</button>
-<button class="btn" onclick="resetProxy()" title="Reset to default">⌂</button>
-</div>
-<div class="proxy-wrap">
-<iframe id="proxyFrame" src="https://vexo-sirramenboi.github.io/Vexo-File-Sharing/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads" loading="lazy"></iframe>
-</div>
-<p class="muted-sm note">Note: if the page looks blank, the target may send <code>X-Frame-Options</code> or CSP <code>frame-ancestors</code> headers that block embedding — use <b>Open ↗</b> in that case.</p>
-</div>
-</section>
+
 
 <!-- ADMIN -->
 <section id="adminPage" class="page hidden">
@@ -1728,6 +1712,201 @@ loadSession();
       showPage(settings.landing);
     }
   }, 50);
+
+})();
+
+<style>
+  /* File Sharing sidebar button */
+  #vexoFileSharingNav {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 13.5px;
+    font-weight: 600;
+    text-align: left;
+    transition: .2s;
+    cursor: pointer;
+  }
+
+  #vexoFileSharingNav:hover {
+    color: #fff;
+    background: rgba(255,255,255,.04);
+  }
+
+  #vexoFileSharingNav.active {
+    color: #fff;
+    background: linear-gradient(
+      90deg,
+      rgba(124,92,255,.2),
+      rgba(25,211,255,.06)
+    );
+    border-color: rgba(124,92,255,.22);
+  }
+
+  #vexoFileSharingNav .ic {
+    width: 22px;
+    text-align: center;
+    font-size: 15px;
+    flex:none;
+  }
+
+  /* Full-page File Sharing view */
+  #vexoFileSharingPage {
+    position: fixed;
+    left: 264px;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    background: #070914;
+    display: none;
+    overflow: hidden;
+  }
+
+  #vexoFileSharingPage.show {
+    display: block;
+  }
+
+  #vexoFileSharingFrame {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+
+  /* Keep VEXO sidebar above the full-page iframe */
+  .side {
+    z-index: 20 !important;
+  }
+
+  /* Smaller sidebar layout */
+  @media(max-width:920px) {
+    #vexoFileSharingPage {
+      left: 78px;
+    }
+  }
+
+  @media(max-width:560px) {
+    #vexoFileSharingPage {
+      left: 78px;
+    }
+  }
+</style>
+
+<script>
+(() => {
+  /* ============================================================
+     CREATE FILE SHARING SIDEBAR BUTTON
+     ============================================================ */
+
+  const nav = document.querySelector(".nav");
+  const proxyButton = document.querySelector('.nav button[data-page="proxy"]');
+
+  if (nav && proxyButton && !document.getElementById("vexoFileSharingNav")) {
+
+    const fileButton = document.createElement("button");
+
+    fileButton.id = "vexoFileSharingNav";
+    fileButton.type = "button";
+    fileButton.innerHTML = `
+      <span class="ic">▣</span>
+      <span class="lbl">File Sharing</span>
+    `;
+
+    /*
+      Put File Sharing directly underneath Web Proxy.
+    */
+    proxyButton.insertAdjacentElement("afterend", fileButton);
+
+    /* ==========================================================
+       CREATE FULL-SCREEN FILE SHARING PAGE
+       ========================================================== */
+
+    const filePage = document.createElement("div");
+
+    filePage.id = "vexoFileSharingPage";
+
+    filePage.innerHTML = `
+      <iframe
+        id="vexoFileSharingFrame"
+        src="https://vexo-sirramenboi.github.io/Vexo-File-Sharing/"
+        title="VEXO File Sharing"
+        allow="fullscreen"
+        allowfullscreen>
+      </iframe>
+    `;
+
+    document.body.appendChild(filePage);
+
+    /* ==========================================================
+       OPEN FILE SHARING
+       ========================================================== */
+
+    fileButton.addEventListener("click", () => {
+
+      /*
+        Hide all normal VEXO pages.
+        This does NOT delete or modify them.
+      */
+      document.querySelectorAll(".page").forEach(page => {
+        page.classList.add("hidden");
+      });
+
+      /*
+        Show File Sharing.
+      */
+      filePage.classList.add("show");
+
+      /*
+        Active sidebar state.
+      */
+      document.querySelectorAll(".nav button").forEach(button => {
+        button.classList.remove("active");
+      });
+
+      fileButton.classList.add("active");
+
+      /*
+        Update VEXO header information.
+      */
+      const title = document.getElementById("pageTitle");
+      const sub = document.getElementById("pageSub");
+      const crumb = document.getElementById("crumbPage");
+
+      if (title) title.textContent = "File Sharing";
+      if (sub) sub.textContent = "VEXO File Sharing";
+      if (crumb) crumb.textContent = "File Sharing";
+    });
+
+    /* ==========================================================
+       WHEN NORMAL VEXO NAVIGATION IS USED AGAIN
+       HIDE FILE SHARING AND RESTORE NORMAL UI
+       ========================================================== */
+
+    document.querySelectorAll(".nav button").forEach(button => {
+
+      if (button === fileButton) return;
+
+      button.addEventListener("click", () => {
+
+        filePage.classList.remove("show");
+        fileButton.classList.remove("active");
+
+      });
+
+    });
+
+  }
 
 })();
 </script>
