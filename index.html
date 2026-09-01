@@ -322,7 +322,11 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 <div class="nav-label">Tools</div>
 <button data-page="tools"><span class="ic">▦</span><span class="lbl">Toolbox</span></button>
 <button data-page="proxy"><span class="ic">⇄</span><span class="lbl">Web Proxy</span></button>
-
+<button type="button" id="fileSharingTab">
+    <span class="ic">▣</span>
+    <span class="lbl">File Sharing</span>
+</button>
+  
 <div id="adminNav" class="admin-nav">
 <button class="admin-button" data-page="admin"><span class="ic">◆</span><span class="lbl">Admin Center</span></button>
 </div>
@@ -351,7 +355,63 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 <span class="status">SUPABASE ONLINE</span>
 </div>
 </div>
+<!-- VEXO FILE SHARING -->
+<section id="filesPage" class="page hidden">
 
+    <div class="panel">
+
+        <div class="panel-head">
+
+            <div>
+                <h3>VEXO File Sharing</h3>
+
+                <div class="muted-sm">
+                    Upload and share files with VEXO File Sharing.
+                </div>
+            </div>
+
+            <div class="actions">
+
+                <button
+                    class="btn"
+                    type="button"
+                    onclick="reloadVexoFiles()">
+                    ↻ Reload
+                </button>
+
+                <button
+                    class="btn primary"
+                    type="button"
+                    onclick="openVexoFiles()">
+                    Open ↗
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="proxy-wrap">
+
+            <iframe
+                id="vexoFilesFrame"
+                src="https://vexo-sirramenboi.github.io/Vexo-File-Sharing/"
+                title="VEXO File Sharing"
+                style="
+                    width:100%;
+                    height:72vh;
+                    min-height:500px;
+                    border:0;
+                    display:block;
+                "
+                allow="clipboard-read; clipboard-write; fullscreen"
+                loading="eager">
+            </iframe>
+
+        </div>
+
+    </div>
+
+</section>
 <!-- HOME -->
 <section id="homePage" class="page">
 <div class="panel hero">
@@ -1714,6 +1774,89 @@ loadSession();
   }, 50);
 
 })();
+/* =========================================================
+   VEXO FILE SHARING TAB
+   Added separately — existing VEXO code stays unchanged
+   ========================================================= */
+
+function openVexoFilesPage(){
+
+    const pages = document.querySelectorAll(".page");
+
+    pages.forEach(page => {
+        page.classList.add("hidden");
+    });
+
+    const filesPage = document.getElementById("filesPage");
+
+    if(filesPage){
+        filesPage.classList.remove("hidden");
+    }
+
+    document.querySelectorAll(".nav button").forEach(button => {
+        button.classList.remove("active");
+    });
+
+    const tab = document.getElementById("fileSharingTab");
+
+    if(tab){
+        tab.classList.add("active");
+    }
+
+    const title = document.getElementById("pageTitle");
+    const sub = document.getElementById("pageSub");
+    const crumb = document.getElementById("crumbPage");
+
+    if(title){
+        title.textContent = "File Sharing";
+    }
+
+    if(sub){
+        sub.textContent = "VEXO File Sharing service.";
+    }
+
+    if(crumb){
+        crumb.textContent = "File Sharing";
+    }
+}
 
 
+function reloadVexoFiles(){
+
+    const frame =
+        document.getElementById("vexoFilesFrame");
+
+    if(!frame) return;
+
+    const url = frame.src;
+
+    frame.src = "about:blank";
+
+    setTimeout(() => {
+
+        frame.src = url;
+
+    }, 50);
+
+}
+
+
+function openVexoFiles(){
+
+    window.open(
+        "https://vexo-sirramenboi.github.io/Vexo-File-Sharing/",
+        "_blank",
+        "noopener,noreferrer"
+    );
+
+}
+
+
+document
+    .getElementById("fileSharingTab")
+    ?.addEventListener(
+        "click",
+        openVexoFilesPage
+    );
+</script>
 </script>
