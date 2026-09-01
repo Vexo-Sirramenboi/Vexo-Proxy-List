@@ -322,6 +322,7 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 <div class="nav-label">Tools</div>
 <button data-page="tools"><span class="ic">▦</span><span class="lbl">Toolbox</span></button>
 <button data-page="proxy"><span class="ic">⇄</span><span class="lbl">Web Proxy</span></button>
+<button data-page="filesharing"><span class="ic">⇄</span><span class="lbl">File Sharing</span></button>
 
 <div id="adminNav" class="admin-nav">
 <button class="admin-button" data-page="admin"><span class="ic">◆</span><span class="lbl">Admin Center</span></button>
@@ -604,6 +605,23 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 <div class="panel-head"><div><h3>Web Proxy</h3><div class="muted-sm">Browse <b style="color:var(--accent2)" id="proxyHost">truf.remiosenifoundation.org</b> right inside VEXO.</div></div></div>
 <div class="toolbar">
 <input class="input search" id="proxyUrl" value="https://truf.remiosenifoundation.org/">
+<button class="btn primary" onclick="loadProxy()">↻ Load</button>
+<button class="btn" onclick="openProxyNewTab()">Open ↗</button>
+<button class="btn" onclick="resetProxy()" title="Reset to default">⌂</button>
+</div>
+<div class="proxy-wrap">
+<iframe id="proxyFrame" src="https://truf.remiosenifoundation.org/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads" loading="lazy"></iframe>
+</div>
+<p class="muted-sm note">Note: if the page looks blank, the target may send <code>X-Frame-Options</code> or CSP <code>frame-ancestors</code> headers that block embedding — use <b>Open ↗</b> in that case.</p>
+</div>
+</section>
+
+  <!-- PROXY -->
+<section id="proxyPage" class="page hidden">
+<div class="panel">
+<div class="panel-head"><div><h3>Web Proxy</h3><div class="muted-sm">Browse <b style="color:var(--accent2)" id="proxyHost">https://vexo-sirramenboi.github.io/Vexo-File-Sharing/</b> right inside VEXO.</div></div></div>
+<div class="toolbar">
+<input class="input search" id="proxyUrl" value="https://vexo-sirramenboi.github.io/Vexo-File-Sharing/">
 <button class="btn primary" onclick="loadProxy()">↻ Load</button>
 <button class="btn" onclick="openProxyNewTab()">Open ↗</button>
 <button class="btn" onclick="resetProxy()" title="Reset to default">⌂</button>
