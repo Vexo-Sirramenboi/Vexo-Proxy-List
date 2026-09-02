@@ -1,8 +1,891 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07090e">
+<meta name="description" content="Vexo Share — simple temporary file sharing.">
+<title>Vexo Share</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --bg:#06080c;
+  --panel:rgba(14,18,27,.72);
+  --panel2:rgba(20,25,37,.8);
+  --line:rgba(255,255,255,.09);
+  --text:#f5f7fb;
+  --muted:#929bad;
+  --accent:#7c9cff;
+  --accent2:#a07cff;
+  --good:#61d69a;
+  --bad:#ff6b7d;
+  --shadow:0 30px 90px rgba(0,0,0,.38)
+}
+
+*{
+  box-sizing:border-box
+}
+
+html,body{
+  margin:0;
+  min-height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif
+}
+
+body{
+  overflow-x:hidden
+}
+
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:34px 34px;
+  mask-image:linear-gradient(to bottom,black,transparent 90%);
+  animation:gridMove 18s linear infinite
+}
+
+@keyframes gridMove{
+  to{
+    background-position:34px 34px
+  }
+}
+
+body:after{
+  content:"";
+  position:fixed;
+  inset:-20%;
+  pointer-events:none;
+  background:
+    radial-gradient(
+      circle at var(--mx,50%) var(--my,20%),
+      rgba(124,156,255,.12),
+      transparent 24%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(160,124,255,.08),
+      transparent 28%
+    );
+  filter:blur(20px)
+}
+
+.page{
+  position:relative;
+  z-index:1;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:32px 18px
+}
+
+.shell{
+  width:min(980px,100%)
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:22px
+}
+
+.brand{
+  display:flex;
+  gap:12px;
+  align-items:center
+}
+
+.mark{
+  width:42px;
+  height:42px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow:0 12px 40px rgba(124,156,255,.2);
+  font-weight:900
+}
+
+.brand b{
+  font-size:18px;
+  letter-spacing:.2px
+}
+
+.brand span{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  margin-top:2px
+}
+
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(18px);
+  border-radius:24px;
+  padding:28px
+}
+
+.hero{
+  text-align:center;
+  padding:14px 18px 28px
+}
+
+.hero h1{
+  font-size:clamp(34px,6vw,58px);
+  margin:0;
+  letter-spacing:-2px
+}
+
+.hero p{
+  color:var(--muted);
+  margin:10px 0 0;
+  font-size:15px
+}
+
+.drop{
+  margin-top:4px;
+  border:1px dashed rgba(124,156,255,.5);
+  border-radius:18px;
+  min-height:260px;
+  display:grid;
+  place-items:center;
+  padding:26px;
+  transition:.2s;
+  background:rgba(124,156,255,.03)
+}
+
+.drop.drag{
+  transform:scale(1.01);
+  background:rgba(124,156,255,.09);
+  border-color:var(--accent)
+}
+
+.drop-inner{
+  text-align:center
+}
+
+.drop-icon{
+  width:58px;
+  height:58px;
+  border-radius:17px;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  display:grid;
+  place-items:center;
+  margin:0 auto 14px;
+  font-weight:800;
+  color:var(--accent)
+}
+
+.drop h2{
+  margin:0;
+  font-size:20px
+}
+
+.drop p{
+  color:var(--muted);
+  font-size:13px;
+  margin:8px 0 18px
+}
+
+.btn{
+  border:1px solid var(--line);
+  background:var(--panel2);
+  color:var(--text);
+  padding:11px 15px;
+  border-radius:10px;
+  font-weight:650;
+  transition:.18s;
+  cursor:pointer
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+  border-color:rgba(124,156,255,.5)
+}
+
+.btn.primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-color:transparent;
+  color:#080a10
+}
+
+.btn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  transform:none
+}
+
+.hidden{
+  display:none!important
+}
+
+.files{
+  display:grid;
+  gap:9px;
+  margin-top:15px
+}
+
+.file{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border:1px solid var(--line);
+  background:rgba(7,10,15,.55);
+  padding:12px;
+  border-radius:12px
+}
+
+.file-icon{
+  width:40px;
+  height:40px;
+  border-radius:10px;
+  background:#121722;
+  display:grid;
+  place-items:center;
+  color:var(--accent);
+  font-size:11px;
+  font-weight:800
+}
+
+.file-main{
+  min-width:0;
+  flex:1
+}
+
+.file-name{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:13px
+}
+
+.file-meta{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:3px
+}
+
+.remove{
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  font-size:20px;
+  cursor:pointer
+}
+
+.remove:hover{
+  color:var(--bad)
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:15px
+}
+
+.field label{
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  margin-bottom:7px
+}
+
+.field select,
+.field input{
+  width:100%;
+  height:42px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#0a0e15;
+  color:var(--text);
+  padding:0 11px;
+  outline:0
+}
+
+.actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:9px;
+  margin-top:18px
+}
+
+.status{
+  margin-top:14px;
+  color:var(--muted);
+  font-size:12px;
+  min-height:18px
+}
+
+.bar{
+  height:7px;
+  background:#11151e;
+  border-radius:99px;
+  overflow:hidden;
+  margin-top:10px
+}
+
+.bar span{
+  display:block;
+  height:100%;
+  width:0;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  transition:width .18s
+}
+
+.result{
+  margin-top:18px;
+  display:grid;
+  gap:12px
+}
+
+.linkbox{
+  display:flex;
+  gap:8px
+}
+
+.linkbox input{
+  flex:1;
+  height:44px;
+  border:1px solid var(--line);
+  background:#090c12;
+  color:var(--text);
+  padding:0 12px;
+  border-radius:10px
+}
+
+.notice{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px 14px;
+  color:var(--muted);
+  font-size:12px;
+  background:rgba(255,255,255,.02)
+}
+
+.error{
+  color:var(--bad)
+}
+
+.success{
+  color:var(--good)
+}
+
+.footer{
+  text-align:center;
+  color:#626b7a;
+  font-size:11px;
+  margin-top:15px
+}
+
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px
+}
+
+.share-file{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(7,10,15,.5)
+}
+
+.share-file .main{
+  min-width:0;
+  flex:1
+}
+
+.share-file .name{
+  font-size:13px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+
+.share-file .meta{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:3px
+}
+
+/* =========================================================
+   LOCAL UPLOAD HISTORY
+========================================================= */
+
+.tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:18px
+}
+
+.tab{
+  border:1px solid var(--line);
+  background:rgba(7,10,15,.4);
+  color:var(--muted);
+  padding:9px 14px;
+  border-radius:10px;
+  font-weight:650;
+  cursor:pointer
+}
+
+.tab:hover{
+  color:var(--text);
+  border-color:rgba(124,156,255,.4)
+}
+
+.tab.active{
+  background:var(--panel2);
+  color:var(--text);
+  border-color:rgba(124,156,255,.4)
+}
+
+.history-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:14px
+}
+
+.history-title{
+  margin:0;
+  font-size:22px
+}
+
+.history-sub{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:12px
+}
+
+.history-list{
+  display:grid;
+  gap:10px
+}
+
+.history-item{
+  border:1px solid var(--line);
+  background:rgba(7,10,15,.55);
+  padding:14px;
+  border-radius:12px
+}
+
+.history-main{
+  display:flex;
+  align-items:center;
+  gap:12px
+}
+
+.history-icon{
+  width:42px;
+  height:42px;
+  border-radius:10px;
+  background:#121722;
+  display:grid;
+  place-items:center;
+  color:var(--accent);
+  font-size:11px;
+  font-weight:800
+}
+
+.history-info{
+  min-width:0;
+  flex:1
+}
+
+.history-name{
+  font-size:13px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+
+.history-meta{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:4px
+}
+
+.history-actions{
+  display:flex;
+  gap:8px;
+  margin-top:12px
+}
+
+.history-actions .btn{
+  font-size:12px;
+  padding:8px 11px
+}
+
+.history-empty{
+  text-align:center;
+  padding:45px 20px;
+  border:1px dashed var(--line);
+  border-radius:14px;
+  color:var(--muted);
+  font-size:13px
+}
+
+.history-empty strong{
+  display:block;
+  color:var(--text);
+  font-size:16px;
+  margin-bottom:6px
+}
+
+.history-expired{
+  opacity:.5
+}
+
+@media(max-width:680px){
+
+  .card{
+    padding:18px;
+    border-radius:18px
+  }
+
+  .controls,
+  .grid2{
+    grid-template-columns:1fr
+  }
+
+  .actions{
+    flex-direction:column
+  }
+
+  .actions .btn{
+    width:100%
+  }
+
+  .header{
+    margin-bottom:15px
+  }
+
+  .drop{
+    min-height:230px
+  }
+
+  .history-head{
+    align-items:flex-start;
+    gap:10px
+  }
+
+  .history-actions{
+    flex-wrap:wrap
+  }
+
+  .history-actions .btn{
+    flex:1
+  }
+
+  .tabs{
+    overflow-x:auto
+  }
+
+  .tab{
+    white-space:nowrap
+  }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="page">
+  <div class="shell">
+
+```
+<header class="header">
+
+  <div class="brand">
+
+    <div class="mark">V</div>
+
+    <div>
+      <b>Vexo Share</b>
+      <span>Temporary file sharing</span>
+    </div>
+
+  </div>
+
+  <button class="btn" id="themeBtn">Theme</button>
+
+</header>
+
+<section class="card">
+
+  <!-- Tabs -->
+
+  <div class="tabs">
+
+    <button
+      class="tab active"
+      id="createTab">
+      Create Share
+    </button>
+
+    <button
+      class="tab"
+      id="uploadsTab">
+      My Uploads
+    </button>
+
+  </div>
+
+  <!-- Create Share -->
+
+  <div id="createPanel">
+
+    <div class="hero">
+
+      <h1>Send files simply.</h1>
+
+      <p>
+        Drop your files, create a share, and send the link.
+      </p>
+
+    </div>
+
+    <div class="drop" id="drop">
+
+      <div class="drop-inner">
+
+        <div class="drop-icon">
+          FILE
+        </div>
+
+        <h2>Drop files here</h2>
+
+        <p>
+          or choose files from your device
+        </p>
+
+        <button
+          class="btn primary"
+          id="pick">
+          Choose files
+        </button>
+
+        <input
+          class="hidden"
+          id="files"
+          type="file"
+          multiple>
+
+      </div>
+
+    </div>
+
+    <div
+      class="files"
+      id="fileList">
+    </div>
+
+    <div
+      class="controls hidden"
+      id="controls">
+
+      <div class="field">
+
+        <label>Expiration</label>
+
+        <select id="expiry">
+
+          <option value="1">
+            1 hour
+          </option>
+
+          <option value="24" selected>
+            24 hours
+          </option>
+
+          <option value="72">
+            3 days
+          </option>
+
+          <option value="168">
+            7 days
+          </option>
+
+          <option value="720">
+            30 days
+          </option>
+
+        </select>
+
+      </div>
+
+      <div class="field">
+
+        <label>Download limit</label>
+
+        <select id="limit">
+
+          <option value="">
+            Unlimited
+          </option>
+
+          <option value="1">
+            1 download
+          </option>
+
+          <option value="5">
+            5 downloads
+          </option>
+
+          <option value="10">
+            10 downloads
+          </option>
+
+          <option value="25">
+            25 downloads
+          </option>
+
+          <option value="100">
+            100 downloads
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+    <div
+      class="actions hidden"
+      id="actions">
+
+      <button
+        class="btn"
+        id="clear">
+        Clear
+      </button>
+
+      <button
+        class="btn primary"
+        id="create">
+        Create share
+      </button>
+
+    </div>
+
+    <div
+      class="status"
+      id="status">
+    </div>
+
+    <div
+      class="bar hidden"
+      id="bar">
+
+      <span id="barFill"></span>
+
+    </div>
+
+    <div
+      class="result hidden"
+      id="result">
+
+      <div class="notice success">
+        Share created successfully.
+      </div>
+
+      <div class="linkbox">
+
+        <input
+          id="shareLink"
+          readonly>
+
+        <button
+          class="btn primary"
+          id="copy">
+          Copy link
+        </button>
+
+      </div>
+
+      <button
+        class="btn"
+        id="newShare">
+        Create another share
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- My Uploads -->
+
+  <div
+    id="uploadsPanel"
+    class="hidden">
+
+    <div class="history-head">
+
+      <div>
+
+        <h2 class="history-title">
+          My Uploads
+        </h2>
+
+        <p class="history-sub">
+          Saved only on this browser and device.
+        </p>
+
+      </div>
+
+      <button
+        class="btn"
+        id="clearHistory">
+        Clear history
+      </button>
+
+    </div>
+
+    <div
+      class="history-list"
+      id="historyList">
+    </div>
+
+  </div>
+
+</section>
+
+<div class="footer">
+  Files are stored in a private Supabase bucket and share links expire.
+</div>
+```
+
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL='https://nompblznhrnedcseybkn.supabase.co';
 const SUPABASE_KEY='sb_publishable_9d1kCj6KhuLQHe4AhIsEOw_72fnlScq';
+
 const {createClient}=window.supabase;
-const db=createClient(SUPABASE_URL,SUPABASE_KEY);
+const db=createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
 const $=s=>document.querySelector(s);
 
@@ -29,67 +912,125 @@ const MAX_TOTAL=300*1024*1024;
 const LOCAL_HISTORY_KEY='vexo_share_upload_history';
 
 function getUploadHistory(){
+
   try{
-    const raw=localStorage.getItem(LOCAL_HISTORY_KEY);
-    if(!raw)return [];
-    
-    const history=JSON.parse(raw);
-    return Array.isArray(history)?history:[];
+
+    const raw=
+      localStorage.getItem(
+        LOCAL_HISTORY_KEY
+      );
+
+    if(!raw){
+      return [];
+    }
+
+    const history=
+      JSON.parse(raw);
+
+    return Array.isArray(history)
+      ?history
+      :[];
+
   }catch(err){
-    console.error('Failed to load upload history:',err);
+
+    console.error(
+      'Failed to load upload history:',
+      err
+    );
+
     return [];
+
   }
+
 }
 
 function saveUploadHistory(history){
+
   try{
+
     localStorage.setItem(
       LOCAL_HISTORY_KEY,
       JSON.stringify(history)
     );
+
+    return true;
+
   }catch(err){
-    console.error('Failed to save upload history:',err);
+
+    console.error(
+      'Failed to save upload history:',
+      err
+    );
+
+    return false;
+
   }
+
 }
 
 function saveShareToHistory(shareData){
-  const history=getUploadHistory();
 
-  history.unshift(shareData);
+  const history=
+    getUploadHistory();
 
-  saveUploadHistory(history);
+  history.unshift(
+    shareData
+  );
+
+  saveUploadHistory(
+    history
+  );
 
   renderUploadHistory();
+
 }
 
 function deleteHistoryItem(id){
-  const history=getUploadHistory();
 
-  const updated=history.filter(
-    item=>String(item.id)!==String(id)
+  const history=
+    getUploadHistory();
+
+  const updated=
+    history.filter(
+      item=>
+        String(item.id)!==
+        String(id)
+    );
+
+  saveUploadHistory(
+    updated
   );
 
-  saveUploadHistory(updated);
-
   renderUploadHistory();
+
 }
 
 function formatHistoryDate(date){
-  const d=new Date(date);
 
-  if(Number.isNaN(d.getTime())){
+  const d=
+    new Date(date);
+
+  if(Number.isNaN(
+    d.getTime()
+  )){
     return 'Unknown date';
   }
 
   return d.toLocaleString();
+
 }
 
 function renderUploadHistory(){
 
-  const history=getUploadHistory();
-  const list=$('#historyList');
+  const history=
+    getUploadHistory();
 
-  if(!list)return;
+  const list=
+    $('#historyList');
+
+  if(!list){
+    return;
+  }
 
   if(!history.length){
 
@@ -103,90 +1044,107 @@ function renderUploadHistory(){
     return;
   }
 
-  list.innerHTML=history.map(item=>{
+  list.innerHTML=
+    history.map(item=>{
 
-    const expiresTime=new Date(item.expires_at).getTime();
-    const expired=
-      Number.isFinite(expiresTime)&&
-      expiresTime<=Date.now();
+      const expiresTime=
+        new Date(
+          item.expires_at
+        ).getTime();
 
-    const files=
-      Array.isArray(item.files)
-      ?item.files
-      :[];
+      const expired=
+        Number.isFinite(
+          expiresTime
+        ) &&
+        expiresTime<=Date.now();
 
-    const totalSize=
-      files.reduce(
-        (total,file)=>total+Number(file.size||0),
-        0
-      );
+      const files=
+        Array.isArray(item.files)
+        ?item.files
+        :[];
 
-    const fileCount=files.length;
+      const totalSize=
+        files.reduce(
+          (total,file)=>
+            total+
+            Number(file.size||0),
+          0
+        );
 
-    const name=
-      fileCount===1
-      ?files[0].name
-      :`${fileCount} files`;
+      const fileCount=
+        files.length;
 
-    const downloadLimit=
-      item.max_downloads==null
-      ?'Unlimited downloads'
-      :`${item.max_downloads} download${item.max_downloads===1?'':'s'} max`;
+      const name=
+        fileCount===1
+        ?files[0].name
+        :`${fileCount} files`;
 
-    return `
-      <div class="history-item ${expired?'history-expired':''}">
+      const downloadLimit=
+        item.max_downloads==null
+        ?'Unlimited downloads'
+        :`${item.max_downloads} download${item.max_downloads===1?'':'s'} max`;
 
-        <div class="history-main">
+      return `
+        <div class="history-item ${expired?'history-expired':''}">
 
-          <div class="history-icon">FILE</div>
+          <div class="history-main">
 
-          <div class="history-info">
-
-            <div class="history-name">
-              ${esc(name)}
+            <div class="history-icon">
+              FILE
             </div>
 
-            <div class="history-meta">
-              ${fileCount} file${fileCount===1?'':'s'}
-              · ${fmt(totalSize)}
-              · ${esc(downloadLimit)}
-            </div>
+            <div class="history-info">
 
-            <div class="history-meta">
-              ${expired?'Expired':'Expires'}
-              ${esc(formatHistoryDate(item.expires_at))}
+              <div class="history-name">
+                ${esc(name)}
+              </div>
+
+              <div class="history-meta">
+                ${fileCount} file${fileCount===1?'':'s'}
+                · ${fmt(totalSize)}
+                · ${esc(downloadLimit)}
+              </div>
+
+              <div class="history-meta">
+                ${expired?'Expired':'Expires'}
+                ${esc(
+                  formatHistoryDate(
+                    item.expires_at
+                  )
+                )}
+              </div>
+
             </div>
 
           </div>
 
+          <div class="history-actions">
+
+            <button
+              class="btn primary"
+              data-open="${esc(item.link||'')}">
+              Open share
+            </button>
+
+            <button
+              class="btn"
+              data-copy="${esc(item.link||'')}">
+              Copy link
+            </button>
+
+            <button
+              class="btn"
+              data-delete="${esc(item.id)}">
+              Delete
+            </button>
+
+          </div>
+
         </div>
+      `;
 
-        <div class="history-actions">
+    }).join('');
 
-          <button
-            class="btn primary"
-            data-open="${esc(item.link||'')}">
-            Open share
-          </button>
-
-          <button
-            class="btn"
-            data-copy="${esc(item.link||'')}">
-            Copy link
-          </button>
-
-          <button
-            class="btn"
-            data-delete="${esc(item.id)}">
-            Delete
-          </button>
-
-        </div>
-
-      </div>
-    `;
-
-  }).join('');
 }
 
 /* =========================================================
@@ -194,102 +1152,164 @@ function renderUploadHistory(){
 ========================================================= */
 
 function esc(v){
-  return String(v).replace(/[&<>"']/g,m=>({
-    '&':'&amp;',
-    '<':'&lt;',
-    '>':'&gt;',
-    '"':'&quot;',
-    "'":'&#39;'
-  }[m]));
+
+  return String(v??'').replace(
+    /[&<>"']/g,
+    m=>({
+
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
+
+    }[m])
+  );
+
 }
 
 function fmt(n){
 
   n=Number(n)||0;
 
-  if(n<1024)return n+' B';
+  if(n<1024){
+    return n+' B';
+  }
 
-  const u=['KB','MB','GB'];
+  const u=[
+    'KB',
+    'MB',
+    'GB'
+  ];
+
   let i=-1;
 
   do{
+
     n/=1024;
     i++;
-  }while(n>=1024&&i<u.length-1);
 
-  return n.toFixed(n>=100?0:1)+' '+u[i];
+  }while(
+    n>=1024 &&
+    i<u.length-1
+  );
+
+  return n.toFixed(
+    n>=100?0:1
+  )+' '+u[i];
+
 }
 
 function randomCode(){
 
-  const a=new Uint8Array(12);
+  const a=
+    new Uint8Array(12);
 
   crypto.getRandomValues(a);
 
   return [...a]
-    .map(x=>x.toString(36).padStart(2,'0'))
+    .map(
+      x=>
+        x
+          .toString(36)
+          .padStart(2,'0')
+    )
     .join('')
     .slice(0,16);
+
 }
 
 function randomId(){
 
   return crypto.randomUUID
     ?crypto.randomUUID()
-    :Date.now()+'-'+Math.random().toString(16).slice(2);
+    :Date.now()+
+      '-'+
+      Math.random()
+        .toString(16)
+        .slice(2);
+
 }
 
 function pathSafeName(name){
 
   return name
-    .replace(/[^a-zA-Z0-9._ -]/g,'_')
-    .slice(0,180)||'file';
+    .replace(
+      /[^a-zA-Z0-9._ -]/g,
+      '_'
+    )
+    .slice(0,180)
+    ||'file';
+
 }
 
-function setStatus(t,kind=''){
-  status.className='status '+kind;
+function setStatus(
+  t,
+  kind=''
+){
+
+  status.className=
+    'status '+
+    kind;
+
   status.textContent=t;
+
 }
 
 function render(){
 
-  fileList.innerHTML=selected.map((f,i)=>`
+  fileList.innerHTML=
+    selected.map(
+      (f,i)=>`
 
-    <div class="file">
+      <div class="file">
 
-      <div class="file-icon">
-        ${esc(
-          (f.name.split('.').pop()||'FILE')
-          .slice(0,4)
-          .toUpperCase()
-        )}
-      </div>
+        <div class="file-icon">
 
-      <div class="file-main">
+          ${esc(
+            (
+              f.name
+                .split('.')
+                .pop()||
+              'FILE'
+            )
+            .slice(0,4)
+            .toUpperCase()
+          )}
 
-        <div class="file-name">
-          ${esc(f.name)}
         </div>
 
-        <div class="file-meta">
-          ${fmt(f.size)}
-          ${f.type?' · '+esc(f.type):''}
+        <div class="file-main">
+
+          <div class="file-name">
+            ${esc(f.name)}
+          </div>
+
+          <div class="file-meta">
+            ${fmt(f.size)}
+            ${
+              f.type
+                ?' · '+esc(f.type)
+                :''
+            }
+          </div>
+
         </div>
+
+        <button
+          class="remove"
+          title="Remove"
+          data-remove="${i}">
+          ×
+        </button>
 
       </div>
 
-      <button
-        class="remove"
-        title="Remove"
-        data-remove="${i}">
-        ×
-      </button>
+    `
+    ).join('');
 
-    </div>
-
-  `).join('');
-
-  const has=selected.length>0;
+  const has=
+    selected.length>0;
 
   controls.classList.toggle(
     'hidden',
@@ -300,18 +1320,29 @@ function render(){
     'hidden',
     !has
   );
+
 }
 
 function addFiles(list){
 
-  const incoming=[...list];
+  const incoming=
+    [...list];
 
   let total=
-    selected.reduce((a,b)=>a+b.size,0);
+    selected.reduce(
+      (a,b)=>
+        a+b.size,
+      0
+    );
 
-  for(const f of incoming){
+  for(
+    const f
+    of incoming
+  ){
 
-    if(f.size>MAX_FILE){
+    if(
+      f.size>MAX_FILE
+    ){
 
       setStatus(
         `${f.name} is over the 100 MB per-file limit.`,
@@ -321,7 +1352,9 @@ function addFiles(list){
       continue;
     }
 
-    if(total+f.size>MAX_TOTAL){
+    if(
+      total+f.size>MAX_TOTAL
+    ){
 
       setStatus(
         'The combined upload is over the 300 MB limit.',
@@ -331,94 +1364,143 @@ function addFiles(list){
       break;
     }
 
-    if(!selected.some(
-      x=>
-        x.name===f.name&&
-        x.size===f.size&&
-        x.lastModified===f.lastModified
-    )){
+    if(
+      !selected.some(
+        x=>
+          x.name===f.name &&
+          x.size===f.size &&
+          x.lastModified===
+            f.lastModified
+      )
+    ){
 
       selected.push(f);
       total+=f.size;
+
     }
 
   }
 
   render();
 
-  if(selected.length&&!status.textContent){
+  if(
+    selected.length &&
+    !status.textContent
+  ){
 
     setStatus(
       `${selected.length} file${selected.length===1?'':'s'} ready.`
     );
+
   }
+
 }
 
 /* =========================================================
    FILE PICKER / DRAG & DROP
 ========================================================= */
 
-picker.onclick=()=>input.click();
+picker.onclick=()=>{
+  input.click();
+};
 
 input.onchange=e=>{
-  addFiles(e.target.files);
+  addFiles(
+    e.target.files
+  );
 };
 
 fileList.onclick=e=>{
 
-  const b=e.target.closest('[data-remove]');
+  const b=
+    e.target.closest(
+      '[data-remove]'
+    );
 
-  if(!b)return;
+  if(!b){
+    return;
+  }
 
   selected.splice(
-    Number(b.dataset.remove),
+    Number(
+      b.dataset.remove
+    ),
     1
   );
 
   render();
 
   setStatus(
-    selected.length?'':''
+    selected.length
+      ?''
+      :''
   );
+
 };
 
-['dragenter','dragover'].forEach(ev=>
-  drop.addEventListener(ev,e=>{
+['dragenter','dragover']
+.forEach(ev=>
 
-    e.preventDefault();
+  drop.addEventListener(
+    ev,
+    e=>{
 
-    drop.classList.add('drag');
+      e.preventDefault();
 
-  })
+      drop.classList.add(
+        'drag'
+      );
+
+    }
+  )
+
 );
 
-['dragleave','drop'].forEach(ev=>
-  drop.addEventListener(ev,e=>{
+['dragleave','drop']
+.forEach(ev=>
 
-    e.preventDefault();
+  drop.addEventListener(
+    ev,
+    e=>{
 
-    drop.classList.remove('drag');
+      e.preventDefault();
 
-  })
+      drop.classList.remove(
+        'drag'
+      );
+
+    }
+  )
+
 );
 
-drop.addEventListener('drop',e=>{
-  addFiles(e.dataTransfer.files);
-});
+drop.addEventListener(
+  'drop',
+  e=>{
 
-document.addEventListener('mousemove',e=>{
+    addFiles(
+      e.dataTransfer.files
+    );
 
-  document.body.style.setProperty(
-    '--mx',
-    e.clientX+'px'
-  );
+  }
+);
 
-  document.body.style.setProperty(
-    '--my',
-    e.clientY+'px'
-  );
+document.addEventListener(
+  'mousemove',
+  e=>{
 
-});
+    document.body.style.setProperty(
+      '--mx',
+      e.clientX+'px'
+    );
+
+    document.body.style.setProperty(
+      '--my',
+      e.clientY+'px'
+    );
+
+  }
+);
 
 /* =========================================================
    BUTTONS
@@ -432,13 +1514,17 @@ $('#clear').onclick=()=>{
   render();
 
   setStatus('');
+
 };
 
 $('#newShare').onclick=()=>{
 
-  result.classList.add('hidden');
+  result.classList.add(
+    'hidden'
+  );
 
   $('#clear').click();
+
 };
 
 $('#copy').onclick=async()=>{
@@ -449,16 +1535,20 @@ $('#copy').onclick=async()=>{
       $('#shareLink').value
     );
 
-    $('#copy').textContent='Copied';
+    $('#copy').textContent=
+      'Copied';
 
     setTimeout(
-      ()=>$('#copy').textContent='Copy link',
+      ()=>
+        $('#copy').textContent=
+          'Copy link',
       1000
     );
 
   }catch(err){
 
     console.error(err);
+
     setStatus(
       'Could not copy the link.',
       'error'
@@ -470,7 +1560,9 @@ $('#copy').onclick=async()=>{
 
 $('#themeBtn').onclick=()=>{
 
-  document.body.classList.toggle('light');
+  document.body.classList.toggle(
+    'light'
+  );
 
 };
 
@@ -480,54 +1572,80 @@ $('#themeBtn').onclick=()=>{
 
 $('#create').onclick=async()=>{
 
-  if(!selected.length)return;
+  if(
+    !selected.length
+  ){
+    return;
+  }
 
   $('#create').disabled=true;
   $('#clear').disabled=true;
 
-  bar.classList.remove('hidden');
+  bar.classList.remove(
+    'hidden'
+  );
 
   fill.style.width='0%';
 
-  setStatus('Creating share…');
+  setStatus(
+    'Creating share…'
+  );
 
-  const code=randomCode();
+  const code=
+    randomCode();
 
   const hours=
-    Number($('#expiry').value);
+    Number(
+      $('#expiry').value
+    );
 
   const expires=
     new Date(
-      Date.now()+hours*3600000
+      Date.now()+
+      hours*3600000
     ).toISOString();
 
-  const maxVal=$('#limit').value;
+  const maxVal=
+    $('#limit').value;
 
   const max_downloads=
     maxVal
-    ?Number(maxVal)
-    :null;
+      ?Number(maxVal)
+      :null;
 
   try{
 
     const {
       data:share,
       error:shareError
-    }=await db
-      .from('shares')
-      .insert({
-        share_code:code,
-        expires_at:expires,
-        max_downloads,
-        download_count:0
-      })
-      .select(
-        'id,share_code,expires_at,max_downloads'
-      )
-      .single();
+    }=
+      await db
+        .from('shares')
+        .insert({
 
-    if(shareError)
+          share_code:
+            code,
+
+          expires_at:
+            expires,
+
+          max_downloads:
+            max_downloads,
+
+          download_count:
+            0
+
+        })
+        .select(
+          'id,share_code,expires_at,max_downloads'
+        )
+        .single();
+
+    if(
+      shareError
+    ){
       throw shareError;
+    }
 
     const localFiles=[];
 
@@ -537,7 +1655,8 @@ $('#create').onclick=async()=>{
       i++
     ){
 
-      const f=selected[i];
+      const f=
+        selected[i];
 
       const storagePath=
         `${code}/${randomId()}-${pathSafeName(f.name)}`;
@@ -553,56 +1672,91 @@ $('#create').onclick=async()=>{
 
       const {
         error:uploadError
-      }=await db
-        .storage
-        .from('vexo-files')
-        .upload(
-          storagePath,
-          f,
-          {
-            cacheControl:'3600',
-            upsert:false,
-            contentType:
-              f.type||
-              'application/octet-stream'
-          }
-        );
+      }=
+        await db
+          .storage
+          .from('vexo-files')
+          .upload(
+            storagePath,
+            f,
+            {
 
-      if(uploadError)
+              cacheControl:
+                '3600',
+
+              upsert:
+                false,
+
+              contentType:
+                f.type||
+                'application/octet-stream'
+
+            }
+          );
+
+      if(
+        uploadError
+      ){
         throw uploadError;
+      }
 
       const {
         error:fileError
-      }=await db
-        .from('share_files')
-        .insert({
-          share_id:share.id,
-          file_name:f.name,
-          storage_path:storagePath,
-          file_size:f.size,
-          mime_type:
-            f.type||
-            'application/octet-stream'
-        });
+      }=
+        await db
+          .from('share_files')
+          .insert({
 
-      if(fileError)
+            share_id:
+              share.id,
+
+            file_name:
+              f.name,
+
+            storage_path:
+              storagePath,
+
+            file_size:
+              f.size,
+
+            mime_type:
+              f.type||
+              'application/octet-stream'
+
+          });
+
+      if(
+        fileError
+      ){
         throw fileError;
+      }
 
       localFiles.push({
-        name:f.name,
-        size:f.size,
+
+        name:
+          f.name,
+
+        size:
+          f.size,
+
         type:
           f.type||
           'application/octet-stream'
+
       });
 
       fill.style.width=
         Math.round(
-          ((i+1)/selected.length)*90
+          (
+            (i+1)/
+            selected.length
+          )*90
         )+'%';
+
     }
 
-    fill.style.width='100%';
+    fill.style.width=
+      '100%';
 
     const url=
       new URL(
@@ -615,13 +1769,16 @@ $('#create').onclick=async()=>{
       share.share_code
     );
 
-    const shareLink=url.href;
+    const shareLink=
+      url.href;
 
-    $('#shareLink').value=shareLink;
+    $('#shareLink').value=
+      shareLink;
 
     saveShareToHistory({
 
-      id:randomId(),
+      id:
+        randomId(),
 
       share_code:
         share.share_code,
@@ -678,32 +1835,48 @@ $('#create').onclick=async()=>{
 $('#createTab').onclick=()=>{
 
   $('#createTab')
-    .classList.add('active');
+    .classList.add(
+      'active'
+    );
 
   $('#uploadsTab')
-    .classList.remove('active');
+    .classList.remove(
+      'active'
+    );
 
   $('#createPanel')
-    .classList.remove('hidden');
+    .classList.remove(
+      'hidden'
+    );
 
   $('#uploadsPanel')
-    .classList.add('hidden');
+    .classList.add(
+      'hidden'
+    );
 
 };
 
 $('#uploadsTab').onclick=()=>{
 
   $('#uploadsTab')
-    .classList.add('active');
+    .classList.add(
+      'active'
+    );
 
   $('#createTab')
-    .classList.remove('active');
+    .classList.remove(
+      'active'
+    );
 
   $('#uploadsPanel')
-    .classList.remove('hidden');
+    .classList.remove(
+      'hidden'
+    );
 
   $('#createPanel')
-    .classList.add('hidden');
+    .classList.add(
+      'hidden'
+    );
 
   renderUploadHistory();
 
@@ -718,41 +1891,59 @@ $('#historyList').addEventListener(
   async e=>{
 
     const open=
-      e.target.closest('[data-open]');
+      e.target.closest(
+        '[data-open]'
+      );
 
     if(open){
 
-      const link=open.dataset.open;
+      const link=
+        open.dataset.open;
 
       if(link){
-        window.location.href=link;
+
+        window.location.href=
+          link;
+
       }
 
       return;
     }
 
     const copy=
-      e.target.closest('[data-copy]');
+      e.target.closest(
+        '[data-copy]'
+      );
 
     if(copy){
 
       try{
 
-        const link=copy.dataset.copy;
+        const link=
+          copy.dataset.copy;
 
         if(!link){
-          throw new Error('No link available');
+
+          throw new Error(
+            'No link available'
+          );
+
         }
 
-        await navigator.clipboard.writeText(link);
+        await navigator.clipboard.writeText(
+          link
+        );
 
         const oldText=
           copy.textContent;
 
-        copy.textContent='Copied';
+        copy.textContent=
+          'Copied';
 
         setTimeout(
-          ()=>copy.textContent=oldText,
+          ()=>
+            copy.textContent=
+              oldText,
           1000
         );
 
@@ -766,7 +1957,9 @@ $('#historyList').addEventListener(
     }
 
     const del=
-      e.target.closest('[data-delete]');
+      e.target.closest(
+        '[data-delete]'
+      );
 
     if(del){
 
@@ -784,12 +1977,17 @@ $('#clearHistory').onclick=()=>{
   const history=
     getUploadHistory();
 
-  if(!history.length)
+  if(
+    !history.length
+  ){
     return;
+  }
 
-  if(confirm(
-    'Clear all upload history from this browser? This will not delete the actual files.'
-  )){
+  if(
+    confirm(
+      'Clear all upload history from this browser? This will not delete the actual files.'
+    )
+  ){
 
     localStorage.removeItem(
       LOCAL_HISTORY_KEY
@@ -806,4 +2004,9 @@ $('#clearHistory').onclick=()=>{
 ========================================================= */
 
 renderUploadHistory();
+render();
+
 </script>
+
+</body>
+</html>
