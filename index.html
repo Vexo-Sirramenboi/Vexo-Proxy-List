@@ -64,7 +64,7 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .admin-nav.show{display:grid;gap:4px;}
 .admin-button{background:linear-gradient(135deg,rgba(124,92,255,.16),rgba(25,211,255,.08))!important;border-color:rgba(124,92,255,.28)!important;color:#fff!important;}
 
-.userbox{margin-top:auto;display:flex;align-items:center;gap:12px;padding:13px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.03);}
+.userbox{margin-top:0;display:flex;align-items:center;gap:12px;padding:13px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.03);}
 .userbox .avatar{width:40px;height:40px;border-radius:12px;background:var(--grad);display:grid;place-items:center;font-size:15px;font-weight:800;color:#fff;flex:none;box-shadow:0 6px 18px rgba(124,92,255,.35);}
 .userbox .ub-info{min-width:0;flex:1;}
 .userbox .ub-info strong{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -310,7 +310,11 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 <div class="app">
 
 <aside class="side">
-<div class="brand"><span class="logo">V</span><span class="word">VE<b>X</b>O</span></div>
+<div class="userbox" id="userBox">
+<div class="avatar">?</div>
+<div class="ub-info"><small>Not signed in</small><strong>Guest</strong></div>
+<button class="btn primary mini" id="loginBtn">Sign in</button>
+</div>
 
 <div class="nav">
 <button class="active" data-page="home"><span class="ic">◈</span><span class="lbl">Dashboard</span></button>
@@ -329,11 +333,7 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 </div>
 </div>
 
-<div class="userbox" id="userBox">
-<div class="avatar">?</div>
-<div class="ub-info"><small>Not signed in</small><strong>Guest</strong></div>
-<button class="btn primary mini" id="loginBtn">Sign in</button>
-</div>
+
 </aside>
 
 <main class="main">
