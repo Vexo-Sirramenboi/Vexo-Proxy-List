@@ -1907,31 +1907,13 @@ loadSession();
     });
   }
 
-<!-- Email 2FA Modal -->
-<div class="modal" id="twoFactorModal">
-  <div class="box">
-    <button class="close" id="close2faBtn">&times;</button>
-    <h2>Email Verification</h2>
-    <p class="muted">A 5-digit verification code has been sent to your email.</p>
-    <form id="twoFactorForm" class="form">
-      <div>
-        <label>5-Digit Code</label>
-        <input class="input" id="twoFactorCode" type="text" maxlength="5" pattern="[0-9]{5}" inputmode="numeric" placeholder="12345" required autocomplete="one-time-code">
-      </div>
-      <div class="actions">
-        <button class="btn primary" type="submit" id="twoFactorSubmitBtn">Verify Code</button>
-        <button class="btn" type="button" id="resend2faBtn">Resend</button>
-      </div>
-    </form>
-  </div>
-</div>
+  /* ============================================================
+     PART 2: 2FA SETTINGS & AUTH INTERCEPTION
+     ============================================================ */
+  let activeFactorId = null;
+  let enrollFactorId = null;
 
-<script>
-(() => {
-  let pendingEmail = "";
-
-  /* 1. SETTINGS TOGGLE */
-  function init2FASettings() {
+  function inject2FASettingsUI() {
     const list = document.querySelector("#settingsPage .settings-list");
     if (!list || document.getElementById("set2fa")) return;
 
@@ -1939,8 +1921,8 @@ loadSession();
     row.className = "toggle-row";
     row.innerHTML = `
       <div>
-        <strong>Email 2FA</strong>
-        <div class="muted-sm">Require a 5-digit code sent to your email on login</div>
+        <strong>Two-Factor Authentication (2FA)</strong>
+        <div class="muted-sm">Require a code from an authenticator app when signing in</div>
       </div>
       <label class="switch">
         <input type="checkbox" id="set2fa">
@@ -1951,8 +1933,12 @@ loadSession();
 
     const toggle = document.getElementById("set2fa");
 
-    async function syncToggle() {
-      if (!user) { toggle.checked = false; return; }
+    // Sync toggle status with Supabase
+    async function sync2FAToggle() {
+      if (!user) {
+        toggle.checked = false;
+        return;
+      }
       const { data } = await db.from("user_security").select("two_factor_enabled").eq("user_id", user.id).maybeSingle();
       toggle.checked = !!data?.two_factor_enabled;
     }
@@ -1960,127 +1946,141 @@ loadSession();
     toggle.addEventListener("change", async (e) => {
       if (!user) {
         toggle.checked = false;
-        toast("Sign in to your account first.");
+        if (typeof toast === "function") toast("Sign in to configure 2FA.");
         return;
       }
 
-      const enabled = e.target.checked;
-      const { error } = await db.from("user_security").upsert({
-        user_id: user.id,
-        two_factor_enabled: enabled
-      });
+      if (e.target.checked) {
+        // Start Enrollment
+        try {
+          const { data, error } = await db.auth.mfa.enroll({ factorType: "totp" });
+          if (error) throw error;
 
-      if (error) {
-        toggle.checked = !enabled;
-        toast("Error updating setting: " + error.message);
+          enrollFactorId = data.id;
+          document.getElementById("mfaQrImg").src = data.totp.qr_code;
+          document.getElementById("mfaSecretCode").textContent = data.totp.secret;
+          document.getElementById("enroll2faModal").classList.add("open");
+        } catch (err) {
+          toggle.checked = false;
+          if (typeof toast === "function") toast("Could not start 2FA enrollment: " + err.message);
+        }
       } else {
-        toast(enabled ? "Email 2FA enabled." : "Email 2FA disabled.");
+        // Disable 2FA
+        if (!confirm("Disable Two-Factor Authentication for your account?")) {
+          toggle.checked = true;
+          return;
+        }
+        try {
+          const factors = await db.auth.mfa.listFactors();
+          if (factors.data?.totp) {
+            for (const f of factors.data.totp) {
+              await db.auth.mfa.unenroll({ factorId: f.id });
+            }
+          }
+          await db.from("user_security").upsert({ user_id: user.id, two_factor_enabled: false });
+          if (typeof toast === "function") toast("2FA disabled.");
+        } catch (err) {
+          toggle.checked = true;
+          if (typeof toast === "function") toast(err.message);
+        }
       }
     });
 
-    const origSession = window.loadSession;
-    window.loadSession = async function() {
-      await origSession.apply(this, arguments);
-      syncToggle();
-    };
-  }
-
-  /* 2. SEND CODE RPC */
-  async function requestEmailCode(email) {
-    const { data, error } = await db.rpc("send_2fa_email_code", { user_email: email });
-    if (error) {
-      toast("Failed to generate code.");
-      return false;
+    // Re-check 2FA state on session updates
+    const origLoadSession = window.loadSession;
+    if (typeof origLoadSession === "function") {
+      window.loadSession = async function() {
+        await origLoadSession.apply(this, arguments);
+        sync2FAToggle();
+      };
     }
-    return data;
   }
 
-  /* 3. INTERCEPT LOGIN */
-  $("authForm")?.addEventListener("submit", async (e) => {
-    if (authMode === "signup") return;
-
-    e.stopImmediatePropagation();
+  // Enrollment verification
+  document.getElementById("enrollVerifyForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const code = document.getElementById("enrollVerifyCode").value.trim();
+    try {
+      const challenge = await db.auth.mfa.challenge({ factorId: enrollFactorId });
+      if (challenge.error) throw challenge.error;
 
-    const email = $("email").value.trim();
-    const password = $("password").value;
+      const verify = await db.auth.mfa.verify({ factorId: enrollFactorId, challengeId: challenge.data.id, code });
+      if (verify.error) throw verify.error;
 
-    const res = await db.auth.signInWithPassword({ email, password });
-    if (res.error) {
-      toast(res.error.message);
-      return;
+      await db.from("user_security").upsert({ user_id: user.id, two_factor_enabled: true });
+      document.getElementById("enroll2faModal").classList.remove("open");
+      document.getElementById("enrollVerifyCode").value = "";
+      if (typeof toast === "function") toast("2FA successfully enabled!");
+    } catch (err) {
+      if (typeof toast === "function") toast("Invalid verification code: " + err.message);
     }
+  });
 
-    const currentUserId = res.data.user?.id;
-    if (!currentUserId) return;
+  document.getElementById("closeEnrollBtn")?.addEventListener("click", () => {
+    document.getElementById("enroll2faModal").classList.remove("open");
+    const toggle = document.getElementById("set2fa");
+    if (toggle) toggle.checked = false;
+  });
 
-    const { data: sec } = await db.from("user_security")
-      .select("two_factor_enabled")
-      .eq("user_id", currentUserId)
-      .maybeSingle();
+  document.getElementById("close2faBtn")?.addEventListener("click", () => {
+    document.getElementById("twoFactorModal").classList.remove("open");
+  });
 
-    if (sec?.two_factor_enabled) {
-      pendingEmail = email;
-      await requestEmailCode(email);
+  // Intercept Auth Login to Check 2FA Opt-in
+  const authForm = document.getElementById("authForm");
+  if (authForm) {
+    authForm.addEventListener("submit", async () => {
+      setTimeout(async () => {
+        const { data: { session } } = await db.auth.getSession();
+        if (!session?.user) return;
 
-      // Hide main app views until verified
-      document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
-      closeAuth();
-      $("twoFactorModal").classList.add("open");
-      $("twoFactorCode").value = "";
-      $("twoFactorCode").focus();
-      return;
-    }
+        const { data: sec } = await db.from("user_security")
+          .select("two_factor_enabled")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
 
-    toast("Welcome to VEXO.");
-    closeAuth();
-    await loadSession();
-  }, true);
+        if (sec?.two_factor_enabled) {
+          const factors = await db.auth.mfa.listFactors();
+          const totpFactor = factors.data?.totp?.find(f => f.status === "verified");
 
-  /* 4. VERIFY 5-DIGIT CODE */
+          if (totpFactor) {
+            activeFactorId = totpFactor.id;
+            document.getElementById("twoFactorModal").classList.add("open");
+          }
+        }
+      }, 300);
+    }, true);
+  }
+
+  // 2FA Verification Form
   document.getElementById("twoFactorForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const code = $("twoFactorCode").value.trim();
+    const code = document.getElementById("twoFactorCode").value.trim();
+    if (!activeFactorId) return;
 
-    if (code.length !== 5) {
-      toast("Please enter a 5-digit code.");
-      return;
+    try {
+      const challenge = await db.auth.mfa.challenge({ factorId: activeFactorId });
+      if (challenge.error) throw challenge.error;
+
+      const res = await db.auth.mfa.verify({ factorId: activeFactorId, challengeId: challenge.data.id, code });
+      if (res.error) throw res.error;
+
+      document.getElementById("twoFactorModal").classList.remove("open");
+      document.getElementById("twoFactorCode").value = "";
+      if (typeof toast === "function") toast("2FA verified. Welcome back!");
+    } catch (err) {
+      if (typeof toast === "function") toast("2FA failed: " + err.message);
     }
-
-    const { data: isValid, error } = await db.rpc("verify_2fa_email_code", {
-      user_email: pendingEmail,
-      entered_code: code
-    });
-
-    if (error || !isValid) {
-      toast("Invalid or expired code. Try again.");
-      return;
-    }
-
-    $("twoFactorModal").classList.remove("open");
-    $("twoFactorCode").value = "";
-    toast("Verified successfully!");
-    pendingEmail = "";
-    await loadSession();
-    showPage("home");
   });
 
-  /* 5. RESEND & CANCEL */
-  document.getElementById("resend2faBtn")?.addEventListener("click", async () => {
-    if (!pendingEmail) return;
-    await requestEmailCode(pendingEmail);
-    toast("A new 5-digit code has been generated.");
+  // Initialize elements once DOM is ready
+  window.addEventListener("DOMContentLoaded", () => {
+    injectBulkSubmissionUI();
+    inject2FASettingsUI();
   });
 
-  document.getElementById("close2faBtn")?.addEventListener("click", async () => {
-    $("twoFactorModal").classList.remove("open");
-    pendingEmail = "";
-    await db.auth.signOut();
-    toast("Login cancelled.");
-    await loadSession();
-  });
-
-  init2FASettings();
+  injectBulkSubmissionUI();
+  inject2FASettingsUI();
 })();
 </script>
 
