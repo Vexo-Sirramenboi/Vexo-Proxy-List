@@ -415,7 +415,7 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 <!-- SUBMIT -->
 <section id="submitPage" class="page hidden">
 <div class="panel">
-<div class="panel-head"><div><h3>Submit a community link</h3><div class="muted-sm">Sign in first. New links start as pending until approved by a moderator.</div></div></div>
+<div class="panel-head"><div><h3>Submit a community link</h3><div class="muted-sm">You can submit with or without an account. New links start as pending until approved by a moderator.</div></div></div>
 <form id="linkForm" class="form">
 <div><label>Title</label><input class="input" id="linkTitle" required placeholder="Example Tool"></div>
 <div><label>URL</label><input class="input" id="linkURL" required type="url" placeholder="https://example.com"></div>
@@ -1039,7 +1039,11 @@ $("linkForm").onsubmit = async e => {
   const category = $("linkCategory").value.trim() || "General";
   const tags = $("linkTags").value.split(",").map(x => x.trim().toLowerCase()).filter(Boolean);
   const description = $("linkDesc").value.trim();
-  const {data:newLink, error} = await db.from("links").insert({
+  // Guests get their own UUID so the admin panel can generate the same
+  // Anonymous + 5-letter name later without needing a SELECT policy.
+  const submissionId = user ? undefined : crypto.randomUUID();
+  const row = {
+    ...(submissionId ? {id: submissionId} : {}),
     user_id: user?.id || null,
     title,
     url,
@@ -1047,16 +1051,41 @@ $("linkForm").onsubmit = async e => {
     tags,
     description,
     status:"pending"
-  }).select().single();
+  };
+
+  let newLink = null;
+  let error = null;
+
+  if(user){
+    // Signed-in users can use the existing SELECT policy to receive the new row.
+    const result = await db.from("links").insert(row).select().single();
+    newLink = result.data;
+    error = result.error;
+  } else {
+    // Guests only need INSERT. Do not add .select(), because that would require
+    // a SELECT policy for pending anonymous rows.
+    const result = await db.from("links").insert(row);
+    error = result.error;
+  }
+
   if(error){ toast(error.message); return; }
-  const {data:admins} = await db.from("user_roles").select("user_id").eq("role","admin");
-  if(admins?.length){
-    const notifications = admins.map(admin => ({user_id:admin.user_id, type:"submission", title:"New link submitted", message:`${title} was submitted for moderation.`, link_id:newLink.id}));
-    const {error:notifError} = await db.from("notifications").insert(notifications);
-    if(notifError) console.error("Notification error:", notifError);
+
+  if(user && newLink){
+    const {data:admins} = await db.from("user_roles").select("user_id").eq("role","admin");
+    if(admins?.length){
+      const notifications = admins.map(admin => ({
+        user_id:admin.user_id,
+        type:"submission",
+        title:"New link submitted",
+        message:`${title} was submitted for moderation.`,
+        link_id:newLink.id
+      }));
+      const {error:notifError} = await db.from("notifications").insert(notifications);
+      if(notifError) console.error("Notification error:", notifError);
+    }
   }
   e.target.reset();
-  toast(user ? "Submitted! All admins have been notified." : `Submitted anonymously as ${anonymousName(newLink.id)}.`);
+  toast(user ? "Submitted! All admins have been notified." : `Submitted anonymously as ${anonymousName(submissionId)}.`);
   await loadPendingCount();
   showPage("home");
 };
@@ -1879,7 +1908,9 @@ loadSession();
         const tags = parts[2] ? parts[2].split(",").map(t => t.trim().toLowerCase()).filter(Boolean) : [];
         const description = parts[3] || "";
 
+        const bulkId = user ? undefined : crypto.randomUUID();
         payload.push({
+          ...(bulkId ? {id: bulkId} : {}),
           user_id: user?.id || null,
           title,
           url,
@@ -1895,20 +1926,23 @@ loadSession();
       sendBtn.textContent = `Submitting ${payload.length} items...`;
 
       try {
-        const { data, error } = await db.from("links").insert(payload).select();
+        const { data, error } = await db.from("links").insert(payload);
         if (error) throw error;
 
-        // Admin notifications
-        const { data: admins } = await db.from("user_roles").select("user_id").eq("role", "admin");
-        if (admins?.length && data?.length) {
-          const notifications = admins.map(a => ({
-            user_id: a.user_id,
-            type: "submission",
-            title: "Bulk links submitted",
-            message: `${payload.length} new links submitted for moderation.`,
-            link_id: data[0].id
-          }));
-          await db.from("notifications").insert(notifications);
+        // Admin notifications only work from a signed-in session.
+        // Guest bulk submissions remain pending and appear in the admin queue.
+        if (user) {
+          const { data: admins } = await db.from("user_roles").select("user_id").eq("role", "admin");
+          if (admins?.length) {
+            const notifications = admins.map(a => ({
+              user_id: a.user_id,
+              type: "submission",
+              title: "Bulk links submitted",
+              message: `${payload.length} new links submitted for moderation.`,
+              link_id: payload[0]?.id || null
+            }));
+            await db.from("notifications").insert(notifications);
+          }
         }
 
         document.getElementById("bulkInput").value = "";
@@ -2103,3 +2137,4 @@ loadSession();
 
 </body>
 </html>
+
