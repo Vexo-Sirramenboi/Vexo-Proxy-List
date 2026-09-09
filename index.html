@@ -1015,16 +1015,39 @@ async function vote(id, value){
   }
 }
 
+/* ANONYMOUS SUBMITTER NAME */
+function anonymousName(id){
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let h = 0;
+  const s = String(id || "");
+  for(let i = 0; i < s.length; i++){
+    h = ((h * 31) + s.charCodeAt(i)) >>> 0;
+  }
+  let name = "";
+  for(let i = 0; i < 5; i++){
+    h = (Math.imul(h ^ (h >>> 16), 2246822507) + 3266489909) >>> 0;
+    name += chars[h % chars.length];
+  }
+  return "Anonymous" + name;
+}
+
 /* SUBMIT LINK */
 $("linkForm").onsubmit = async e => {
   e.preventDefault();
-  if(!user){ openAuth(); toast("Sign in before submitting."); return; }
   const title = $("linkTitle").value.trim();
   const url = $("linkURL").value.trim();
   const category = $("linkCategory").value.trim() || "General";
   const tags = $("linkTags").value.split(",").map(x => x.trim().toLowerCase()).filter(Boolean);
   const description = $("linkDesc").value.trim();
-  const {data:newLink, error} = await db.from("links").insert({user_id:user.id, title, url, category, tags, description, status:"pending"}).select().single();
+  const {data:newLink, error} = await db.from("links").insert({
+    user_id: user?.id || null,
+    title,
+    url,
+    category,
+    tags,
+    description,
+    status:"pending"
+  }).select().single();
   if(error){ toast(error.message); return; }
   const {data:admins} = await db.from("user_roles").select("user_id").eq("role","admin");
   if(admins?.length){
@@ -1033,7 +1056,7 @@ $("linkForm").onsubmit = async e => {
     if(notifError) console.error("Notification error:", notifError);
   }
   e.target.reset();
-  toast("Submitted! All admins have been notified.");
+  toast(user ? "Submitted! All admins have been notified." : `Submitted anonymously as ${anonymousName(newLink.id)}.`);
   await loadPendingCount();
   showPage("home");
 };
@@ -1226,7 +1249,7 @@ async function renderAdminQueue(){
   const profileMap = new Map(profiles.map(p => [p.id, p]));
   $("adminQueue").innerHTML = arr.map(x => {
     const profile = profileMap.get(x.user_id);
-    const submitter = profile?.username || "Unknown user";
+    const submitter = x.user_id ? (profile?.username || "Unknown user") : anonymousName(x.id);
     const initial = submitter.charAt(0).toUpperCase();
     const statusClass = x.status === "approved" ? "approved" : x.status === "rejected" ? "rejected" : "pending";
 const date = x.created_at ? new Date(x.created_at).toLocaleString() : "Unknown date";
@@ -1832,12 +1855,6 @@ loadSession();
     // Bulk submission handler
     document.getElementById("bulkLinkForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!user) {
-        if (typeof openAuth === "function") openAuth();
-        if (typeof toast === "function") toast("Sign in before submitting.");
-        return;
-      }
-
       const raw = document.getElementById("bulkInput").value.trim();
       const defaultCategory = document.getElementById("bulkCategory").value.trim() || "General";
       if (!raw) {
@@ -1863,7 +1880,7 @@ loadSession();
         const description = parts[3] || "";
 
         payload.push({
-          user_id: user.id,
+          user_id: user?.id || null,
           title,
           url,
           category: defaultCategory,
@@ -1977,7 +1994,7 @@ loadSession();
               await db.auth.mfa.unenroll({ factorId: f.id });
             }
           }
-          await db.from("user_security").upsert({ user_id: user.id, two_factor_enabled: false });
+          await db.from("user_security").upsert({ user_id: user?.id || null, two_factor_enabled: false });
           if (typeof toast === "function") toast("2FA disabled.");
         } catch (err) {
           toggle.checked = true;
@@ -2007,7 +2024,7 @@ loadSession();
       const verify = await db.auth.mfa.verify({ factorId: enrollFactorId, challengeId: challenge.data.id, code });
       if (verify.error) throw verify.error;
 
-      await db.from("user_security").upsert({ user_id: user.id, two_factor_enabled: true });
+      await db.from("user_security").upsert({ user_id: user?.id || null, two_factor_enabled: true });
       document.getElementById("enroll2faModal").classList.remove("open");
       document.getElementById("enrollVerifyCode").value = "";
       if (typeof toast === "function") toast("2FA successfully enabled!");
