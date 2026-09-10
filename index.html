@@ -295,7 +295,24 @@ body.no-motion *{animation:none!important;transition:none!important;}
 body.no-cursor,body.no-cursor button{cursor:auto!important;}
 body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 
-/* LINK CHECKER ADD-ON */
+
+/* VEXO VIRUSTOTAL SAFETY CHECKER — APPEND-ONLY */
+.vt-summary{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 13px;}
+.vt-stat{padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.03);font-size:11px;color:var(--muted);}
+.vt-grid{display:grid;gap:10px;}
+.vt-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:12px;align-items:center;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025);}
+.vt-main{min-width:0;}
+.vt-title{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vt-url{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px;}
+.vt-badge{display:inline-flex;align-items:center;justify-content:center;min-width:82px;padding:5px 9px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.07em;border:1px solid transparent;}
+.vt-safe{color:var(--green);background:rgba(52,211,153,.10);border-color:rgba(52,211,153,.22);}
+.vt-suspicious{color:var(--amber);background:rgba(251,191,36,.10);border-color:rgba(251,191,36,.22);}
+.vt-malicious{color:var(--red);background:rgba(251,113,133,.10);border-color:rgba(251,113,133,.22);}
+.vt-unknown{color:var(--muted);background:rgba(148,163,184,.08);border-color:var(--line2);}
+.vt-detail{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;}
+@media(max-width:850px){.vt-row{grid-template-columns:1fr auto;}.vt-detail{grid-column:1/-1;}.vt-row .btn{justify-self:end;}}
+
+/* VEXO UPTIME LINK CHECKER — APPEND-ONLY */
 .link-checker-grid{display:grid;gap:10px;}
 .link-checker-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025);}
 .link-checker-main{min-width:0;}
@@ -306,7 +323,6 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 .check-down{color:var(--red);background:rgba(251,113,133,.10);border:1px solid rgba(251,113,133,.22);}
 .check-status{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;}
 @media(max-width:720px){.link-checker-row{grid-template-columns:1fr auto;}.check-status{grid-column:1/-1;}}
-
 </style>
 </head>
 <body>
@@ -651,13 +667,33 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 </div>
 </div>
 
+<!-- LINK CHECKER — APPEND-ONLY -->
 <div class="panel">
-<div class="panel-head">
-<div><h3>Link Checker</h3><div class="muted-sm">Server-side reachability checks for approved links.</div></div>
-<button class="btn primary" id="checkLinksBtn" onclick="runLinkChecker()">Check all links</button>
+  <div class="panel-head">
+    <div>
+      <h3>Link Checker</h3>
+      <div class="muted-sm">Check every approved link for a reachable HTTP response.</div>
+    </div>
+    <button class="btn primary" id="checkLinksBtn" onclick="runLinkChecker()">Check all links</button>
+  </div>
+  <div id="linkCheckerSummary" class="muted-sm" style="margin-bottom:12px;">Only VEXO administrators can run the server-side checker.</div>
+  <div id="linkCheckerResults" class="link-checker-grid"></div>
 </div>
-<div id="linkCheckerSummary" class="muted-sm" style="margin-bottom:12px;">Only VEXO administrators can run the server-side checker.</div>
-<div id="linkCheckerResults" class="link-checker-grid"></div>
+
+<!-- VIRUSTOTAL SAFETY CHECKER — APPEND-ONLY -->
+<div class="panel">
+  <div class="panel-head">
+    <div>
+      <h3>VirusTotal Safety Checker</h3>
+      <div class="muted-sm">Check approved links against VirusTotal threat intelligence.</div>
+    </div>
+    <button class="btn primary" id="vtCheckBtn" onclick="runVirusTotalChecker()">Check safety</button>
+  </div>
+  <div class="muted-sm" style="margin-bottom:12px;">
+    Admin-only. The VirusTotal API key stays on the Supabase Edge Function and is never exposed in this page.
+  </div>
+  <div id="vtSummary" class="vt-summary"></div>
+  <div id="vtResults" class="vt-grid"></div>
 </div>
 
 <div class="panel">
@@ -1362,61 +1398,6 @@ async function deleteLink(id){
   toast("Link removed.");
   await loadAdminData();
   await loadLinks();
-}
-
-/* SERVER-SIDE LINK CHECKER */
-async function runLinkChecker(){
-  if(!isAdmin){
-    toast("Admin access required.");
-    return;
-  }
-
-  const btn = $("checkLinksBtn");
-  const results = $("linkCheckerResults");
-  const summary = $("linkCheckerSummary");
-
-  btn.disabled = true;
-  btn.textContent = "Checking...";
-  summary.textContent = "The Supabase server is checking every approved URL.";
-  results.innerHTML = emptyState("Checking approved links...", "↻");
-
-  try{
-    const { data, error } = await db.functions.invoke("link-checker");
-
-    if(error) throw error;
-
-    if(data?.error) throw new Error(data.error);
-
-    const checked = Array.isArray(data?.results) ? data.results : [];
-    const up = checked.filter(x => x.ok).length;
-    const down = checked.filter(x => !x.ok).length;
-
-    summary.textContent = `${checked.length} checked · ${up} reachable · ${down} unavailable`;
-
-    if(!checked.length){
-      results.innerHTML = emptyState("There are no approved links to check.", "·");
-      return;
-    }
-
-    results.innerHTML = checked.map(x => `
-      <div class="link-checker-row">
-        <div class="link-checker-main">
-          <div class="link-checker-title">${esc(x.title || "Untitled")}</div>
-          <div class="link-checker-url">${esc(x.url || "")}</div>
-        </div>
-        <span class="check-badge ${x.ok ? "check-up" : "check-down"}">${x.ok ? "UP" : "DOWN"}</span>
-        <span class="check-status">${esc(x.detail || "No response details")}</span>
-      </div>
-    `).join("");
-  }catch(err){
-    console.error("Link checker:", err);
-    results.innerHTML = emptyState("The server-side link checker could not run.", "!");
-    summary.textContent = err?.message || "Could not contact the Edge Function.";
-    toast("Link checker failed.");
-  }finally{
-    btn.disabled = false;
-    btn.textContent = "Check all links";
-  }
 }
 
 /* ADMIN NOTIFICATIONS */
@@ -2210,6 +2191,207 @@ loadSession();
   injectBulkSubmissionUI();
   inject2FASettingsUI();
 })();
+</script>
+
+
+
+<!-- VEXO VIRUSTOTAL SAFETY CHECKER — APPEND-ONLY -->
+<script>
+/* VEXO UPTIME LINK CHECKER — APPEND-ONLY */
+async function runLinkChecker(){
+  if(!isAdmin){
+    toast("Admin access required.");
+    return;
+  }
+
+  const btn = $("checkLinksBtn");
+  const results = $("linkCheckerResults");
+  const summary = $("linkCheckerSummary");
+
+  btn.disabled = true;
+  btn.textContent = "Checking...";
+  summary.textContent = "The Supabase server is checking every approved URL.";
+  results.innerHTML = emptyState("Checking approved links...", "↻");
+
+  try{
+    const { data, error } = await db.functions.invoke("link-checker");
+    if(error) throw error;
+    if(data?.error) throw new Error(data.error);
+
+    const checked = Array.isArray(data?.results) ? data.results : [];
+    const up = checked.filter(x => x.ok).length;
+    const down = checked.filter(x => !x.ok).length;
+
+    summary.textContent = `${checked.length} checked · ${up} reachable · ${down} unavailable`;
+
+    if(!checked.length){
+      results.innerHTML = emptyState("There are no approved links to check.", "·");
+      return;
+    }
+
+    results.innerHTML = checked.map(x => `
+      <div class="link-checker-row">
+        <div class="link-checker-main">
+          <div class="link-checker-title">${esc(x.title || "Untitled")}</div>
+          <div class="link-checker-url">${esc(x.url || "")}</div>
+        </div>
+        <span class="check-badge ${x.ok ? "check-up" : "check-down"}">${x.ok ? "UP" : "DOWN"}</span>
+        <span class="check-status">${esc(x.detail || "No response details")}</span>
+      </div>
+    `).join("");
+
+    // Only offer deletion for URLs that clearly no longer exist.
+    // 404 = Not Found, 410 = Gone. Temporary outages are left alone.
+    const definitelyGone = checked.filter(x =>
+      !x.ok && (Number(x.status) === 404 || Number(x.status) === 410)
+    );
+
+    if(definitelyGone.length){
+      const names = definitelyGone
+        .slice(0, 12)
+        .map(x => `• ${x.title || "Untitled"} — ${x.status}`)
+        .join("\n");
+
+      const extra = definitelyGone.length > 12
+        ? `\n• ...and ${definitelyGone.length - 12} more`
+        : "";
+
+      const confirmMessage =
+        `The checker found ${definitelyGone.length} approved link${definitelyGone.length === 1 ? "" : "s"} that returned 404/410 and appear to no longer exist.\n\n` +
+        `${names}${extra}\n\nDelete these links permanently from VEXO?`;
+
+      if(confirm(confirmMessage)){
+        btn.disabled = true;
+        btn.textContent = "Removing...";
+
+        let removed = 0;
+        const failed = [];
+
+        try{
+          for(const item of definitelyGone){
+            if(!item.id) continue;
+            const {error:deleteError} = await db.from("links").delete().eq("id", item.id);
+            if(deleteError){
+              console.error("Broken link delete failed:", item.id, deleteError);
+              failed.push(item.title || item.url || "Untitled");
+            }else{
+              removed++;
+            }
+          }
+
+          if(removed) toast(`${removed} broken link${removed === 1 ? "" : "s"} removed.`);
+          await loadAdminData();
+          await loadLinks();
+          if(failed.length) toast(`${failed.length} link${failed.length === 1 ? "" : "s"} could not be removed.`);
+        }catch(deleteErr){
+          console.error("Broken link cleanup:", deleteErr);
+          toast("Broken link cleanup failed.");
+        }finally{
+          btn.disabled = false;
+          btn.textContent = "Check all links";
+        }
+      }
+    }
+  }catch(err){
+    console.error("Link checker:", err);
+    results.innerHTML = emptyState("The server-side link checker could not run.", "!");
+    summary.textContent = err?.message || "Could not contact the Edge Function.";
+    toast("Link checker failed.");
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "Check all links";
+  }
+}
+</script>
+
+<script>
+async function runVirusTotalChecker(){
+  if(!isAdmin){
+    toast("Admin access required.");
+    return;
+  }
+
+  const btn = $("vtCheckBtn");
+  const summary = $("vtSummary");
+  const results = $("vtResults");
+
+  btn.disabled = true;
+  btn.textContent = "Checking...";
+  summary.innerHTML = `<span class="vt-stat">Preparing VirusTotal checks...</span>`;
+  results.innerHTML = emptyState("Checking approved links with VirusTotal...", "↻");
+
+  try{
+    const { data, error } = await db.functions.invoke("link-safety-checker");
+    if(error) throw error;
+    if(data?.error) throw new Error(data.error);
+
+    const checked = Array.isArray(data?.results) ? data.results : [];
+    const safe = checked.filter(x => x.verdict === "safe").length;
+    const suspicious = checked.filter(x => x.verdict === "suspicious").length;
+    const malicious = checked.filter(x => x.verdict === "malicious").length;
+    const unknown = checked.filter(x => !["safe","suspicious","malicious"].includes(x.verdict)).length;
+
+    summary.innerHTML = `
+      <span class="vt-stat">${checked.length} checked</span>
+      <span class="vt-stat">${safe} safe</span>
+      <span class="vt-stat">${suspicious} suspicious</span>
+      <span class="vt-stat">${malicious} malicious</span>
+      <span class="vt-stat">${unknown} unknown</span>
+    `;
+
+    if(!checked.length){
+      results.innerHTML = emptyState("There are no approved links to check.", "·");
+      return;
+    }
+
+    results.innerHTML = checked.map(x => {
+      const badgeClass = x.verdict === "safe" ? "vt-safe" : x.verdict === "suspicious" ? "vt-suspicious" : x.verdict === "malicious" ? "vt-malicious" : "vt-unknown";
+      const badgeText = x.verdict === "safe" ? "SAFE" : x.verdict === "suspicious" ? "SUSPICIOUS" : x.verdict === "malicious" ? "MALICIOUS" : "NO DATA";
+      const detections = Number.isFinite(x.malicious) || Number.isFinite(x.suspicious) || Number.isFinite(x.harmless)
+        ? `${x.malicious || 0} malicious · ${x.suspicious || 0} suspicious`
+        : (x.detail || "No report details");
+      const reportBtn = x.reportUrl ? `<a class="btn mini" href="${esc(x.reportUrl)}" target="_blank" rel="noopener noreferrer">Report ↗</a>` : "";
+      return `
+        <div class="vt-row">
+          <div class="vt-main">
+            <div class="vt-title">${esc(x.title || "Untitled")}</div>
+            <div class="vt-url">${esc(x.url || "")}</div>
+          </div>
+          <span class="vt-badge ${badgeClass}">${badgeText}</span>
+          <span class="vt-detail">${esc(detections)}</span>
+          ${reportBtn}
+        </div>`;
+    }).join("");
+
+    const dangerous = checked.filter(x => x.verdict === "malicious");
+    if(dangerous.length){
+      const names = dangerous.slice(0,8).map(x => `• ${x.title || x.url}`).join("\n");
+      const extra = dangerous.length > 8 ? `\n• +${dangerous.length - 8} more` : "";
+      if(confirm(`VirusTotal marked ${dangerous.length} approved link${dangerous.length === 1 ? "" : "s"} as MALICIOUS.\n\n${names}${extra}\n\nRemove these links from VEXO?`)){
+        let removed = 0;
+        for(const x of dangerous){
+          if(!x.id) continue;
+          const {error:deleteError} = await db.from("links").delete().eq("id", x.id);
+          if(!deleteError) removed++;
+          else console.error("VirusTotal removal error:", deleteError);
+        }
+        toast(removed ? `${removed} malicious link${removed === 1 ? "" : "s"} removed.` : "No malicious links were removed.");
+        if(removed){
+          await loadAdminData();
+          await loadLinks();
+        }
+      }
+    }
+  }catch(err){
+    console.error("VirusTotal checker:", err);
+    results.innerHTML = emptyState("The VirusTotal safety checker could not run.", "!");
+    summary.innerHTML = `<span class="vt-stat">${esc(err?.message || "Could not contact the safety checker.")}</span>`;
+    toast("VirusTotal safety check failed.");
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "Check safety";
+  }
+}
 </script>
 
 </body>
