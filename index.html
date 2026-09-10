@@ -294,6 +294,19 @@ body.compact .home-grid{gap:14px;}
 body.no-motion *{animation:none!important;transition:none!important;}
 body.no-cursor,body.no-cursor button{cursor:auto!important;}
 body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
+
+/* LINK CHECKER ADD-ON */
+.link-checker-grid{display:grid;gap:10px;}
+.link-checker-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025);}
+.link-checker-main{min-width:0;}
+.link-checker-title{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.link-checker-url{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px;}
+.check-badge{display:inline-flex;align-items:center;justify-content:center;min-width:58px;padding:5px 9px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.08em;}
+.check-up{color:var(--green);background:rgba(52,211,153,.10);border:1px solid rgba(52,211,153,.22);}
+.check-down{color:var(--red);background:rgba(251,113,133,.10);border:1px solid rgba(251,113,133,.22);}
+.check-status{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;}
+@media(max-width:720px){.link-checker-row{grid-template-columns:1fr auto;}.check-status{grid-column:1/-1;}}
+
 </style>
 </head>
 <body>
@@ -636,6 +649,15 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 <div class="admin-stat"><strong id="adminRejected">0</strong><span>Rejected links</span></div>
 <div class="admin-stat"><strong id="adminUsers">0</strong><span>Admins</span></div>
 </div>
+</div>
+
+<div class="panel">
+<div class="panel-head">
+<div><h3>Link Checker</h3><div class="muted-sm">Server-side reachability checks for approved links.</div></div>
+<button class="btn primary" id="checkLinksBtn" onclick="runLinkChecker()">Check all links</button>
+</div>
+<div id="linkCheckerSummary" class="muted-sm" style="margin-bottom:12px;">Only VEXO administrators can run the server-side checker.</div>
+<div id="linkCheckerResults" class="link-checker-grid"></div>
 </div>
 
 <div class="panel">
@@ -1340,6 +1362,61 @@ async function deleteLink(id){
   toast("Link removed.");
   await loadAdminData();
   await loadLinks();
+}
+
+/* SERVER-SIDE LINK CHECKER */
+async function runLinkChecker(){
+  if(!isAdmin){
+    toast("Admin access required.");
+    return;
+  }
+
+  const btn = $("checkLinksBtn");
+  const results = $("linkCheckerResults");
+  const summary = $("linkCheckerSummary");
+
+  btn.disabled = true;
+  btn.textContent = "Checking...";
+  summary.textContent = "The Supabase server is checking every approved URL.";
+  results.innerHTML = emptyState("Checking approved links...", "↻");
+
+  try{
+    const { data, error } = await db.functions.invoke("link-checker");
+
+    if(error) throw error;
+
+    if(data?.error) throw new Error(data.error);
+
+    const checked = Array.isArray(data?.results) ? data.results : [];
+    const up = checked.filter(x => x.ok).length;
+    const down = checked.filter(x => !x.ok).length;
+
+    summary.textContent = `${checked.length} checked · ${up} reachable · ${down} unavailable`;
+
+    if(!checked.length){
+      results.innerHTML = emptyState("There are no approved links to check.", "·");
+      return;
+    }
+
+    results.innerHTML = checked.map(x => `
+      <div class="link-checker-row">
+        <div class="link-checker-main">
+          <div class="link-checker-title">${esc(x.title || "Untitled")}</div>
+          <div class="link-checker-url">${esc(x.url || "")}</div>
+        </div>
+        <span class="check-badge ${x.ok ? "check-up" : "check-down"}">${x.ok ? "UP" : "DOWN"}</span>
+        <span class="check-status">${esc(x.detail || "No response details")}</span>
+      </div>
+    `).join("");
+  }catch(err){
+    console.error("Link checker:", err);
+    results.innerHTML = emptyState("The server-side link checker could not run.", "!");
+    summary.textContent = err?.message || "Could not contact the Edge Function.";
+    toast("Link checker failed.");
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "Check all links";
+  }
 }
 
 /* ADMIN NOTIFICATIONS */
@@ -2137,4 +2214,3 @@ loadSession();
 
 </body>
 </html>
-
