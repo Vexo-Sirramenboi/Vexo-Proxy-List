@@ -4,6 +4,9 @@
 [![Supabase](https://img.shields.io/badge/Backend-Supabase-3ECF8E?style=flat&logo=supabase)](https://supabase.com)
 [![HTML5](https://img.shields.io/badge/Built%20With-HTML%2FCSS%2FJS-E34F26?style=flat&logo=html5)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 
+As of 9/11/2026 Vexo Proxy List has been released.
+Today we also would like to say our prayers to help the people who were lost when the 9/11 attacks happened. May they rest in peace and find life in a new world.
+
 VEXO is a community-driven web directory and discovery platform. Users can submit useful links, vote on submissions, bookmark favorites, and engage in real-time chat—all with robust moderation tools.
 
 ---
