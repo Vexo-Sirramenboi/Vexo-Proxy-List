@@ -324,8 +324,40 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 .check-status{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;}
 @media(max-width:720px){.link-checker-row{grid-template-columns:1fr auto;}.check-status{grid-column:1/-1;}}
 </style>
+<style>
+
+/* VEXO DEDICATED BACKGROUND OVERRIDE */
+#vexoBackgroundFrame{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+  margin:0;
+  padding:0;
+  z-index:-10;
+  pointer-events:none;
+  background:#050711;
+}
+body{
+  background:transparent !important;
+}
+#scene,#grid,.orb{
+  display:none !important;
+}
+
+</style>
 </head>
 <body>
+
+<!-- VEXO DEDICATED BACKGROUND — separate HTML file -->
+<iframe
+  id="vexoBackgroundFrame"
+  src="vexo-background.html"
+  title="VEXO Background"
+  aria-hidden="true"
+></iframe>
+
 
 <div id="scene"></div>
 <div id="grid"></div>
@@ -1446,6 +1478,7 @@ document.querySelectorAll("[data-bg]").forEach(b => b.onclick = () => {
 
 const saved = localStorage.getItem("vexo-bg") || "grid";
 document.querySelector(`[data-bg="${saved}"]`)?.click();
+window.vexoSetBackground?.(saved);
 
 /* CURSOR */
 let mx=0, my=0, cx=0, cy=0, rx=0, ry=0;
@@ -2396,6 +2429,52 @@ async function runVirusTotalChecker(){
 }
 </script>
 
+
+<script>
+/* VEXO DEDICATED BACKGROUND CONTROLLER */
+(() => {
+  const frame = document.getElementById("vexoBackgroundFrame");
+  if(!frame) return;
+
+  function currentBackground(){
+    return localStorage.getItem("vexo-bg") || "grid";
+  }
+
+  function sendBackground(mode){
+    frame.contentWindow?.postMessage({
+      type:"VEXO_BACKGROUND",
+      mode:mode
+    },"*");
+  }
+
+  frame.addEventListener("load", () => {
+    sendBackground(currentBackground());
+  });
+
+  window.addEventListener("message", event => {
+    if(event.data?.type === "VEXO_BACKGROUND_READY"){
+      sendBackground(currentBackground());
+    }
+  });
+
+  document.querySelectorAll("[data-bg]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const mode = btn.dataset.bg;
+      localStorage.setItem("vexo-bg", mode);
+      sendBackground(mode);
+    });
+  });
+
+  window.vexoSetBackground = mode => {
+    if(!["grid","plain","stars"].includes(mode)) return;
+    localStorage.setItem("vexo-bg", mode);
+    sendBackground(mode);
+  };
+
+  setTimeout(() => sendBackground(currentBackground()), 100);
+})();
+</script>
+
 </body>
 </html>
 
@@ -3322,3 +3401,4 @@ async function runVirusTotalChecker(){
   setTimeout(hookAnnouncementRefresh, 1000);
 })();
 </script>
+
