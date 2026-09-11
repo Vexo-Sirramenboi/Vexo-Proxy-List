@@ -2398,3 +2398,485 @@ async function runVirusTotalChecker(){
 
 </body>
 </html>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- VEXO TERMS / ANNOUNCEMENTS / TAKEDOWN MANAGEMENT — ADD-ON -->
+<!-- Append-only: existing VEXO functionality above is preserved. -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<style>
+.vexo-announcements-home{margin-top:20px;}
+.vexo-announcement-list{display:grid;gap:10px;}
+.vexo-announcement{padding:15px 16px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.025);}
+.vexo-announcement-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;}
+.vexo-announcement-title{font-size:14px;font-weight:800;}
+.vexo-announcement-date{font-size:10px;color:var(--muted);white-space:nowrap;}
+.vexo-announcement-body{font-size:12.5px;color:var(--muted);line-height:1.65;white-space:pre-wrap;}
+.terms-wrap{display:grid;gap:18px;}
+.terms-card{padding:20px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025);}
+.terms-card h3{margin:0 0 8px;font-size:16px;}
+.terms-card p,.terms-card li{color:var(--muted);font-size:13px;line-height:1.7;}
+.terms-card ul{margin:8px 0 0;padding-left:20px;}
+.terms-notice{padding:13px 15px;border-radius:12px;border:1px solid rgba(251,191,36,.25);background:rgba(251,191,36,.07);color:#f8d778;font-size:12px;line-height:1.6;}
+.terms-good{padding:13px 15px;border-radius:12px;border:1px solid rgba(52,211,153,.22);background:rgba(52,211,153,.06);color:#9be8ca;font-size:12px;line-height:1.6;}
+.announcement-admin-grid,.takedown-admin-grid{display:grid;gap:10px;}
+.admin-edit-card{padding:15px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.025);}
+.admin-edit-card h4{margin:0 0 6px;font-size:14px;}
+.admin-edit-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}
+.admin-pill{display:inline-flex;align-items:center;padding:4px 8px;border-radius:99px;background:rgba(124,92,255,.10);border:1px solid rgba(124,92,255,.20);font-size:10px;font-weight:800;letter-spacing:.06em;color:#b9a8ff;text-transform:uppercase;}
+.admin-pill.active{color:var(--green);border-color:rgba(52,211,153,.2);background:rgba(52,211,153,.08);}
+.admin-pill.inactive{color:var(--muted);}
+.admin-edit-card .muted-sm{line-height:1.55;white-space:pre-wrap;}
+.admin-request-text{font-size:12.5px;color:var(--muted);line-height:1.6;white-space:pre-wrap;}
+@media(max-width:700px){.vexo-announcement-top{align-items:flex-start;flex-direction:column;gap:4px;}}
+</style>
+
+<script>
+(() => {
+  const TERMS_PAGE_ID = "termsPage";
+  const ANN_HOME_ID = "vexoAnnouncementsHome";
+  const ANN_ADMIN_ID = "announcementAdminPanel";
+  const TAKEDOWN_ADMIN_ID = "takedownAdminPanel";
+
+  function esc2(v=""){
+    return String(v).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+  }
+
+  function fmtDate(v){
+    if(!v) return "Unknown date";
+    try{return new Date(v).toLocaleString();}catch(e){return "Unknown date";}
+  }
+
+  function isAdminNow(){ return !!isAdmin; }
+
+  /* ---------------- SIDEBAR + TERMS PAGE ---------------- */
+  function injectTermsPage(){
+    if(document.getElementById(TERMS_PAGE_ID)) return;
+
+    const nav = document.querySelector(".nav");
+    const settingsBtn = nav?.querySelector('[data-page="settings"]');
+    if(nav && settingsBtn && !nav.querySelector('[data-page="terms"]')){
+      const b = document.createElement("button");
+      b.dataset.page = "terms";
+      b.innerHTML = '<span class="ic">§</span><span class="lbl">Terms of Use</span>';
+      b.onclick = () => showTermsPage();
+      settingsBtn.insertAdjacentElement("afterend", b);
+    }
+
+    const main = document.querySelector("main.main");
+    if(!main) return;
+
+    const section = document.createElement("section");
+    section.id = TERMS_PAGE_ID;
+    section.className = "page hidden";
+    section.innerHTML = `
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>VEXO Terms of Use</h3>
+            <div class="muted-sm">Community rules, third-party link disclosures and reporting options.</div>
+          </div>
+        </div>
+        <div class="terms-wrap">
+          <div class="terms-notice">
+            This page is an informational Terms of Use template for the VEXO project. It does not guarantee immunity from legal claims, copyright liability, or other legal responsibility. The project owner should replace placeholders and obtain legal advice where appropriate.
+          </div>
+
+          <div class="terms-card">
+            <h3>1. What VEXO does</h3>
+            <p>VEXO is a community-driven directory and discovery service for links submitted by users. VEXO primarily provides references to third-party websites and does not own, operate, control, or endorse those third-party websites merely because a link appears in the VEXO directory.</p>
+          </div>
+
+          <div class="terms-card">
+            <h3>2. Third-party sites and affiliation</h3>
+            <p>Unless a specific affiliation is expressly stated, VEXO is not affiliated with, sponsored by, endorsed by, or officially connected to the third-party websites, services, companies, brands, or projects linked from the community directory. Third-party names and trademarks belong to their respective owners.</p>
+          </div>
+
+          <div class="terms-card">
+            <h3>3. Community submissions</h3>
+            <p>Links are submitted by members of the community and are reviewed by VEXO moderators and administrators. A submission appearing on VEXO does not mean VEXO created, owns, or approves the underlying third-party content. Submitters remain responsible for the accuracy and legality of material they submit.</p>
+          </div>
+
+          <div class="terms-card">
+            <h3>4. Safety and security checks</h3>
+            <p>VEXO may use server-side uptime checks, automated threat-intelligence services, and human moderation to identify broken, suspicious, phishing-related, or malicious links. These checks are risk-reduction measures, not guarantees that a website or file is completely safe.</p>
+            <div class="terms-good">A link being listed on VEXO should never be treated as a guarantee of safety, legality, availability, or trustworthiness.</div>
+          </div>
+
+          <div class="terms-card">
+            <h3>5. Copyright and DMCA requests</h3>
+            <p>VEXO provides a reporting and takedown workflow for people who believe a linked resource infringes their copyright or otherwise requires review. VEXO will review submitted notices and may remove or disable a link when appropriate.</p>
+            <p>Nothing on this page states that VEXO qualifies for any particular statutory safe harbor. Any DMCA safe-harbor protection depends on the facts and on satisfying applicable legal requirements. In the United States, qualifying service providers using the §512(c) safe harbor generally need a compliant notice-and-takedown process and a designated agent with current information on file with the U.S. Copyright Office.</p>
+          </div>
+
+          <div class="terms-card">
+            <h3>6. Prohibited submissions</h3>
+            <ul>
+              <li>Links intentionally submitted to distribute malware, phishing pages, or other harmful software.</li>
+              <li>Links or descriptions that knowingly facilitate unlawful activity.</li>
+              <li>Fraudulent, deceptive, or abusive submissions.</li>
+              <li>Repeated submissions designed to evade moderation or removal.</li>
+            </ul>
+          </div>
+
+          <div class="terms-card">
+            <h3>7. Availability and liability</h3>
+            <p>Third-party websites can change, disappear, block automated requests, or become unavailable without notice. VEXO does not warrant that linked websites will remain available or that information found on them is accurate. VEXO may remove or change listings at any time.</p>
+          </div>
+
+          <div class="terms-card">
+            <h3>8. Contact and takedown requests</h3>
+            <div class="muted-sm" style="margin-bottom:12px;">Use this form to request review of a VEXO-linked page. Do not submit passwords, payment information, or other unnecessary sensitive information.</div>
+            <form id="vexoTakedownForm" class="form">
+              <div class="row">
+                <div><label>Your name</label><input class="input" id="tdName" maxlength="120" required></div>
+                <div><label>Contact email</label><input class="input" id="tdEmail" type="email" maxlength="200" required></div>
+              </div>
+              <div>
+                <label>Request type</label>
+                <select class="select" id="tdType">
+                  <option value="copyright">Copyright / DMCA</option>
+                  <option value="phishing">Phishing / impersonation</option>
+                  <option value="malware">Malware / harmful content</option>
+                  <option value="other">Other legal or safety concern</option>
+                </select>
+              </div>
+              <div><label>VEXO link URL</label><input class="input" id="tdUrl" type="url" maxlength="1000" required placeholder="https://vexo... or the linked third-party URL"></div>
+              <div><label>Details</label><textarea class="textarea" id="tdDetails" rows="6" maxlength="5000" required placeholder="Explain the issue, why the link should be reviewed, and any information needed to locate the material."></textarea></div>
+              <label class="check"><input type="checkbox" id="tdConfirm" required> I confirm that the information in this request is accurate to the best of my knowledge.</label>
+              <button class="btn primary" type="submit" id="tdSubmit">Send takedown / review request</button>
+            </form>
+          </div>
+        </div>
+      </div>`;
+    main.appendChild(section);
+
+    document.getElementById("vexoTakedownForm")?.addEventListener("submit", submitTakedown);
+  }
+
+  function showTermsPage(){
+    injectTermsPage();
+    document.querySelectorAll(".page").forEach(x => x.classList.add("hidden"));
+    const page = document.getElementById(TERMS_PAGE_ID);
+    page?.classList.remove("hidden");
+    document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.page === "terms"));
+    $("pageTitle").textContent = "Terms of Use";
+    $("pageSub").textContent = "Community rules, third-party disclosures and reporting options.";
+    $("crumbPage").textContent = "Terms of Use";
+  }
+
+  /* ---------------- PUBLIC ANNOUNCEMENTS ---------------- */
+  function injectHomeAnnouncements(){
+    const home = document.getElementById("homePage");
+    const hero = home?.querySelector(".hero");
+    if(!home || !hero || document.getElementById(ANN_HOME_ID)) return;
+
+    const panel = document.createElement("div");
+    panel.id = ANN_HOME_ID;
+    panel.className = "panel vexo-announcements-home hidden";
+    panel.innerHTML = `
+      <div class="panel-head">
+        <div><h3>VEXO Announcements</h3><div class="muted-sm">Updates from the VEXO community team.</div></div>
+      </div>
+      <div id="vexoAnnouncementsList" class="vexo-announcement-list"></div>`;
+    hero.insertAdjacentElement("afterend", panel);
+  }
+
+  async function loadPublicAnnouncements(){
+    injectHomeAnnouncements();
+    const panel = document.getElementById(ANN_HOME_ID);
+    const list = document.getElementById("vexoAnnouncementsList");
+    if(!panel || !list) return;
+
+    const {data, error} = await db.from("announcements")
+      .select("id,title,body,created_at,updated_at")
+      .eq("active", true)
+      .order("created_at", {ascending:false})
+      .limit(10);
+
+    if(error){
+      console.error("Announcements:", error);
+      panel.classList.add("hidden");
+      return;
+    }
+
+    if(!data?.length){
+      panel.classList.add("hidden");
+      return;
+    }
+
+    panel.classList.remove("hidden");
+    list.innerHTML = data.map(a => `
+      <article class="vexo-announcement">
+        <div class="vexo-announcement-top">
+          <div class="vexo-announcement-title">${esc2(a.title)}</div>
+          <div class="vexo-announcement-date">${esc2(fmtDate(a.updated_at || a.created_at))}</div>
+        </div>
+        <div class="vexo-announcement-body">${esc2(a.body)}</div>
+      </article>`).join("");
+  }
+
+  /* ---------------- TAKEDOWN REQUEST ---------------- */
+  async function submitTakedown(e){
+    e.preventDefault();
+    const btn = document.getElementById("tdSubmit");
+    if(!btn) return;
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+    try{
+      const row = {
+        requester_name: document.getElementById("tdName").value.trim(),
+        requester_email: document.getElementById("tdEmail").value.trim(),
+        request_type: document.getElementById("tdType").value,
+        url: document.getElementById("tdUrl").value.trim(),
+        details: document.getElementById("tdDetails").value.trim(),
+        status: "pending"
+      };
+      const {error} = await db.from("takedown_requests").insert(row);
+      if(error) throw error;
+      e.target.reset();
+      toast("Request submitted for administrator review.");
+    }catch(err){
+      console.error("Takedown request:", err);
+      toast(err?.message || "Could not submit the request.");
+    }finally{
+      btn.disabled = false;
+      btn.textContent = "Send takedown / review request";
+    }
+  }
+
+  /* ---------------- ADMIN ANNOUNCEMENTS ---------------- */
+  function injectAnnouncementAdmin(){
+    const adminPage = document.getElementById("adminPage");
+    const queuePanel = document.getElementById("adminQueue")?.closest(".panel");
+    if(!adminPage || !queuePanel || document.getElementById(ANN_ADMIN_ID)) return;
+
+    const panel = document.createElement("div");
+    panel.id = ANN_ADMIN_ID;
+    panel.className = "panel";
+    panel.innerHTML = `
+      <div class="panel-head">
+        <div><h3>Homepage Announcements</h3><div class="muted-sm">Create, publish, update, or remove notices shown on the VEXO home page.</div></div>
+      </div>
+      <form id="announcementForm" class="form" style="margin-bottom:18px;">
+        <input type="hidden" id="announcementId">
+        <div class="row">
+          <div><label>Announcement title</label><input class="input" id="announcementTitle" maxlength="180" required placeholder="Example: Maintenance notice"></div>
+          <div><label>Visibility</label><select class="select" id="announcementActive"><option value="true">Published</option><option value="false">Draft</option></select></div>
+        </div>
+        <div><label>Announcement message</label><textarea class="textarea" id="announcementBody" rows="5" maxlength="5000" required placeholder="Write the announcement shown on the VEXO homepage..."></textarea></div>
+        <div class="actions">
+          <button class="btn primary" type="submit" id="announcementSaveBtn">Publish announcement</button>
+          <button class="btn" type="button" id="announcementCancelBtn">Clear / new</button>
+        </div>
+      </form>
+      <div id="announcementAdminList" class="announcement-admin-grid"></div>`;
+    queuePanel.insertAdjacentElement("beforebegin", panel);
+
+    document.getElementById("announcementForm")?.addEventListener("submit", saveAnnouncement);
+    document.getElementById("announcementCancelBtn")?.addEventListener("click", clearAnnouncementForm);
+  }
+
+  function clearAnnouncementForm(){
+    $("announcementId").value = "";
+    $("announcementTitle").value = "";
+    $("announcementBody").value = "";
+    $("announcementActive").value = "true";
+    $("announcementSaveBtn").textContent = "Publish announcement";
+  }
+
+  async function loadAnnouncementsAdmin(){
+    if(!isAdminNow()) return;
+    injectAnnouncementAdmin();
+    const box = document.getElementById("announcementAdminList");
+    if(!box) return;
+
+    const {data,error} = await db.from("announcements")
+      .select("id,title,body,active,created_at,updated_at")
+      .order("created_at", {ascending:false})
+      .limit(100);
+    if(error){
+      box.innerHTML = emptyState("Could not load announcements.", "!");
+      console.error("Admin announcements:", error);
+      return;
+    }
+    if(!data?.length){
+      box.innerHTML = emptyState("No announcements yet.", "·");
+      return;
+    }
+
+    box.innerHTML = data.map(a => `
+      <div class="admin-edit-card">
+        <div class="admin-edit-meta">
+          <span class="admin-pill ${a.active ? "active" : "inactive"}">${a.active ? "Published" : "Draft"}</span>
+          <span class="muted-sm">Updated ${esc2(fmtDate(a.updated_at || a.created_at))}</span>
+        </div>
+        <h4>${esc2(a.title)}</h4>
+        <div class="muted-sm" style="margin-bottom:10px;">${esc2(a.body)}</div>
+        <div class="actions">
+          <button class="btn mini" onclick="window.editVexoAnnouncement('${a.id}')">Edit</button>
+          <button class="btn mini danger" onclick="window.deleteVexoAnnouncement('${a.id}')">Delete</button>
+        </div>
+      </div>`).join("");
+  }
+
+  async function saveAnnouncement(e){
+    e.preventDefault();
+    if(!isAdminNow()){ toast("Admin access required."); return; }
+    const id = $("announcementId").value.trim();
+    const row = {
+      title: $("announcementTitle").value.trim(),
+      body: $("announcementBody").value.trim(),
+      active: $("announcementActive").value === "true",
+      updated_at: new Date().toISOString(),
+      created_by: user?.id || null
+    };
+    if(!row.title || !row.body){ toast("Title and message are required."); return; }
+    const btn = $("announcementSaveBtn");
+    btn.disabled = true;
+    btn.textContent = id ? "Updating..." : "Publishing...";
+    try{
+      let res;
+      if(id){
+        res = await db.from("announcements").update(row).eq("id", id);
+      }else{
+        res = await db.from("announcements").insert(row);
+      }
+      if(res.error) throw res.error;
+      toast(id ? "Announcement updated." : "Announcement published.");
+      clearAnnouncementForm();
+      await loadAnnouncementsAdmin();
+      await loadPublicAnnouncements();
+    }catch(err){
+      console.error("Save announcement:", err);
+      toast(err?.message || "Could not save announcement.");
+    }finally{
+      btn.disabled = false;
+    }
+  }
+
+  window.editVexoAnnouncement = async id => {
+    if(!isAdminNow()) return;
+    const {data,error} = await db.from("announcements").select("id,title,body,active").eq("id",id).single();
+    if(error){ toast(error.message); return; }
+    $("announcementId").value = data.id;
+    $("announcementTitle").value = data.title || "";
+    $("announcementBody").value = data.body || "";
+    $("announcementActive").value = data.active ? "true" : "false";
+    $("announcementSaveBtn").textContent = "Update announcement";
+    document.getElementById(ANN_ADMIN_ID)?.scrollIntoView({behavior:"smooth",block:"start"});
+  };
+
+  window.deleteVexoAnnouncement = async id => {
+    if(!isAdminNow()) return;
+    if(!confirm("Delete this announcement permanently?")) return;
+    const {error} = await db.from("announcements").delete().eq("id",id);
+    if(error){ toast(error.message); return; }
+    toast("Announcement deleted.");
+    await loadAnnouncementsAdmin();
+    await loadPublicAnnouncements();
+  };
+
+  /* ---------------- ADMIN TAKEDOWN REQUESTS ---------------- */
+  function injectTakedownAdmin(){
+    const adminPage = document.getElementById("adminPage");
+    const notifPanel = document.getElementById("adminNotifications")?.closest(".panel");
+    if(!adminPage || !notifPanel || document.getElementById(TAKEDOWN_ADMIN_ID)) return;
+
+    const panel = document.createElement("div");
+    panel.id = TAKEDOWN_ADMIN_ID;
+    panel.className = "panel";
+    panel.innerHTML = `
+      <div class="panel-head">
+        <div><h3>Takedown &amp; Legal Requests</h3><div class="muted-sm">Review copyright, phishing, malware, and other community reports.</div></div>
+      </div>
+      <div id="takedownAdminList" class="takedown-admin-grid"></div>`;
+    notifPanel.insertAdjacentElement("beforebegin", panel);
+  }
+
+  async function loadTakedownAdmin(){
+    if(!isAdminNow()) return;
+    injectTakedownAdmin();
+    const box = document.getElementById("takedownAdminList");
+    if(!box) return;
+    const {data,error} = await db.from("takedown_requests")
+      .select("id,requester_name,requester_email,request_type,url,details,status,admin_note,created_at,updated_at")
+      .order("created_at",{ascending:false})
+      .limit(100);
+    if(error){ box.innerHTML = emptyState("Could not load requests.","!"); console.error(error); return; }
+    if(!data?.length){ box.innerHTML = emptyState("No takedown requests yet.","·"); return; }
+
+    box.innerHTML = data.map(r => `
+      <div class="admin-edit-card">
+        <div class="admin-edit-meta">
+          <span class="admin-pill ${r.status === "resolved" ? "active" : "inactive"}">${esc2(r.status || "pending")}</span>
+          <span class="muted-sm">${esc2(r.request_type || "other")}</span>
+          <span class="muted-sm">${esc2(fmtDate(r.created_at))}</span>
+        </div>
+        <h4>${esc2(r.requester_name || "Unknown requester")}</h4>
+        <div class="muted-sm" style="margin-bottom:6px;">${esc2(r.requester_email || "No email")}</div>
+        <div class="submission-url" style="margin-bottom:8px;">${esc2(r.url || "")}</div>
+        <div class="admin-request-text" style="margin-bottom:10px;">${esc2(r.details || "No details provided.")}</div>
+        <textarea class="textarea" id="tdnote-${r.id}" rows="3" placeholder="Optional internal admin note">${esc2(r.admin_note || "")}</textarea>
+        <div class="actions" style="margin-top:9px;">
+          <select class="select" id="tdstatus-${r.id}" style="width:150px;">
+            <option value="pending" ${r.status === "pending" ? "selected" : ""}>Pending</option>
+            <option value="reviewing" ${r.status === "reviewing" ? "selected" : ""}>Reviewing</option>
+            <option value="resolved" ${r.status === "resolved" ? "selected" : ""}>Resolved</option>
+            <option value="rejected" ${r.status === "rejected" ? "selected" : ""}>Rejected</option>
+          </select>
+          <button class="btn mini primary" onclick="window.updateVexoTakedown('${r.id}')">Save</button>
+          <button class="btn mini danger" onclick="window.deleteVexoTakedown('${r.id}')">Delete</button>
+        </div>
+      </div>`).join("");
+  }
+
+  window.updateVexoTakedown = async id => {
+    if(!isAdminNow()) return;
+    const status = document.getElementById("tdstatus-"+id)?.value;
+    const admin_note = document.getElementById("tdnote-"+id)?.value || "";
+    const {error} = await db.from("takedown_requests").update({status,admin_note,updated_at:new Date().toISOString()}).eq("id",id);
+    if(error){ toast(error.message); return; }
+    toast("Request updated.");
+    await loadTakedownAdmin();
+  };
+
+  window.deleteVexoTakedown = async id => {
+    if(!isAdminNow()) return;
+    if(!confirm("Delete this takedown request permanently?")) return;
+    const {error} = await db.from("takedown_requests").delete().eq("id",id);
+    if(error){ toast(error.message); return; }
+    toast("Request deleted.");
+    await loadTakedownAdmin();
+  };
+
+  /* ---------------- WRAP EXISTING ADMIN LOAD ---------------- */
+  const originalLoadAdminData = window.loadAdminData;
+  if(typeof originalLoadAdminData === "function"){
+    window.loadAdminData = async function(){
+      const result = await originalLoadAdminData.apply(this, arguments);
+      if(isAdminNow()){
+        injectAnnouncementAdmin();
+        injectTakedownAdmin();
+        await loadAnnouncementsAdmin();
+        await loadTakedownAdmin();
+      }
+      return result;
+    };
+  }
+
+  /* ---------------- INITIALIZATION ---------------- */
+  function init(){
+    injectTermsPage();
+    injectHomeAnnouncements();
+    loadPublicAnnouncements();
+    if(isAdminNow()){
+      injectAnnouncementAdmin();
+      injectTakedownAdmin();
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", init);
+  init();
+})();
+</script>
+
