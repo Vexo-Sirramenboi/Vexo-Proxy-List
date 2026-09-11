@@ -1,27 +1,4 @@
-<!DOCTYPE html><!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>VEXO — Community</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0
-0 100 100'><rect width='100' height='100' rx='22' fill='%237c5cff'/><text x='50' y='68'
-font-size='52' font-family='Arial' font-weight='bold' fill='white'
-text-anchor='middle'>V</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link
-href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Spac
-e+Grotesk:wght@600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-:root{
---bg:#06090f;--bg2:#0a0f1c;--card:#0e1626;--surface:rgba(17,24,43,.72);
---line:rgba(148,163,184,.11);--line2:rgba(148,163,184,.18);
---text:#e8eefb;--muted:#8a97b5;
---accent:#7c5cff;--accent2:#19d3ff;--pink:#ff3f9d;
-
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -53,7 +30,6 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 ::-webkit-scrollbar-thumb{background:rgba(124,92,255,.28);border-radius:99px;border:2px solid var(--bg);}
 ::-webkit-scrollbar-thumb:hover{background:rgba(124,92,255,.45);}
 
-
 /* background */
 #scene{position:fixed;inset:0;z-index:-3;background:radial-gradient(circle at 50% 20%,rgba(124,92,255,.16),transparent 35%),linear-gradient(120deg,#050711,#0a0d1c 55%,#070914);}
 #grid{position:fixed;inset:-20%;z-index:-2;background-image:linear-gradient(rgba(124,92,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(25,211,255,.07) 1px,transparent 1px);background-size:55px 55px;transform:perspective(600px) rotateX(58deg) translateY(20%);animation:drift 18s linear infinite;mask-image:linear-gradient(transparent,#000 25%,#000 70%,transparent);}
@@ -64,16 +40,13 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 @keyframes drift{to{transform:perspective(600px) rotateX(58deg) translateY(30%);}}
 @keyframes float{50%{transform:translate(40px,-35px) scale(1.15);}}
 
-
 /* cursor */
 .cursor,.cursor-ring{position:fixed;left:0;top:0;border-radius:50%;pointer-events:none;z-index:9999;}
 .cursor{width:9px;height:9px;background:#fff;box-shadow:0 0 12px rgba(25,211,255,.9),0 0 30px rgba(124,92,255,.5);}
 .cursor-ring{width:36px;height:36px;border:1.5px solid rgba(25,211,255,.55);}
 
-
 /* layout */
 .app{display:flex;min-height:100vh;}
-
 
 .side{width:264px;position:fixed;inset:0 auto 0 0;padding:24px 18px;display:flex;flex-direction:column;background:rgba(8,12,22,.82);backdrop-filter:blur(24px);border-right:1px solid var(--line);z-index:20;}
 .brand{display:flex;align-items:center;gap:12px;padding:6px 8px 26px;font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;letter-spacing:.16em;}
@@ -91,13 +64,11 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .admin-nav.show{display:grid;gap:4px;}
 .admin-button{background:linear-gradient(135deg,rgba(124,92,255,.16),rgba(25,211,255,.08))!important;border-color:rgba(124,92,255,.28)!important;color:#fff!important;}
 
-
 .userbox{margin-top:0;display:flex;align-items:center;gap:12px;padding:13px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.03);}
 .userbox .avatar{width:40px;height:40px;border-radius:12px;background:var(--grad);display:grid;place-items:center;font-size:15px;font-weight:800;color:#fff;flex:none;box-shadow:0 6px 18px rgba(124,92,255,.35);}
 .userbox .ub-info{min-width:0;flex:1;}
 .userbox .ub-info strong{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .userbox .ub-info small{color:var(--muted);font-size:11px;}
-
 
 .main{margin-left:264px;width:calc(100% - 264px);padding:26px 34px 60px;}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:26px;}
@@ -113,13 +84,11 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green);animation:pulse 2s ease-in-out infinite;}
 @keyframes pulse{50%{opacity:.45;}}
 
-
 .panel{background:linear-gradient(180deg,rgba(17,24,43,.74),rgba(13,18,32,.74));border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);backdrop-filter:blur(18px);padding:22px;margin-bottom:20px;}
 .panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;}
 .panel-head h3{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em;}
 .muted{color:var(--muted);}
 .muted-sm{color:var(--muted);font-size:12px;}
-
 
 .hero{display:flex;align-items:center;justify-content:space-between;gap:30px;padding:32px;position:relative;overflow:hidden;}
 .hero-left{max-width:580px;}
@@ -138,7 +107,6 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .d3{top:6%;right:28%;width:8px;height:8px;background:#fff;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
 .stat{display:flex;align-items:center;gap:14px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--card);position:relative;overflow:hidden;transition:.25s;}
 .stat::after{content:"";position:absolute;width:90px;height:90px;right:-45px;top:-45px;border-radius:50%;background:rgba(124,92,255,.08);filter:blur(4px);}
@@ -147,7 +115,6 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .stat strong{display:block;font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.1;}
 .stat span{color:var(--muted);font-size:12px;}
 .stat small{color:var(--green);font-size:11px;font-weight:600;}
-
 
 .home-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;}
 .bars{display:grid;gap:15px;}
@@ -163,7 +130,6 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .feed-body{min-width:0;flex:1;}
 .feed-body strong{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-
 .actions{display:flex;flex-wrap:wrap;gap:9px;}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;transition:.2s;}
 .btn:hover{border-color:rgba(124,92,255,.55);background:rgba(124,92,255,.09);transform:translateY(-1px);}
@@ -174,7 +140,6 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .btn.warning{color:var(--amber);background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.28);}
 .btn.mini{padding:6px 10px;font-size:12px;border-radius:8px;}
 
-
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
 .input,.textarea,.select{width:100%;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--text);border-radius:11px;padding:11px 13px;font-size:13.5px;outline:none;transition:.2s;}
 .input::placeholder,.textarea::placeholder{color:#5b6884;}
@@ -184,7 +149,6 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .form{display:grid;gap:14px;}
 .form label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;letter-spacing:.04em;}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-
 
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
 .card{position:relative;display:flex;flex-direction:column;gap:10px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--card);overflow:hidden;transition:.25s;}
@@ -201,7 +165,6 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .card-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto;padding-top:4px;}
 .card-meta{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;}
 .icon-btn.on{color:var(--amber);border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08);}
-
 
 .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;}
 .tool-card{display:flex;flex-direction:column;gap:10px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--card);transition:.25s;}
@@ -220,12 +183,10 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .count-stats span{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
 .swatch{width:38px;height:38px;border-radius:10px;border:1px solid var(--line2);background:transparent;flex:none;}
 
-
 .proxy-wrap{border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:#fff;}
 .proxy-wrap iframe{display:block;width:100%;height:72vh;min-height:480px;border:0;background:#fff;}
 .note{margin-top:12px;line-height:1.6;}
 .note code{background:rgba(124,92,255,.12);padding:2px 6px;border-radius:6px;font-size:11.5px;color:#b9a8ff;}
-
 
 .admin-header{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px;}
 .admin-title{font-size:27px;font-weight:800;letter-spacing:-.02em;}
@@ -257,11 +218,9 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .notification:last-child{border-bottom:0;}
 .notification-icon{width:38px;height:38px;border-radius:11px;background:rgba(124,92,255,.13);display:grid;place-items:center;font-size:11px;font-weight:800;color:#b9a8ff;flex:none;}
 
-
 .empty{text-align:center;padding:45px 20px;color:var(--muted);grid-column:1/-1;border:1.5px dashed var(--line2);border-radius:14px;}
 .empty-icon{font-size:30px;margin-bottom:10px;opacity:.6;}
 .empty p{margin:0;font-size:13.5px;}
-
 
 .modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(2,4,10,.7);backdrop-filter:blur(10px);z-index:100;}
 .modal.open{display:grid;}
@@ -270,23 +229,19 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .close{float:right;background:none;border:0;color:var(--muted);font-size:26px;line-height:1;transition:.2s;}
 .close:hover{color:#fff;transform:rotate(90deg);}
 
-
 .admin-lock{position:fixed;inset:0;display:none;place-items:center;z-index:500;background:radial-gradient(circle at center,rgba(124,92,255,.13),#050711 60%);backdrop-filter:blur(20px);}
 .admin-lock.show{display:grid;}
 .lock-box{width:min(480px,calc(100% - 30px));padding:40px;text-align:center;border:1px solid var(--line2);background:rgba(13,20,36,.92);border-radius:24px;box-shadow:var(--shadow);}
 .lock-icon{width:78px;height:78px;margin:0 auto 18px;border-radius:22px;background:var(--grad);display:grid;place-items:center;font-size:24px;font-weight:800;color:#fff;box-shadow:0 0 40px rgba(124,92,255,.5);}
 
-
 .toast{position:fixed;right:22px;bottom:22px;z-index:300;display:flex;align-items:center;gap:10px;padding:13px 17px;border-radius:13px;background:#131c33;border:1px solid var(--line2);box-shadow:var(--shadow);font-size:13.5px;font-weight:600;opacity:0;transform:translateY(14px);transition:.25s;max-width:min(360px,calc(100vw - 44px));}
 .toast.show{opacity:1;transform:none;}
 .toast-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);flex:none;}
-
 
 hr{border:0;border-top:1px solid var(--line);margin:22px 0;}
 .hidden{display:none!important;}
 .page{animation:fadeUp .35s ease;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
-
 
 @media(max-width:1080px){.home-grid{grid-template-columns:1fr;}}
 @media(max-width:920px){
@@ -311,7 +266,6 @@ hr{border:0;border-top:1px solid var(--line);margin:22px 0;}
 .count-stats{grid-template-columns:1fr 1fr;}
 }
 @media(pointer:coarse){body,button{cursor:auto;}.cursor,.cursor-ring{display:none;}}
-
 
 /* ═══ SETTINGS ADDITIONS (new, appended — nothing above was modified) ═══ */
 .set-head{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(138,151,181,.55);margin:20px 0 10px;}
@@ -341,7 +295,6 @@ body.no-motion *{animation:none!important;transition:none!important;}
 body.no-cursor,body.no-cursor button{cursor:auto!important;}
 body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 
-
 /* VEXO VIRUSTOTAL SAFETY CHECKER — APPEND-ONLY */
 .vt-summary{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 13px;}
 .vt-stat{padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.03);font-size:11px;color:var(--muted);}
@@ -358,7 +311,6 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 .vt-detail{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;}
 @media(max-width:850px){.vt-row{grid-template-columns:1fr auto;}.vt-detail{grid-column:1/-1;}.vt-row .btn{justify-self:end;}}
 
-
 /* VEXO UPTIME LINK CHECKER — APPEND-ONLY */
 .link-checker-grid{display:grid;gap:10px;}
 .link-checker-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025);}
@@ -372,7 +324,6 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 @media(max-width:720px){.link-checker-row{grid-template-columns:1fr auto;}.check-status{grid-column:1/-1;}}
 </style>
 <style>
-
 
 /* VEXO DEDICATED BACKGROUND OVERRIDE */
 #vexoBackgroundFrame{
@@ -394,39 +345,9 @@ body{
   display:none !important;
 }
 
-
-</style>
-
-<style>
-/* VEXO SIDEBAR SCROLLBAR — APPENDED ONLY */
-.side{
-  overflow-y:auto;
-  overflow-x:hidden;
-  scrollbar-width:thin;
-  scrollbar-color:rgba(124,92,255,.45) transparent;
-  overscroll-behavior-y:contain;
-}
-
-.side::-webkit-scrollbar{
-  width:7px;
-}
-
-.side::-webkit-scrollbar-track{
-  background:transparent;
-}
-
-.side::-webkit-scrollbar-thumb{
-  background:rgba(124,92,255,.35);
-  border-radius:99px;
-}
-
-.side::-webkit-scrollbar-thumb:hover{
-  background:rgba(124,92,255,.6);
-}
 </style>
 </head>
 <body>
-
 
 <!-- VEXO DEDICATED BACKGROUND — separate HTML file -->
 <iframe
@@ -437,21 +358,16 @@ body{
 ></iframe>
 
 
-
-
 <div id="scene"></div>
 <div id="grid"></div>
 <div class="orb o1"></div>
 <div class="orb o2"></div>
 <div class="orb o3"></div>
 
-
 <div class="cursor" id="cursor"></div>
 <div class="cursor-ring" id="cursorRing"></div>
 
-
 <div class="app">
-
 
 <aside class="side">
 <div class="userbox" id="userBox">
@@ -460,7 +376,6 @@ body{
 <button class="btn primary mini" id="loginBtn">Sign in</button>
 </div>
 
-
 <div class="nav">
 <button class="active" data-page="home"><span class="ic">◈</span><span class="lbl">Dashboard</span></button>
 <button data-page="vault"><span class="ic">⌘</span><span class="lbl">Community Vault</span></button>
@@ -468,12 +383,10 @@ body{
 <button data-page="favorites"><span class="ic">★</span><span class="lbl">Favorites</span></button>
 <button data-page="settings"><span class="ic">⚙</span><span class="lbl">Settings</span></button>
 
-
 <div class="nav-label">Tools</div>
 <button data-page="tools"><span class="ic">▦</span><span class="lbl">Toolbox</span></button>
 <button data-page="proxy"><span class="ic">⇄</span><span class="lbl">Web Proxy</span></button>
 <button data-page="fileshare"><span class="ic">↗</span><span class="lbl">File Sharing</span></button>
-
 
 <div id="adminNav" class="admin-nav">
 <button class="admin-button" data-page="admin"><span class="ic">◆</span><span class="lbl">Admin Center</span></button>
@@ -481,13 +394,9 @@ body{
 </div>
 
 
-
-
 </aside>
 
-
 <main class="main">
-
 
 <div class="top">
 <div>
@@ -503,7 +412,6 @@ body{
 <span class="status">SUPABASE ONLINE</span>
 </div>
 </div>
-
 
 <!-- HOME -->
 <section id="homePage" class="page">
@@ -526,14 +434,12 @@ body{
 </div>
 </div>
 
-
 <div class="stats">
 <div class="stat"><div class="ico">◉</div><div><strong id="statLinks">0</strong><span>Approved links</span><small id="statNote1">No views yet</small></div></div>
 <div class="stat"><div class="ico">◔</div><div><strong id="statUsers">—</strong><span>Your account</span><small id="statNote2">Guest session</small></div></div>
 <div class="stat"><div class="ico">★</div><div><strong id="statFav">0</strong><span>Your favorites</span><small id="statNote3">Saved links</small></div></div>
 <div class="stat"><div class="ico">◷</div><div><strong id="statPending">—</strong><span>Pending submissions</span><small id="statNote4">Awaiting review</small></div></div>
 </div>
-
 
 <div class="home-grid">
 <div class="panel">
@@ -546,7 +452,6 @@ body{
 </div>
 </div>
 </section>
-
 
 <!-- VAULT -->
 <section id="vaultPage" class="page hidden">
@@ -561,7 +466,6 @@ body{
 </div>
 </section>
 
-
 <!-- FAVORITES -->
 <section id="favoritesPage" class="page hidden">
 <div class="panel">
@@ -569,7 +473,6 @@ body{
 <div class="grid" id="favoritesGrid"></div>
 </div>
 </section>
-
 
 <!-- SUBMIT -->
 <section id="submitPage" class="page hidden">
@@ -588,12 +491,10 @@ body{
 </div>
 </section>
 
-
 <!-- SETTINGS -->
 <section id="settingsPage" class="page hidden">
 <div class="panel">
 <div class="panel-head"><div><h3>Settings</h3><div class="muted-sm">Choose the VEXO visual mode.</div></div></div>
-
 
 <div class="set-head">Background</div>
 <div class="actions">
@@ -602,10 +503,8 @@ body{
 <button class="btn" data-bg="stars">✦ Deep Space</button>
 </div>
 
-
 <div class="set-head">Accent color</div>
 <div class="swatches" id="accentSwatches"></div>
-
 
 <div class="set-head">Layout &amp; behavior</div>
 <div class="settings-list">
@@ -623,7 +522,6 @@ body{
 </div>
 </div>
 
-
 <div class="set-head">Backup</div>
 <div class="actions">
 <button class="btn" id="exportSettings">⇩ Export settings</button>
@@ -632,19 +530,16 @@ body{
 <input type="file" id="importFile" accept="application/json,.json" class="hidden">
 </div>
 
-
 <hr>
 <button class="btn danger" id="logoutBtn">Sign out</button>
 </div>
 </section>
-
 
 <!-- TOOLS -->
 <section id="toolsPage" class="page hidden">
 <div class="panel">
 <div class="panel-head"><div><h3>Toolbox</h3><div class="muted-sm">Handy client-side utilities — nothing leaves your browser.</div></div></div>
 <div class="tools-grid">
-
 
 <div class="tool-card">
 <div class="tool-head"><h4>Base64</h4><span class="chip">codec</span></div>
@@ -657,7 +552,6 @@ body{
 <textarea class="input ta-sm tool-out" id="b64Out" readonly placeholder="Output..."></textarea>
 </div>
 
-
 <div class="tool-card">
 <div class="tool-head"><h4>URL Codec</h4><span class="chip">codec</span></div>
 <input class="input" id="urlIn" placeholder="https://example.com/a b?q=hello world">
@@ -669,7 +563,6 @@ body{
 <input class="input tool-out" id="urlOut" readonly placeholder="Encoded / decoded URL...">
 </div>
 
-
 <div class="tool-card">
 <div class="tool-head"><h4>JSON Formatter</h4><span class="chip">dev</span></div>
 <textarea class="input ta-sm" id="jsonIn" placeholder='{"hello":"world"}'></textarea>
@@ -679,7 +572,6 @@ body{
 </div>
 <textarea class="input ta-sm tool-out" id="jsonOut" readonly placeholder="Formatted JSON..."></textarea>
 </div>
-
 
 <div class="tool-card">
 <div class="tool-head"><h4>Hash Generator</h4><span class="chip">crypto</span></div>
@@ -692,7 +584,6 @@ body{
 <input class="input tool-out" id="hashOut" readonly placeholder="Hex digest...">
 </div>
 
-
 <div class="tool-card">
 <div class="tool-head"><h4>UUID Generator</h4><span class="chip">dev</span></div>
 <input class="input tool-out" id="uuidOut" readonly placeholder="Click generate...">
@@ -701,7 +592,6 @@ body{
 <button class="btn mini" onclick="copyToClipboard($('uuidOut').value,'UUID')">Copy</button>
 </div>
 </div>
-
 
 <div class="tool-card">
 <div class="tool-head"><h4>Password Generator</h4><span class="chip">secure</span></div>
@@ -714,7 +604,6 @@ body{
 <input class="input tool-out" id="passOut" readonly placeholder="Generated password...">
 </div>
 
-
 <div class="tool-card">
 <div class="tool-head"><h4>Text Counter</h4><span class="chip">live</span></div>
 <textarea class="input ta-sm" id="countIn" placeholder="Start typing..." oninput="countText()"></textarea>
@@ -726,7 +615,6 @@ body{
 </div>
 </div>
 
-
 <div class="tool-card">
 <div class="tool-head"><h4>Timestamp Converter</h4><span class="chip">dev</span></div>
 <div class="col-row">
@@ -736,7 +624,6 @@ body{
 </div>
 <input class="input tool-out" id="tsOut" readonly placeholder="Human-readable date...">
 </div>
-
 
 <div class="tool-card">
 <div class="tool-head"><h4>Color Converter</h4><span class="chip">design</span></div>
@@ -750,7 +637,6 @@ body{
 </div>
 <input class="input tool-out" id="colOut" readonly placeholder="Converted value...">
 </div>
-
 
 <div class="tool-card">
 <div class="tool-head"><h4>Case Converter</h4><span class="chip">text</span></div>
@@ -771,11 +657,9 @@ body{
 <textarea class="input ta-sm tool-out" id="caseOut" readonly placeholder="Converted text..."></textarea>
 </div>
 
-
 </div>
 </div>
 </section>
-
 
 <!-- PROXY -->
 <section id="proxyPage" class="page hidden">
@@ -794,14 +678,12 @@ body{
 </div>
 </section>
 
-
 <!-- FILE SHARING -->
 <section id="filesharePage" class="page hidden">
 <div class="panel" style="padding:0;overflow:hidden;">
 <iframe id="fileShareFrame" src="https://vexo-sirramenboi.github.io/Vexo-File-Sharing/" style="display:block;width:100%;height:calc(100vh - 125px);min-height:600px;border:0;background:#06090f;" loading="lazy" title="Vexo File Sharing"></iframe>
 </div>
 </section>
-
 
 <!-- ADMIN -->
 <section id="adminPage" class="page hidden">
@@ -818,7 +700,6 @@ body{
 </div>
 </div>
 
-
 <!-- LINK CHECKER — APPEND-ONLY -->
 <div class="panel">
   <div class="panel-head">
@@ -831,7 +712,6 @@ body{
   <div id="linkCheckerSummary" class="muted-sm" style="margin-bottom:12px;">Only VEXO administrators can run the server-side checker.</div>
   <div id="linkCheckerResults" class="link-checker-grid"></div>
 </div>
-
 
 <!-- VIRUSTOTAL SAFETY CHECKER — APPEND-ONLY -->
 <div class="panel">
@@ -849,7 +729,6 @@ body{
   <div id="vtResults" class="vt-grid"></div>
 </div>
 
-
 <div class="panel">
 <div class="panel-head"><div><h3>Moderation Queue</h3><div class="muted-sm">Review, approve or reject community submissions.</div></div></div>
 <div class="toolbar">
@@ -862,17 +741,14 @@ body{
 <div id="adminQueue" class="queue"></div>
 </div>
 
-
 <div class="panel">
 <div class="panel-head"><div><h3>Admin Notifications</h3><div class="muted-sm">Latest activity across VEXO.</div></div></div>
 <div id="adminNotifications"></div>
 </div>
 </section>
 
-
 </main>
 </div>
-
 
 <!-- AUTH MODAL -->
 <div class="modal" id="authModal">
@@ -890,7 +766,6 @@ body{
 </div>
 </div>
 
-
 <!-- ADMIN LOCK -->
 <div class="admin-lock" id="adminLock">
 <div class="lock-box">
@@ -901,9 +776,7 @@ body{
 </div>
 </div>
 
-
 <div class="toast" id="toast"></div>
-
 
 <script>
 /* SUPABASE */
@@ -911,14 +784,11 @@ const SUPABASE_URL = "https://jxxjvwemjvhrozuaihso.supabase.co";
 const SUPABASE_KEY = "sb_publishable_hbQfOIYOcFnCDyn0s6GPyg_amHog7u-";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-
 /* STATE */
 let user = null, isAdmin = false, links = [], allAdminLinks = [], favorites = new Set(), authMode = "login";
 
-
 /* HELPERS */
 const $ = id => document.getElementById(id);
-
 
 function toast(msg){
   const t = $("toast");
@@ -928,22 +798,18 @@ function toast(msg){
   t._timer = setTimeout(() => t.classList.remove("show"), 2600);
 }
 
-
 function esc(v=""){
   return String(v).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 }
-
 
 function emptyState(msg, icon="·"){
   return `<div class="empty"><div class="empty-icon">${icon}</div><p>${msg}</p></div>`;
 }
 
-
 function shortDate(iso){
   if(!iso) return "Unknown date";
   return new Date(iso).toLocaleDateString(undefined, {month:"short",day:"numeric"});
 }
-
 
 function copyToClipboard(val, label){
   if(!val){ toast("Nothing to copy."); return; }
@@ -955,7 +821,6 @@ function copyToClipboard(val, label){
   }
 }
 
-
 function fallbackCopy(val, done){
   const ta = document.createElement("textarea");
   ta.value = val;
@@ -966,7 +831,6 @@ function fallbackCopy(val, done){
   try { document.execCommand("copy"); done(); } catch(e) { toast("Copy failed."); }
   ta.remove();
 }
-
 
 /* PAGE NAVIGATION */
 function showPage(name){
@@ -992,18 +856,14 @@ function showPage(name){
   if(name === "admin") loadAdminData();
 }
 
-
 document.querySelectorAll(".nav button").forEach(b => b.onclick = () => showPage(b.dataset.page));
 
-
 function closeAdminLock(){ $("adminLock").classList.remove("show"); }
-
 
 /* AUTH */
 function openAuth(){ $("authModal").classList.add("open"); }
 function closeAuth(){ $("authModal").classList.remove("open"); }
 $("loginBtn").onclick = openAuth;
-
 
 $("switchAuth").onclick = () => {
   authMode = authMode === "login" ? "signup" : "login";
@@ -1013,7 +873,6 @@ $("switchAuth").onclick = () => {
   $("switchAuth").textContent = authMode === "login" ? "Create an account" : "I already have an account";
   $("usernameWrap").classList.toggle("hidden", authMode === "login");
 };
-
 
 $("authForm").onsubmit = async e => {
   e.preventDefault();
@@ -1036,7 +895,6 @@ $("authForm").onsubmit = async e => {
   await loadSession();
 };
 
-
 $("logoutBtn").onclick = async () => {
   await db.auth.signOut();
   isAdmin = false;
@@ -1044,7 +902,6 @@ $("logoutBtn").onclick = async () => {
   await loadSession();
   showPage("home");
 };
-
 
 /* ADMIN CHECK */
 async function checkAdmin(){
@@ -1067,7 +924,6 @@ async function checkAdmin(){
   if(!isAdmin) $("bellBadge").classList.add("hidden");
   return isAdmin;
 }
-
 
 /* SESSION */
 async function loadSession(){
@@ -1106,7 +962,6 @@ async function loadSession(){
   if(isAdmin) await loadAdminData();
 }
 
-
 /* FAVORITES */
 async function loadFavorites(){
   if(!user){ favorites = new Set(); $("statFav").textContent = "0"; return; }
@@ -1116,7 +971,6 @@ async function loadFavorites(){
   $("statFav").textContent = favorites.size;
   $("statNote3").textContent = favorites.size ? "Saved to your vault" : "Star links to save them";
 }
-
 
 /* LINKS */
 async function loadLinks(){
@@ -1131,12 +985,10 @@ async function loadLinks(){
   renderHomeSections();
 }
 
-
 function buildCategories(){
   const cats = [...new Set(links.map(x => x.category || "General"))].sort();
   $("category").innerHTML = `<option value="">All categories</option>` + cats.map(c => `<option>${esc(c)}</option>`).join("");
 }
-
 
 function filteredLinks(){
   const q = $("search").value.toLowerCase();
@@ -1146,7 +998,6 @@ function filteredLinks(){
     (!q || [x.title, x.url, x.description, x.category, ...(x.tags || [])].join(" ").toLowerCase().includes(q))
   );
 }
-
 
 /* CARD RENDER */
 function card(x){
@@ -1174,22 +1025,18 @@ function card(x){
   </article>`;
 }
 
-
 function renderLinks(){
   const arr = filteredLinks();
   $("linksGrid").innerHTML = arr.length ? arr.map(card).join("") : emptyState("No approved links match your search.", "◇");
 }
-
 
 function renderFavorites(){
   const arr = links.filter(x => favorites.has(x.id));
   $("favoritesGrid").innerHTML = arr.length ? arr.map(card).join("") : emptyState("You have no favorites yet. Star a link to save it.", "☆");
 }
 
-
 $("search").oninput = renderLinks;
 $("category").onchange = renderLinks;
-
 
 /* HOME SECTIONS */
 function renderHomeSections(){
@@ -1216,7 +1063,6 @@ function renderHomeSections(){
     </div>`).join("");
 }
 
-
 /* OPEN LINK */
 async function openLink(id){
   const x = links.find(a => a.id === id);
@@ -1224,7 +1070,6 @@ async function openLink(id){
   window.open(x.url, "_blank", "noopener,noreferrer");
   await db.from("links").update({views:(x.views || 0) + 1}).eq("id", id);
 }
-
 
 /* FAVORITE */
 async function toggleFavorite(id){
@@ -1245,7 +1090,6 @@ async function toggleFavorite(id){
   renderFavorites();
 }
 
-
 /* VOTES */
 async function vote(id, value){
   if(!user){ openAuth(); toast("Sign in to vote."); return; }
@@ -1262,7 +1106,6 @@ async function vote(id, value){
   }
 }
 
-
 /* ANONYMOUS SUBMITTER NAME */
 function anonymousName(id){
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -1278,7 +1121,6 @@ function anonymousName(id){
   }
   return "Anonymous" + name;
 }
-
 
 /* SUBMIT LINK */
 $("linkForm").onsubmit = async e => {
@@ -1300,10 +1142,8 @@ $("linkForm").onsubmit = async e => {
     status:"pending"
   };
 
-
   let newLink = null;
   let error = null;
-
 
   if(user){
     const result = await db.from("links").insert(row).select().single();
@@ -1314,9 +1154,7 @@ $("linkForm").onsubmit = async e => {
     error = result.error;
   }
 
-
   if(error){ toast(error.message); return; }
-
 
   if(user && newLink){
     const {data:admins} = await db.from("user_roles").select("user_id").eq("role","admin");
@@ -1338,7 +1176,6 @@ $("linkForm").onsubmit = async e => {
   showPage("home");
 };
 
-
 /* USER PENDING COUNT */
 async function loadPendingCount(){
   if(!user){ $("statPending").textContent = "—"; $("statNote4").textContent = "Sign in to submit"; return; }
@@ -1346,7 +1183,6 @@ async function loadPendingCount(){
   $("statPending").textContent = count || 0;
   $("statNote4").textContent = (count || 0) ? "Awaiting review" : "All caught up";
 }
-
 
 /* ═══ TOOLS ═══ */
 function runB64(mode){
@@ -1359,7 +1195,6 @@ function runB64(mode){
   }catch(e){ $("b64Out").value = "Invalid input"; }
 }
 
-
 function runUrl(mode){
   const v = $("urlIn").value;
   if(!v){ $("urlOut").value = ""; return; }
@@ -1368,7 +1203,6 @@ function runUrl(mode){
   }catch(e){ $("urlOut").value = "Invalid input"; }
 }
 
-
 function runJson(){
   const v = $("jsonIn").value.trim();
   if(!v){ $("jsonOut").value = ""; return; }
@@ -1376,7 +1210,6 @@ function runJson(){
     $("jsonOut").value = JSON.stringify(JSON.parse(v), null, 2);
   }catch(e){ $("jsonOut").value = "Invalid JSON: " + e.message; }
 }
-
 
 async function runHash(){
   const v = $("hashIn").value;
@@ -1388,7 +1221,6 @@ async function runHash(){
   }catch(e){ $("hashOut").value = "Hash unavailable (needs HTTPS or localhost)."; }
 }
 
-
 function genUuid(){
   if(crypto.randomUUID){ $("uuidOut").value = crypto.randomUUID(); return; }
   $("uuidOut").value = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
@@ -1396,7 +1228,6 @@ function genUuid(){
     return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
   });
 }
-
 
 function genPass(){
   const len = +$("passLen").value;
@@ -1411,7 +1242,6 @@ function genPass(){
   $("passOut").value = out.split("").sort(() => Math.random() - .5).join("");
 }
 
-
 function countText(){
   const v = $("countIn").value;
   $("countChars").textContent = v.length;
@@ -1419,7 +1249,6 @@ function countText(){
   $("countLines").textContent = v ? v.split("\n").length : 0;
   $("countBytes").textContent = new TextEncoder().encode(v).length;
 }
-
 
 function tsConvert(){
   const v = $("tsIn").value.trim();
@@ -1431,12 +1260,10 @@ function tsConvert(){
   $("tsOut").value = d.toISOString() + "  ·  " + d.toLocaleString();
 }
 
-
 function tsNow(){
   $("tsIn").value = Math.floor(Date.now() / 1000);
   tsConvert();
 }
-
 
 function colConvert(){
   const v = $("colIn").value.trim();
@@ -1456,7 +1283,6 @@ function colConvert(){
   }
 }
 
-
 function caseConvert(){
   const v = $("caseIn").value;
   const mode = $("caseSel").value;
@@ -1472,10 +1298,8 @@ function caseConvert(){
   $("caseOut").value = out;
 }
 
-
 /* ═══ PROXY ═══ */
 const PROXY_DEFAULT = "https://truf.remiosenifoundation.org/";
-
 
 function loadProxy(){
   let v = $("proxyUrl").value.trim();
@@ -1486,13 +1310,11 @@ function loadProxy(){
   toast("Proxy loaded.");
 }
 
-
 function openProxyNewTab(){
   let v = $("proxyUrl").value.trim() || PROXY_DEFAULT;
   if(!/^https?:\/\//i.test(v)) v = "https://" + v;
   window.open(v, "_blank", "noopener,noreferrer");
 }
-
 
 function resetProxy(){
   $("proxyUrl").value = PROXY_DEFAULT;
@@ -1501,9 +1323,7 @@ function resetProxy(){
   toast("Proxy reset.");
 }
 
-
 $("proxyUrl").addEventListener("keydown", e => { if(e.key === "Enter") loadProxy(); });
-
 
 /* ADMIN DATA */
 async function loadAdminData(){
@@ -1524,7 +1344,6 @@ async function loadAdminData(){
   await renderAdminQueue();
   await loadAdminNotifications();
 }
-
 
 /* ADMIN QUEUE */
 async function renderAdminQueue(){
@@ -1573,7 +1392,6 @@ async function renderAdminQueue(){
   }).join("");
 }
 
-
 /* APPROVE / REJECT / DELETE */
 async function approveLink(id){
   if(!isAdmin) return;
@@ -1588,7 +1406,6 @@ async function approveLink(id){
   await loadLinks();
 }
 
-
 async function rejectLink(id){
   if(!isAdmin) return;
   const {data:link} = await db.from("links").select("id,title,user_id").eq("id", id).single();
@@ -1601,7 +1418,6 @@ async function rejectLink(id){
   await loadAdminData();
 }
 
-
 async function deleteLink(id){
   if(!isAdmin) return;
   if(!confirm("Remove this link permanently?")) return;
@@ -1611,7 +1427,6 @@ async function deleteLink(id){
   await loadAdminData();
   await loadLinks();
 }
-
 
 /* ADMIN NOTIFICATIONS */
 async function loadAdminNotifications(){
@@ -1630,16 +1445,13 @@ async function loadAdminNotifications(){
     </div>`).join("");
 }
 
-
 $("adminSearch").oninput = renderAdminQueue;
 $("adminStatus").onchange = renderAdminQueue;
-
 
 /* BELL */
 $("bellBtn").onclick = () => {
   if(isAdmin){ showPage("admin"); } else { toast("Admin access required."); }
 };
-
 
 /* BACKGROUND SETTINGS */
 document.querySelectorAll("[data-bg]").forEach(b => b.onclick = () => {
@@ -1658,17 +1470,14 @@ document.querySelectorAll("[data-bg]").forEach(b => b.onclick = () => {
   }
 });
 
-
 const saved = localStorage.getItem("vexo-bg") || "grid";
 document.querySelector(`[data-bg="${saved}"]`)?.click();
 window.vexoSetBackground?.(saved);
-
 
 /* CURSOR */
 let mx=0, my=0, cx=0, cy=0, rx=0, ry=0;
 const cursorEl = $("cursor"), ringEl = $("cursorRing");
 document.addEventListener("mousemove", e => { mx = e.clientX; my = e.clientY; });
-
 
 function cursorLoop(){
   cx += (mx-cx)*.22;
@@ -1681,19 +1490,15 @@ function cursorLoop(){
 }
 cursorLoop();
 
-
 /* AUTH STATE */
 db.auth.onAuthStateChange(() => setTimeout(loadSession, 0));
-
 
 /* START */
 loadSession();
 
-
 /* ═══ VEXO SETTINGS ENGINE — APPENDED ═══ */
 (() => {
   const SETTINGS_KEY = "vexo-settings";
-
 
   const defaults = {
     bg: "grid",
@@ -1707,7 +1512,6 @@ loadSession();
     landing: "home"
   };
 
-
   const accents = [
     {name:"Violet",  accent:"#7c5cff", accent2:"#19d3ff", pink:"#ff3f9d"},
     {name:"Blue",    accent:"#3b82f6", accent2:"#22d3ee", pink:"#818cf8"},
@@ -1719,9 +1523,7 @@ loadSession();
     {name:"White",   accent:"#e5e7eb", accent2:"#94a3b8", pink:"#cbd5e1"}
   ];
 
-
   let settings = {...defaults};
-
 
   function loadSettings(){
     try{
@@ -1734,23 +1536,19 @@ loadSession();
     }
   }
 
-
   function saveSettings(){
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   }
-
 
   function applyAccent(){
     document.documentElement.style.setProperty("--accent", settings.accent);
     document.documentElement.style.setProperty("--accent2", settings.accent2);
     document.documentElement.style.setProperty("--pink", settings.pink);
 
-
     document.documentElement.style.setProperty(
       "--grad",
       `linear-gradient(135deg,${settings.accent},#4c8dff 55%,${settings.accent2})`
     );
-
 
     document.querySelectorAll(".swatch-btn").forEach(btn => {
       btn.classList.toggle(
@@ -1760,100 +1558,79 @@ loadSession();
     });
   }
 
-
   function applyBackground(){
     const value = settings.bg;
-
 
     const grid = $("grid");
     const scene = $("scene");
     const orbs = document.querySelectorAll(".orb");
 
-
     if(!grid || !scene) return;
 
-
     grid.style.display = value === "plain" ? "none" : "block";
-
 
     orbs.forEach(o => {
       o.style.display = value === "plain" ? "none" : "block";
     });
-
 
     if(value === "stars"){
       scene.style.background =
         "radial-gradient(circle at 20% 20%,rgba(124,92,255,.2),transparent 25%)," +
         "radial-gradient(circle at 80% 60%,rgba(25,211,255,.14),transparent 25%),#03040a";
 
-
       grid.style.opacity = ".18";
-
 
     }else if(value === "grid"){
       scene.style.background =
         "radial-gradient(circle at 50% 20%,rgba(124,92,255,.15),transparent 35%)," +
         "linear-gradient(120deg,#050711,#0a0d1c 55%,#070914)";
 
-
       grid.style.opacity = "1";
-
 
     }else{
       scene.style.background = "#070914";
       grid.style.opacity = "0";
     }
 
-
     document.querySelectorAll("[data-bg]").forEach(btn => {
       btn.classList.toggle("active", btn.dataset.bg === value);
     });
   }
 
-
   function applyCompact(){
     document.body.classList.toggle("compact", settings.compact);
-
 
     const el = $("setCompact");
     if(el) el.checked = settings.compact;
   }
 
-
   function applyMotion(){
     document.body.classList.toggle("no-motion", !settings.motion);
-
 
     const el = $("setMotion");
     if(el) el.checked = settings.motion;
   }
 
-
   function applyCursor(){
     document.body.classList.toggle("no-cursor", !settings.cursor);
-
 
     const el = $("setCursor");
     if(el) el.checked = settings.cursor;
   }
-
 
   function applyStatus(){
     document.querySelectorAll(".status").forEach(el => {
       el.style.display = settings.status ? "" : "none";
     });
 
-
     const el = $("setStatus");
     if(el) el.checked = settings.status;
   }
-
 
   function applyLanding(){
     const el = $("setLanding");
     if(el) el.value = settings.landing;
   }
-
 
   function applyAll(){
     applyAccent();
@@ -1865,63 +1642,49 @@ loadSession();
     applyLanding();
   }
 
-
   /* ACCENT SWATCHES */
   function buildSwatches(){
     const container = $("accentSwatches");
     if(!container) return;
 
-
     container.innerHTML = "";
-
 
     accents.forEach(color => {
       const btn = document.createElement("button");
-
 
       btn.type = "button";
       btn.className = "swatch-btn";
       btn.title = color.name;
 
-
       btn.dataset.accent = color.accent;
-
 
       btn.style.background =
         `linear-gradient(135deg,${color.accent},${color.accent2})`;
-
 
       btn.onclick = () => {
         settings.accent = color.accent;
         settings.accent2 = color.accent2;
         settings.pink = color.pink;
 
-
         saveSettings();
         applyAccent();
-
 
         toast(`${color.name} accent selected`);
       };
 
-
       container.appendChild(btn);
     });
 
-
     applyAccent();
   }
-
 
   /* BACKGROUND */
   document.querySelectorAll("[data-bg]").forEach(btn => {
     btn.onclick = () => {
       settings.bg = btn.dataset.bg;
 
-
       saveSettings();
       applyBackground();
-
 
       toast(
         settings.bg === "grid"
@@ -1933,15 +1696,12 @@ loadSession();
     };
   });
 
-
   /* COMPACT */
   $("setCompact")?.addEventListener("change", e => {
     settings.compact = e.target.checked;
 
-
     saveSettings();
     applyCompact();
-
 
     toast(
       settings.compact
@@ -1950,15 +1710,12 @@ loadSession();
     );
   });
 
-
   /* MOTION */
   $("setMotion")?.addEventListener("change", e => {
     settings.motion = e.target.checked;
 
-
     saveSettings();
     applyMotion();
-
 
     toast(
       settings.motion
@@ -1967,15 +1724,12 @@ loadSession();
     );
   });
 
-
   /* CURSOR */
   $("setCursor")?.addEventListener("change", e => {
     settings.cursor = e.target.checked;
 
-
     saveSettings();
     applyCursor();
-
 
     toast(
       settings.cursor
@@ -1984,15 +1738,12 @@ loadSession();
     );
   });
 
-
   /* STATUS */
   $("setStatus")?.addEventListener("change", e => {
     settings.status = e.target.checked;
 
-
     saveSettings();
     applyStatus();
-
 
     toast(
       settings.status
@@ -2001,116 +1752,90 @@ loadSession();
     );
   });
 
-
   /* LANDING PAGE */
   $("setLanding")?.addEventListener("change", e => {
     settings.landing = e.target.value;
 
-
     saveSettings();
-
 
     toast("Landing page saved");
   });
-
 
   /* EXPORT */
   $("exportSettings")?.addEventListener("click", () => {
     const data = JSON.stringify(settings, null, 2);
 
-
     const blob = new Blob([data], {
       type: "application/json"
     });
 
-
     const url = URL.createObjectURL(blob);
-
 
     const a = document.createElement("a");
     a.href = url;
     a.download = "vexo-settings.json";
 
-
     document.body.appendChild(a);
     a.click();
     a.remove();
 
-
     URL.revokeObjectURL(url);
-
 
     toast("Settings exported");
   });
-
 
   /* IMPORT */
   $("importSettings")?.addEventListener("click", () => {
     $("importFile")?.click();
   });
 
-
   $("importFile")?.addEventListener("change", async e => {
     const file = e.target.files?.[0];
 
-
     if(!file) return;
-
 
     try{
       const text = await file.text();
       const imported = JSON.parse(text);
 
-
       if(!imported || typeof imported !== "object"){
         throw new Error("Invalid settings file");
       }
-
 
       settings = {
         ...defaults,
         ...imported
       };
 
-
       saveSettings();
       applyAll();
 
-
       toast("Settings imported");
-
 
     }catch(err){
       console.error(err);
       toast("Invalid settings file");
     }
 
-
     e.target.value = "";
   });
-
 
   /* RESET */
   $("resetSettings")?.addEventListener("click", () => {
     if(!confirm("Reset all VEXO settings?")) return;
 
-
     settings = {...defaults};
-
 
     saveSettings();
     applyAll();
 
-
     toast("Settings reset");
   });
-
 
   /* START */
   loadSettings();
   buildSwatches();
   applyAll();
-
 
   /* OPEN SAVED LANDING PAGE */
   setTimeout(() => {
@@ -2122,15 +1847,12 @@ loadSession();
     }
   }, 50);
 
-
 })();
 </script>
-
 
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- VEXO EXTENSION: BULK LINK SUBMIT & 2FA (APPEND-ONLY)          -->
 <!-- ══════════════════════════════════════════════════════════════ -->
-
 
 <!-- 2FA Verification Modal -->
 <div class="modal" id="twoFactorModal">
@@ -2147,7 +1869,6 @@ loadSession();
     </form>
   </div>
 </div>
-
 
 <!-- 2FA Enrollment / QR Modal -->
 <div class="modal" id="enroll2faModal">
@@ -2169,7 +1890,6 @@ loadSession();
   </div>
 </div>
 
-
 <script>
 (() => {
   /* ============================================================
@@ -2179,7 +1899,6 @@ loadSession();
     const submitPanel = document.querySelector("#submitPage .panel");
     const singleForm = document.getElementById("linkForm");
     if (!submitPanel || !singleForm || document.getElementById("bulkSubmitWrap")) return;
-
 
     // Mode switch buttons
     const switcher = document.createElement("div");
@@ -2191,7 +1910,6 @@ loadSession();
       <button type="button" class="btn mini" id="btnModeBulk">Bulk Submit (CSV / Lines)</button>
     `;
     submitPanel.insertBefore(switcher, singleForm);
-
 
     // Bulk container
     const bulkWrap = document.createElement("div");
@@ -2216,11 +1934,9 @@ loadSession();
     `;
     submitPanel.appendChild(bulkWrap);
 
-
     // Toggle modes
     const btnSingle = document.getElementById("btnModeSingle");
     const btnBulk = document.getElementById("btnModeBulk");
-
 
     btnSingle.addEventListener("click", () => {
       btnSingle.classList.add("primary");
@@ -2229,7 +1945,6 @@ loadSession();
       bulkWrap.classList.add("hidden");
     });
 
-
     btnBulk.addEventListener("click", () => {
       btnBulk.classList.add("primary");
       btnSingle.classList.remove("primary");
@@ -2237,11 +1952,9 @@ loadSession();
       bulkWrap.classList.remove("hidden");
     });
 
-
     document.getElementById("btnBulkClear").addEventListener("click", () => {
       document.getElementById("bulkInput").value = "";
     });
-
 
     // Bulk submission handler
     document.getElementById("bulkLinkForm").addEventListener("submit", async (e) => {
@@ -2253,16 +1966,13 @@ loadSession();
         return;
       }
 
-
       const lines = raw.split("\n").map(l => l.trim()).filter(Boolean);
       const payload = [];
-
 
       for (let i = 0; i < lines.length; i++) {
         const parts = lines[i].split("|").map(p => p.trim());
         const title = parts[0] || "";
         let url = parts[1] || "";
-
 
         // Basic URL validation
         if (!url || !/^https?:\/\//i.test(url)) {
@@ -2270,10 +1980,8 @@ loadSession();
           return;
         }
 
-
         const tags = parts[2] ? parts[2].split(",").map(t => t.trim().toLowerCase()).filter(Boolean) : [];
         const description = parts[3] || "";
-
 
         const bulkId = user ? undefined : crypto.randomUUID();
         payload.push({
@@ -2288,16 +1996,13 @@ loadSession();
         });
       }
 
-
       const sendBtn = document.getElementById("btnBulkSend");
       sendBtn.disabled = true;
       sendBtn.textContent = `Submitting ${payload.length} items...`;
 
-
       try {
         const { data, error } = await db.from("links").insert(payload);
         if (error) throw error;
-
 
         if (user) {
           const { data: admins } = await db.from("user_roles").select("user_id").eq("role", "admin");
@@ -2313,7 +2018,6 @@ loadSession();
           }
         }
 
-
         document.getElementById("bulkInput").value = "";
         if (typeof toast === "function") toast(`${payload.length} links submitted for review!`);
         if (typeof loadPendingCount === "function") await loadPendingCount();
@@ -2327,18 +2031,15 @@ loadSession();
     });
   }
 
-
   /* ============================================================
      PART 2: 2FA SETTINGS & AUTH INTERCEPTION
      ============================================================ */
   let activeFactorId = null;
   let enrollFactorId = null;
 
-
   function inject2FASettingsUI() {
     const list = document.querySelector("#settingsPage .settings-list");
     if (!list || document.getElementById("set2fa")) return;
-
 
     const row = document.createElement("div");
     row.className = "toggle-row";
@@ -2354,9 +2055,7 @@ loadSession();
     `;
     list.appendChild(row);
 
-
     const toggle = document.getElementById("set2fa");
-
 
     // Sync toggle status with Supabase
     async function sync2FAToggle() {
@@ -2368,7 +2067,6 @@ loadSession();
       toggle.checked = !!data?.two_factor_enabled;
     }
 
-
     toggle.addEventListener("change", async (e) => {
       if (!user) {
         toggle.checked = false;
@@ -2376,12 +2074,10 @@ loadSession();
         return;
       }
 
-
       if (e.target.checked) {
         try {
           const { data, error } = await db.auth.mfa.enroll({ factorType: "totp" });
           if (error) throw error;
-
 
           enrollFactorId = data.id;
           document.getElementById("mfaQrImg").src = data.totp.qr_code;
@@ -2412,7 +2108,6 @@ loadSession();
       }
     });
 
-
     const origLoadSession = window.loadSession;
     if (typeof origLoadSession === "function") {
       window.loadSession = async function() {
@@ -2422,7 +2117,6 @@ loadSession();
     }
   }
 
-
   // Enrollment verification
   document.getElementById("enrollVerifyForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -2431,10 +2125,8 @@ loadSession();
       const challenge = await db.auth.mfa.challenge({ factorId: enrollFactorId });
       if (challenge.error) throw challenge.error;
 
-
       const verify = await db.auth.mfa.verify({ factorId: enrollFactorId, challengeId: challenge.data.id, code });
       if (verify.error) throw verify.error;
-
 
       await db.from("user_security").upsert({ user_id: user?.id || null, two_factor_enabled: true });
       document.getElementById("enroll2faModal").classList.remove("open");
@@ -2445,18 +2137,15 @@ loadSession();
     }
   });
 
-
   document.getElementById("closeEnrollBtn")?.addEventListener("click", () => {
     document.getElementById("enroll2faModal").classList.remove("open");
     const toggle = document.getElementById("set2fa");
     if (toggle) toggle.checked = false;
   });
 
-
   document.getElementById("close2faBtn")?.addEventListener("click", () => {
     document.getElementById("twoFactorModal").classList.remove("open");
   });
-
 
   // Intercept Auth Login to Check 2FA Opt-in
   const authForm = document.getElementById("authForm");
@@ -2466,17 +2155,14 @@ loadSession();
         const { data: { session } } = await db.auth.getSession();
         if (!session?.user) return;
 
-
         const { data: sec } = await db.from("user_security")
           .select("two_factor_enabled")
           .eq("user_id", session.user.id)
           .maybeSingle();
 
-
         if (sec?.two_factor_enabled) {
           const factors = await db.auth.mfa.listFactors();
           const totpFactor = factors.data?.totp?.find(f => f.status === "verified");
-
 
           if (totpFactor) {
             activeFactorId = totpFactor.id;
@@ -2487,22 +2173,18 @@ loadSession();
     }, true);
   }
 
-
   // 2FA Verification Form
   document.getElementById("twoFactorForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const code = document.getElementById("twoFactorCode").value.trim();
     if (!activeFactorId) return;
 
-
     try {
       const challenge = await db.auth.mfa.challenge({ factorId: activeFactorId });
       if (challenge.error) throw challenge.error;
 
-
       const res = await db.auth.mfa.verify({ factorId: activeFactorId, challengeId: challenge.data.id, code });
       if (res.error) throw res.error;
-
 
       document.getElementById("twoFactorModal").classList.remove("open");
       document.getElementById("twoFactorCode").value = "";
@@ -2512,18 +2194,15 @@ loadSession();
     }
   });
 
-
   window.addEventListener("DOMContentLoaded", () => {
     injectBulkSubmissionUI();
     inject2FASettingsUI();
   });
 
-
   injectBulkSubmissionUI();
   inject2FASettingsUI();
 })();
 </script>
-
 
 <!-- VEXO VIRUSTOTAL SAFETY CHECKER & LINK CHECKER (FIXED INVOCATION) -->
 <script>
@@ -2534,17 +2213,14 @@ async function runLinkChecker(){
     return;
   }
 
-
   const btn = $("checkLinksBtn");
   const results = $("linkCheckerResults");
   const summary = $("linkCheckerSummary");
-
 
   btn.disabled = true;
   btn.textContent = "Checking...";
   summary.textContent = "The Supabase server is checking every approved URL.";
   results.innerHTML = emptyState("Checking approved links...", "↻");
-
 
   try{
     const { data: sessionData } = await db.auth.getSession();
@@ -2555,11 +2231,9 @@ async function runLinkChecker(){
       invokeHeaders["Authorization"] = `Bearer ${token}`;
     }
 
-
     const { data, error } = await db.functions.invoke("link-checker", {
       headers: invokeHeaders
     });
-
 
     if(error) {
       let serverErrorMsg = error.message;
@@ -2573,20 +2247,16 @@ async function runLinkChecker(){
     }
     if(data?.error) throw new Error(data.error);
 
-
     const checked = Array.isArray(data?.results) ? data.results : [];
     const up = checked.filter(x => x.ok).length;
     const down = checked.filter(x => !x.ok).length;
 
-
     summary.textContent = `${checked.length} checked · ${up} reachable · ${down} unavailable`;
-
 
     if(!checked.length){
       results.innerHTML = emptyState("There are no approved links to check.", "·");
       return;
     }
-
 
     results.innerHTML = checked.map(x => `
       <div class="link-checker-row">
@@ -2599,11 +2269,9 @@ async function runLinkChecker(){
       </div>
     `).join("");
 
-
     const definitelyGone = checked.filter(x =>
       !x.ok && (Number(x.status) === 404 || Number(x.status) === 410)
     );
-
 
     if(definitelyGone.length){
       const names = definitelyGone
@@ -2611,25 +2279,20 @@ async function runLinkChecker(){
         .map(x => `• ${x.title || "Untitled"} — ${x.status}`)
         .join("\n");
 
-
       const extra = definitelyGone.length > 12
         ? `\n• ...and ${definitelyGone.length - 12} more`
         : "";
-
 
       const confirmMessage =
         `The checker found ${definitelyGone.length} approved link${definitelyGone.length === 1 ? "" : "s"} that returned 404/410 and appear to no longer exist.\n\n` +
         `${names}${extra}\n\nDelete these links permanently from VEXO?`;
 
-
       if(confirm(confirmMessage)){
         btn.disabled = true;
         btn.textContent = "Removing...";
 
-
         let removed = 0;
         const failed = [];
-
 
         try{
           for(const item of definitelyGone){
@@ -2642,7 +2305,6 @@ async function runLinkChecker(){
               removed++;
             }
           }
-
 
           if(removed) toast(`${removed} broken link${removed === 1 ? "" : "s"} removed.`);
           await loadAdminData();
@@ -2669,7 +2331,6 @@ async function runLinkChecker(){
 }
 </script>
 
-
 <script>
 /* VEXO VIRUSTOTAL SAFETY CHECKER — REVISED */
 async function runVirusTotalChecker(){
@@ -2678,17 +2339,14 @@ async function runVirusTotalChecker(){
     return;
   }
 
-
   const btn = $("vtCheckBtn");
   const summary = $("vtSummary");
   const results = $("vtResults");
-
 
   btn.disabled = true;
   btn.textContent = "Checking...";
   summary.innerHTML = `<span class="vt-stat">Preparing VirusTotal checks...</span>`;
   results.innerHTML = emptyState("Checking approved links with VirusTotal...", "↻");
-
 
   try{
     const { data: sessionData } = await db.auth.getSession();
@@ -2699,11 +2357,9 @@ async function runVirusTotalChecker(){
       invokeHeaders["Authorization"] = `Bearer ${token}`;
     }
 
-
     const { data, error } = await db.functions.invoke("link-safety-checker", {
       headers: invokeHeaders
     });
-
 
     if(error) {
       let serverErrorMsg = error.message;
@@ -2717,13 +2373,11 @@ async function runVirusTotalChecker(){
     }
     if(data?.error) throw new Error(data.error);
 
-
     const checked = Array.isArray(data?.results) ? data.results : [];
     const safe = checked.filter(x => x.verdict === "safe").length;
     const suspicious = checked.filter(x => x.verdict === "suspicious").length;
     const malicious = checked.filter(x => x.verdict === "malicious").length;
     const unknown = checked.filter(x => !["safe","suspicious","malicious"].includes(x.verdict)).length;
-
 
     summary.innerHTML = `
       <span class="vt-stat">${checked.length} checked</span>
@@ -2733,12 +2387,10 @@ async function runVirusTotalChecker(){
       <span class="vt-stat">${unknown} unknown</span>
     `;
 
-
     if(!checked.length){
       results.innerHTML = emptyState("There are no approved links to check.", "·");
       return;
     }
-
 
     results.innerHTML = checked.map(x => {
       const badgeClass = x.verdict === "safe" ? "vt-safe" : x.verdict === "suspicious" ? "vt-suspicious" : x.verdict === "malicious" ? "vt-malicious" : "vt-unknown";
@@ -2758,7 +2410,6 @@ async function runVirusTotalChecker(){
           ${reportBtn}
         </div>`;
     }).join("");
-
 
     const dangerous = checked.filter(x => x.verdict === "malicious");
     if(dangerous.length){
@@ -2791,18 +2442,15 @@ async function runVirusTotalChecker(){
 }
 </script>
 
-
 <script>
 /* VEXO DEDICATED BACKGROUND CONTROLLER */
 (() => {
   const frame = document.getElementById("vexoBackgroundFrame");
   if(!frame) return;
 
-
   function currentBackground(){
     return localStorage.getItem("vexo-bg") || "grid";
   }
-
 
   function sendBackground(mode){
     frame.contentWindow?.postMessage({
@@ -2811,18 +2459,15 @@ async function runVirusTotalChecker(){
     },"*");
   }
 
-
   frame.addEventListener("load", () => {
     sendBackground(currentBackground());
   });
-
 
   window.addEventListener("message", event => {
     if(event.data?.type === "VEXO_BACKGROUND_READY"){
       sendBackground(currentBackground());
     }
   });
-
 
   document.querySelectorAll("[data-bg]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -2832,22 +2477,18 @@ async function runVirusTotalChecker(){
     });
   });
 
-
   window.vexoSetBackground = mode => {
     if(!["grid","plain","stars"].includes(mode)) return;
     localStorage.setItem("vexo-bg", mode);
     sendBackground(mode);
   };
 
-
   setTimeout(() => sendBackground(currentBackground()), 100);
 })();
 </script>
 
-
 </body>
 </html>
-
 
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- VEXO TERMS / ANNOUNCEMENTS / TAKEDOWN MANAGEMENT — ADD-ON -->
@@ -2879,7 +2520,6 @@ async function runVirusTotalChecker(){
 @media(max-width:700px){.vexo-announcement-top{align-items:flex-start;flex-direction:column;gap:4px;}}
 </style>
 
-
 <script>
 (() => {
   const TERMS_PAGE_ID = "termsPage";
@@ -2887,24 +2527,19 @@ async function runVirusTotalChecker(){
   const ANN_ADMIN_ID = "announcementAdminPanel";
   const TAKEDOWN_ADMIN_ID = "takedownAdminPanel";
 
-
   function esc2(v=""){
     return String(v).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
   }
-
 
   function fmtDate(v){
     if(!v) return "Unknown date";
     try{return new Date(v).toLocaleString();}catch(e){return "Unknown date";}
   }
 
-
   function isAdminNow(){ return !!isAdmin; }
-
 
   function injectTermsPage(){
     if(document.getElementById(TERMS_PAGE_ID)) return;
-
 
     const nav = document.querySelector(".nav");
     const settingsBtn = nav?.querySelector('[data-page="settings"]');
@@ -2916,10 +2551,8 @@ async function runVirusTotalChecker(){
       settingsBtn.insertAdjacentElement("afterend", b);
     }
 
-
     const main = document.querySelector("main.main");
     if(!main) return;
-
 
     const section = document.createElement("section");
     section.id = TERMS_PAGE_ID;
@@ -2937,24 +2570,20 @@ async function runVirusTotalChecker(){
             This page is an informational Terms of Use template for the VEXO project. It does not guarantee immunity from legal claims, copyright liability, or other legal responsibility. The project owner should replace placeholders and obtain legal advice where appropriate.
           </div>
 
-
           <div class="terms-card">
             <h3>1. What VEXO does</h3>
             <p>VEXO is a community-driven directory and discovery service for links submitted by users. VEXO primarily provides references to third-party websites and does not own, operate, control, or endorse those third-party websites merely because a link appears in the VEXO directory.</p>
           </div>
-
 
           <div class="terms-card">
             <h3>2. Third-party sites and affiliation</h3>
             <p>Unless a specific affiliation is expressly stated, VEXO is not affiliated with, sponsored by, endorsed by, or officially connected to the third-party websites, services, companies, brands, or projects linked from the community directory. Third-party names and trademarks belong to their respective owners.</p>
           </div>
 
-
           <div class="terms-card">
             <h3>3. Community submissions</h3>
             <p>Links are submitted by members of the community and are reviewed by VEXO moderators and administrators. A submission appearing on VEXO does not mean VEXO created, owns, or approves the underlying third-party content. Submitters remain responsible for the accuracy and legality of material they submit.</p>
           </div>
-
 
           <div class="terms-card">
             <h3>4. Safety and security checks</h3>
@@ -2962,13 +2591,11 @@ async function runVirusTotalChecker(){
             <div class="terms-good">A link being listed on VEXO should never be treated as a guarantee of safety, legality, availability, or trustworthiness.</div>
           </div>
 
-
           <div class="terms-card">
             <h3>5. Copyright and DMCA requests</h3>
             <p>VEXO provides a reporting and takedown workflow for people who believe a linked resource infringes their copyright or otherwise requires review. VEXO will review submitted notices and may remove or disable a link when appropriate.</p>
             <p>Nothing on this page states that VEXO qualifies for any particular statutory safe harbor. Any DMCA safe-harbor protection depends on the facts and on satisfying applicable legal requirements. In the United States, qualifying service providers using the §512(c) safe harbor generally need a compliant notice-and-takedown process and a designated agent with current information on file with the U.S. Copyright Office.</p>
           </div>
-
 
           <div class="terms-card">
             <h3>6. Prohibited submissions</h3>
@@ -2980,12 +2607,10 @@ async function runVirusTotalChecker(){
             </ul>
           </div>
 
-
           <div class="terms-card">
             <h3>7. Availability and liability</h3>
             <p>Third-party websites can change, disappear, block automated requests, or become unavailable without notice. VEXO does not warrant that linked websites will remain available or that information found on them is accurate. VEXO may remove or change listings at any time.</p>
           </div>
-
 
           <div class="terms-card">
             <h3>8. Contact and takedown requests</h3>
@@ -3014,10 +2639,8 @@ async function runVirusTotalChecker(){
       </div>`;
     main.appendChild(section);
 
-
     document.getElementById("vexoTakedownForm")?.addEventListener("submit", submitTakedown);
   }
-
 
   function showTermsPage(){
     injectTermsPage();
@@ -3030,12 +2653,10 @@ async function runVirusTotalChecker(){
     $("crumbPage").textContent = "Terms of Use";
   }
 
-
   function injectHomeAnnouncements(){
     const home = document.getElementById("homePage");
     const hero = home?.querySelector(".hero");
     if(!home || !hero || document.getElementById(ANN_HOME_ID)) return;
-
 
     const panel = document.createElement("div");
     panel.id = ANN_HOME_ID;
@@ -3048,13 +2669,11 @@ async function runVirusTotalChecker(){
     hero.insertAdjacentElement("afterend", panel);
   }
 
-
   async function loadPublicAnnouncements(){
     injectHomeAnnouncements();
     const panel = document.getElementById(ANN_HOME_ID);
     const list = document.getElementById("vexoAnnouncementsList");
     if(!panel || !list) return;
-
 
     const {data, error} = await db.from("announcements")
       .select("id,title,body,created_at,updated_at")
@@ -3062,19 +2681,16 @@ async function runVirusTotalChecker(){
       .order("created_at", {ascending:false})
       .limit(10);
 
-
     if(error){
       console.error("Announcements:", error);
       panel.classList.add("hidden");
       return;
     }
 
-
     if(!data?.length){
       panel.classList.add("hidden");
       return;
     }
-
 
     panel.classList.remove("hidden");
     list.innerHTML = data.map(a => `
@@ -3086,7 +2702,6 @@ async function runVirusTotalChecker(){
         <div class="vexo-announcement-body">${esc2(a.body)}</div>
       </article>`).join("");
   }
-
 
   async function submitTakedown(e){
     e.preventDefault();
@@ -3116,12 +2731,10 @@ async function runVirusTotalChecker(){
     }
   }
 
-
   function injectAnnouncementAdmin(){
     const adminPage = document.getElementById("adminPage");
     const queuePanel = document.getElementById("adminQueue")?.closest(".panel");
     if(!adminPage || !queuePanel || document.getElementById(ANN_ADMIN_ID)) return;
-
 
     const panel = document.createElement("div");
     panel.id = ANN_ADMIN_ID;
@@ -3145,11 +2758,9 @@ async function runVirusTotalChecker(){
       <div id="announcementAdminList" class="announcement-admin-grid"></div>`;
     queuePanel.insertAdjacentElement("beforebegin", panel);
 
-
     document.getElementById("announcementForm")?.addEventListener("submit", saveAnnouncement);
     document.getElementById("announcementCancelBtn")?.addEventListener("click", clearAnnouncementForm);
   }
-
 
   function clearAnnouncementForm(){
     $("announcementId").value = "";
@@ -3159,13 +2770,11 @@ async function runVirusTotalChecker(){
     $("announcementSaveBtn").textContent = "Publish announcement";
   }
 
-
   async function loadAnnouncementsAdmin(){
     if(!isAdminNow()) return;
     injectAnnouncementAdmin();
     const box = document.getElementById("announcementAdminList");
     if(!box) return;
-
 
     const {data,error} = await db.from("announcements")
       .select("id,title,body,active,created_at,updated_at")
@@ -3181,7 +2790,6 @@ async function runVirusTotalChecker(){
       return;
     }
 
-
     box.innerHTML = data.map(a => `
       <div class="admin-edit-card">
         <div class="admin-edit-meta">
@@ -3196,7 +2804,6 @@ async function runVirusTotalChecker(){
         </div>
       </div>`).join("");
   }
-
 
   async function saveAnnouncement(e){
     e.preventDefault();
@@ -3233,7 +2840,6 @@ async function runVirusTotalChecker(){
     }
   }
 
-
   window.editVexoAnnouncement = async id => {
     if(!isAdminNow()) return;
     const {data,error} = await db.from("announcements").select("id,title,body,active").eq("id",id).single();
@@ -3246,7 +2852,6 @@ async function runVirusTotalChecker(){
     document.getElementById(ANN_ADMIN_ID)?.scrollIntoView({behavior:"smooth",block:"start"});
   };
 
-
   window.deleteVexoAnnouncement = async id => {
     if(!isAdminNow()) return;
     if(!confirm("Delete this announcement permanently?")) return;
@@ -3257,12 +2862,10 @@ async function runVirusTotalChecker(){
     await loadPublicAnnouncements();
   };
 
-
   function injectTakedownAdmin(){
     const adminPage = document.getElementById("adminPage");
     const notifPanel = document.getElementById("adminNotifications")?.closest(".panel");
     if(!adminPage || !notifPanel || document.getElementById(TAKEDOWN_ADMIN_ID)) return;
-
 
     const panel = document.createElement("div");
     panel.id = TAKEDOWN_ADMIN_ID;
@@ -3275,7 +2878,6 @@ async function runVirusTotalChecker(){
     notifPanel.insertAdjacentElement("beforebegin", panel);
   }
 
-
   async function loadTakedownAdmin(){
     if(!isAdminNow()) return;
     injectTakedownAdmin();
@@ -3287,7 +2889,6 @@ async function runVirusTotalChecker(){
       .limit(100);
     if(error){ box.innerHTML = emptyState("Could not load requests.","!"); console.error(error); return; }
     if(!data?.length){ box.innerHTML = emptyState("No takedown requests yet.","·"); return; }
-
 
     box.innerHTML = data.map(r => `
       <div class="admin-edit-card">
@@ -3314,7 +2915,6 @@ async function runVirusTotalChecker(){
       </div>`).join("");
   }
 
-
   window.updateVexoTakedown = async id => {
     if(!isAdminNow()) return;
     const status = document.getElementById("tdstatus-"+id)?.value;
@@ -3325,7 +2925,6 @@ async function runVirusTotalChecker(){
     await loadTakedownAdmin();
   };
 
-
   window.deleteVexoTakedown = async id => {
     if(!isAdminNow()) return;
     if(!confirm("Delete this takedown request permanently?")) return;
@@ -3334,7 +2933,6 @@ async function runVirusTotalChecker(){
     toast("Request deleted.");
     await loadTakedownAdmin();
   };
-
 
   const originalLoadAdminData = window.loadAdminData;
   if(typeof originalLoadAdminData === "function"){
@@ -3350,7 +2948,6 @@ async function runVirusTotalChecker(){
     };
   }
 
-
   function init(){
     injectTermsPage();
     injectHomeAnnouncements();
@@ -3361,12 +2958,10 @@ async function runVirusTotalChecker(){
     }
   }
 
-
   window.addEventListener("DOMContentLoaded", init);
   init();
 })();
 </script>
-
 
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- VEXO FLASHY HOMEPAGE ANNOUNCEMENTS — APPEND-ONLY -->
@@ -3391,7 +2986,6 @@ async function runVirusTotalChecker(){
   animation:vexoAnnounceFloat 5s ease-in-out infinite;
 }
 
-
 #vexoAnnouncementsHome.vexo-announcement-featured::before{
   content:"";
   position:absolute;
@@ -3407,7 +3001,6 @@ async function runVirusTotalChecker(){
   pointer-events:none;
 }
 
-
 #vexoAnnouncementsHome.vexo-announcement-featured::after{
   content:"";
   position:absolute;
@@ -3421,7 +3014,6 @@ async function runVirusTotalChecker(){
   pointer-events:none;
 }
 
-
 #vexoAnnouncementsHome .vexo-announcement-featured-head{
   position:relative;
   display:flex;
@@ -3431,7 +3023,6 @@ async function runVirusTotalChecker(){
   padding:17px 20px 13px;
   border-bottom:1px solid rgba(148,163,184,.12);
 }
-
 
 #vexoAnnouncementsHome .vexo-announcement-featured-label{
   display:inline-flex;
@@ -3444,7 +3035,6 @@ async function runVirusTotalChecker(){
   text-transform:uppercase;
 }
 
-
 #vexoAnnouncementsHome .vexo-announcement-live{
   width:9px;
   height:9px;
@@ -3454,19 +3044,16 @@ async function runVirusTotalChecker(){
   animation:vexoAnnouncePulse 1.35s ease-in-out infinite;
 }
 
-
 #vexoAnnouncementsHome .vexo-announcement-team{
   color:var(--muted);
   font-size:10.5px;
   font-weight:700;
 }
 
-
 #vexoAnnouncementsHome .vexo-announcement-featured-body{
   position:relative;
   padding:22px 20px 20px;
 }
-
 
 #vexoAnnouncementsHome .vexo-announcement-primary{
   display:grid;
@@ -3476,11 +3063,9 @@ async function runVirusTotalChecker(){
   padding:4px 0 0;
 }
 
-
 #vexoAnnouncementsHome .vexo-announcement-primary-copy{
   min-width:0;
 }
-
 
 #vexoAnnouncementsHome .vexo-announcement-primary-title{
   margin:0 0 9px;
@@ -3492,7 +3077,6 @@ async function runVirusTotalChecker(){
   color:#fff;
   text-shadow:0 0 26px rgba(124,92,255,.24);
 }
-
 
 #vexoAnnouncementsHome .vexo-announcement-primary-date{
   display:inline-flex;
@@ -3506,7 +3090,6 @@ async function runVirusTotalChecker(){
   text-transform:uppercase;
 }
 
-
 #vexoAnnouncementsHome .vexo-announcement-primary-date::before{
   content:"";
   width:18px;
@@ -3515,7 +3098,6 @@ async function runVirusTotalChecker(){
   opacity:.65;
 }
 
-
 #vexoAnnouncementsHome .vexo-announcement-primary-text{
   color:#b8c3da;
   font-size:13.5px;
@@ -3523,7 +3105,6 @@ async function runVirusTotalChecker(){
   white-space:pre-wrap;
   max-width:950px;
 }
-
 
 #vexoAnnouncementsHome .vexo-announcement-changelog-button{
   display:inline-flex;
@@ -3541,14 +3122,12 @@ async function runVirusTotalChecker(){
   transition:.2s;
 }
 
-
 #vexoAnnouncementsHome .vexo-announcement-changelog-button:hover{
   transform:translateY(-2px);
   border-color:rgba(25,211,255,.65);
   background:rgba(25,211,255,.12);
   box-shadow:0 10px 30px rgba(25,211,255,.12);
 }
-
 
 #vexoAnnouncementsHome .vexo-announcement-history{
   display:none;
@@ -3557,12 +3136,10 @@ async function runVirusTotalChecker(){
   border-top:1px solid rgba(148,163,184,.11);
 }
 
-
 #vexoAnnouncementsHome.vexo-announcement-history-open .vexo-announcement-history{
   display:grid;
   gap:9px;
 }
-
 
 #vexoAnnouncementsHome .vexo-announcement-history-title{
   margin:0 0 4px;
@@ -3573,12 +3150,10 @@ async function runVirusTotalChecker(){
   text-transform:uppercase;
 }
 
-
 #vexoAnnouncementsHome .vexo-announcement-history-list{
   display:grid;
   gap:8px;
 }
-
 
 #vexoAnnouncementsHome .vexo-announcement-history-item{
   padding:12px 13px;
@@ -3587,14 +3162,12 @@ async function runVirusTotalChecker(){
   background:rgba(255,255,255,.025);
 }
 
-
 #vexoAnnouncementsHome .vexo-announcement-history-item strong{
   display:block;
   color:#fff;
   font-size:12.5px;
   margin-bottom:4px;
 }
-
 
 #vexoAnnouncementsHome .vexo-announcement-history-item small{
   display:block;
@@ -3604,7 +3177,6 @@ async function runVirusTotalChecker(){
   margin-bottom:6px;
 }
 
-
 #vexoAnnouncementsHome .vexo-announcement-history-item p{
   margin:0;
   color:var(--muted);
@@ -3613,17 +3185,14 @@ async function runVirusTotalChecker(){
   white-space:pre-wrap;
 }
 
-
 #vexoAnnouncementsHome .vexo-announcement-mobile-note{
   display:none;
 }
-
 
 @keyframes vexoAnnounceFloat{
   0%,100%{transform:translateY(0);}
   50%{transform:translateY(-2px);}
 }
-
 
 @keyframes vexoAnnounceBorder{
   0%{background-position:0% 50%;}
@@ -3631,19 +3200,16 @@ async function runVirusTotalChecker(){
   100%{background-position:0% 50%;}
 }
 
-
 @keyframes vexoAnnounceSweep{
   0%,55%{left:-35%;opacity:0;}
   65%{opacity:1;}
   90%,100%{left:115%;opacity:0;}
 }
 
-
 @keyframes vexoAnnouncePulse{
   0%,100%{transform:scale(1);opacity:1;}
   50%{transform:scale(.72);opacity:.55;}
 }
-
 
 @media(max-width:700px){
   #vexoAnnouncementsHome .vexo-announcement-featured-head{
@@ -3652,16 +3218,13 @@ async function runVirusTotalChecker(){
     gap:7px;
   }
 
-
   #vexoAnnouncementsHome .vexo-announcement-primary{
     grid-template-columns:1fr;
   }
 
-
   #vexoAnnouncementsHome .vexo-announcement-changelog-button{
     width:100%;
   }
-
 
   #vexoAnnouncementsHome .vexo-announcement-mobile-note{
     display:block;
@@ -3670,7 +3233,6 @@ async function runVirusTotalChecker(){
     font-size:10.5px;
   }
 }
-
 
 @media(prefers-reduced-motion:reduce){
   #vexoAnnouncementsHome.vexo-announcement-featured,
@@ -3682,19 +3244,16 @@ async function runVirusTotalChecker(){
 }
 </style>
 
-
 <script>
 (() => {
   const ANN_ID = "vexoAnnouncementsHome";
   let cachedAnnouncements = [];
-
 
   function e(v=""){
     return String(v).replace(/[&<>"']/g, m => ({
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
     }[m]));
   }
-
 
   function fd(v){
     if(!v) return "Unknown date";
@@ -3707,17 +3266,13 @@ async function runVirusTotalChecker(){
     }
   }
 
-
   function buildFeatured(announcements){
     const panel = document.getElementById(ANN_ID);
     if(!panel || !announcements?.length) return;
 
-
     cachedAnnouncements = announcements;
 
-
     panel.classList.add("vexo-announcement-featured");
-
 
     panel.innerHTML = `
       <div class="vexo-announcement-featured-head">
@@ -3727,7 +3282,6 @@ async function runVirusTotalChecker(){
         </div>
         <div class="vexo-announcement-team">Updates from the VEXO community team</div>
       </div>
-
 
       <div class="vexo-announcement-featured-body">
         <div class="vexo-announcement-primary">
@@ -3742,7 +3296,6 @@ async function runVirusTotalChecker(){
             </div>
           </div>
 
-
           <button
             type="button"
             class="vexo-announcement-changelog-button"
@@ -3751,7 +3304,6 @@ async function runVirusTotalChecker(){
             View Changelog ↗
           </button>
         </div>
-
 
         <div class="vexo-announcement-history" id="vexoAnnouncementHistory">
           <div class="vexo-announcement-history-title">Recent updates</div>
@@ -3772,12 +3324,10 @@ async function runVirusTotalChecker(){
       </div>
     `;
 
-
     const button = document.getElementById("vexoOpenChangelog");
     button?.addEventListener("click", () => {
       const open = panel.classList.toggle("vexo-announcement-history-open");
       button.textContent = open ? "Hide Changelog ↑" : "View Changelog ↗";
-
 
       if(open){
         document.getElementById("vexoAnnouncementHistory")?.scrollIntoView({
@@ -3788,11 +3338,9 @@ async function runVirusTotalChecker(){
     });
   }
 
-
   async function refreshFeaturedAnnouncements(){
     const panel = document.getElementById(ANN_ID);
     if(!panel) return;
-
 
     const {data,error} = await db.from("announcements")
       .select("id,title,body,created_at,updated_at")
@@ -3800,22 +3348,18 @@ async function runVirusTotalChecker(){
       .order("created_at",{ascending:false})
       .limit(10);
 
-
     if(error){
       console.error("Featured announcements:", error);
       return;
     }
-
 
     if(!data?.length){
       panel.classList.add("hidden");
       return;
     }
 
-
     panel.classList.remove("hidden");
     buildFeatured(data);
-
 
     const home = document.getElementById("homePage");
     const hero = home?.querySelector(".hero");
@@ -3824,22 +3368,18 @@ async function runVirusTotalChecker(){
     }
   }
 
-
   function start(){
     const panel = document.getElementById(ANN_ID);
     if(!panel) return;
-
 
     refreshFeaturedAnnouncements();
     window.refreshVexoFeaturedAnnouncements = refreshFeaturedAnnouncements;
   }
 
-
   window.addEventListener("DOMContentLoaded", start);
   start();
 })();
 </script>
-
 
 <script>
 (() => {
@@ -3855,13 +3395,11 @@ async function runVirusTotalChecker(){
     }
   }
 
-
   hookAnnouncementRefresh();
   setTimeout(hookAnnouncementRefresh, 250);
   setTimeout(hookAnnouncementRefresh, 1000);
 })();
 </script>
-
 
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- VEXO COMMUNITY CHAT ADD-ON                                   -->
@@ -3878,7 +3416,6 @@ async function runVirusTotalChecker(){
   overflow: hidden;
 }
 
-
 .chat-messages {
   flex: 1;
   min-height: 0;
@@ -3889,7 +3426,6 @@ async function runVirusTotalChecker(){
   gap: 8px;
 }
 
-
 .chat-msg {
   display: flex;
   gap: 10px;
@@ -3899,12 +3435,10 @@ async function runVirusTotalChecker(){
   position: relative;
 }
 
-
 .chat-msg.self {
   align-self: flex-end;
   flex-direction: row-reverse;
 }
-
 
 .chat-avatar {
   width: 32px;
@@ -3919,7 +3453,6 @@ async function runVirusTotalChecker(){
   flex-shrink: 0;
 }
 
-
 .chat-bubble {
   background: var(--card);
   border: 1px solid var(--line);
@@ -3933,7 +3466,6 @@ async function runVirusTotalChecker(){
   word-break: break-word;
 }
 
-
 .chat-msg.self .chat-bubble {
   background:
     linear-gradient(
@@ -3944,7 +3476,6 @@ async function runVirusTotalChecker(){
   border-color: rgba(124, 92, 255, 0.35);
 }
 
-
 .chat-meta {
   display: flex;
   align-items: center;
@@ -3953,19 +3484,16 @@ async function runVirusTotalChecker(){
   line-height: 1;
 }
 
-
 .chat-user {
   font-size: 11px;
   font-weight: 700;
   color: var(--accent2);
 }
 
-
 .chat-time {
   font-size: 9px;
   color: var(--muted);
 }
-
 
 .chat-delete-btn {
   background: none;
@@ -3981,12 +3509,10 @@ async function runVirusTotalChecker(){
   margin-left: 2px;
 }
 
-
 .chat-delete-btn:hover {
   color: var(--red);
   background: rgba(255, 70, 70, 0.1);
 }
-
 
 .chat-text {
   font-size: 13px;
@@ -3998,7 +3524,6 @@ async function runVirusTotalChecker(){
   word-break: break-word;
 }
 
-
 .chat-input-bar {
   display: flex;
   gap: 8px;
@@ -4007,12 +3532,10 @@ async function runVirusTotalChecker(){
   border-top: 1px solid var(--line);
 }
 
-
 .chat-input-bar input {
   flex: 1;
   min-width: 0;
 }
-
 
 @media (max-width: 600px) {
   .chat-container {
@@ -4030,14 +3553,11 @@ async function runVirusTotalChecker(){
 }
 </style>
 
-
 <script>
 (() => {
   "use strict";
 
-
   const CHAT_PAGE_ID = "chatPage";
-
 
 const BLOCKED_WORDS = [
   // Existing words
@@ -4074,7 +3594,6 @@ const BLOCKED_WORDS = [
   "nigger", "niggers",
   "niggas", "cum",
 
-
   // Common spelling variations
   "fuk", "fuking", "fukin", "fck", "fcking", "fcked",
   "fuq", "fuqing", "f*ck", "f**k",
@@ -4087,7 +3606,6 @@ const BLOCKED_WORDS = [
   "a55", "a55hole",
   "a$$", "a$$hole",
 
-
   // Repeated-letter variants
   "fuuuck", "fuuuck", "fuuucking",
   "shiiit", "shiiiit",
@@ -4095,7 +3613,6 @@ const BLOCKED_WORDS = [
   "diiick",
   "cooock",
   "daaaamn",
-
 
   // Common shortened forms
   "fk", "fck",
@@ -4106,12 +3623,10 @@ const BLOCKED_WORDS = [
   "lmfao"
 ];
 
-
   const BLOCKED_PHRASES = [
     "fuck you", "fuck off", "fucking idiot", "fucking stupid", "shut the fuck up", "go fuck yourself",
     "piece of shit", "son of a bitch", "you bitch", "you asshole", "dumb fucking", "stupid fuck"
   ];
-
 
   const CHAR_MAP = {
     "0": "o", "1": "i", "!": "i", "3": "e", "4": "a", "@": "a",
@@ -4121,13 +3636,11 @@ const BLOCKED_WORDS = [
     "ο": "o", "Ο": "o", "ѕ": "s", "τ": "t", "Τ": "t"
   };
 
-
   function normalizeUnicode(text) {
     return String(text || "")
       .normalize("NFKD")
       .replace(/[\u0300-\u036f]/g, "");
   }
-
 
   function replaceLookalikes(text) {
     let result = "";
@@ -4136,7 +3649,6 @@ const BLOCKED_WORDS = [
     }
     return result;
   }
-
 
   function normalizeText(text) {
     let s = normalizeUnicode(text).toLowerCase();
@@ -4152,16 +3664,13 @@ const BLOCKED_WORDS = [
     return s;
   }
 
-
   function compactText(text) {
     return normalizeText(text).replace(/[^a-z0-9]/g, "");
   }
 
-
   function escapeRegex(text) {
     return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
-
 
   function buildFlexibleRegex(word) {
     const chars = word.split("");
@@ -4176,36 +3685,29 @@ const BLOCKED_WORDS = [
     return new RegExp(pattern, "gi");
   }
 
-
   function containsBlockedContent(text) {
     const normalized = normalizeText(text);
     const compact = compactText(text);
 
-
     for (const word of BLOCKED_WORDS) {
       if (compact.includes(word)) return true;
     }
-
 
     for (const word of BLOCKED_WORDS) {
       const regex = buildFlexibleRegex(word);
       if (regex.test(normalized)) return true;
     }
 
-
     const phraseText = normalized.replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
     for (const phrase of BLOCKED_PHRASES) {
       if (phraseText.includes(phrase.toLowerCase())) return true;
     }
 
-
     return false;
   }
 
-
   function cleanMessage(rawText) {
     let filtered = String(rawText || "");
-
 
     for (const phrase of BLOCKED_PHRASES) {
       const words = phrase.split(/\s+/).map(escapeRegex);
@@ -4214,16 +3716,13 @@ const BLOCKED_WORDS = [
       filtered = filtered.replace(regex, match => "*".repeat(match.length));
     }
 
-
     for (const word of BLOCKED_WORDS) {
       const regex = buildFlexibleRegex(word);
       filtered = filtered.replace(regex, match => "*".repeat(match.length));
     }
 
-
     return filtered;
   }
-
 
   function escText(str = "") {
     return String(str).replace(/[&<>"']/g, m => ({
@@ -4231,21 +3730,17 @@ const BLOCKED_WORDS = [
     }[m]));
   }
 
-
   function injectChatUI() {
     if (document.getElementById(CHAT_PAGE_ID)) return;
 
-
     const nav = document.querySelector(".nav");
     const favBtn = nav?.querySelector('[data-page="favorites"]');
-
 
     if (nav && !nav.querySelector('[data-page="chat"]')) {
       const chatNavBtn = document.createElement("button");
       chatNavBtn.dataset.page = "chat";
       chatNavBtn.innerHTML = '<span class="ic">💬</span><span class="lbl">Community Chat</span>';
       chatNavBtn.onclick = showChatPage;
-
 
       if (favBtn) {
         favBtn.insertAdjacentElement("afterend", chatNavBtn);
@@ -4254,15 +3749,12 @@ const BLOCKED_WORDS = [
       }
     }
 
-
     const main = document.querySelector("main.main");
     if (!main) return;
-
 
     const chatSection = document.createElement("section");
     chatSection.id = CHAT_PAGE_ID;
     chatSection.className = "page hidden";
-
 
     chatSection.innerHTML = `
       <div class="panel">
@@ -4273,7 +3765,6 @@ const BLOCKED_WORDS = [
           </div>
         </div>
 
-
         <div class="chat-container">
           <div class="chat-messages" id="chatMessages">
             <div class="empty">
@@ -4281,7 +3772,6 @@ const BLOCKED_WORDS = [
               <p>Loading conversation...</p>
             </div>
           </div>
-
 
           <form class="chat-input-bar" id="chatForm">
             <input
@@ -4298,11 +3788,9 @@ const BLOCKED_WORDS = [
       </div>
     `;
 
-
     main.appendChild(chatSection);
     document.getElementById("chatForm")?.addEventListener("submit", sendChatMessage);
   }
-
 
   function showChatPage() {
     injectChatUI();
@@ -4310,38 +3798,31 @@ const BLOCKED_WORDS = [
     const chatSection = document.getElementById(CHAT_PAGE_ID);
     chatSection?.classList.remove("hidden");
 
-
     document.querySelectorAll(".nav button").forEach(b => {
       b.classList.toggle("active", b.dataset.page === "chat");
     });
-
 
     const titleEl = document.getElementById("pageTitle");
     const subEl = document.getElementById("pageSub");
     const crumbEl = document.getElementById("crumbPage");
 
-
     if (titleEl) titleEl.textContent = "Community Chat";
     if (subEl) subEl.textContent = "Real-time conversation with the VEXO community.";
     if (crumbEl) crumbEl.textContent = "Chat";
-
 
     loadMessages();
     subscribeChat();
   }
 
-
   async function loadMessages() {
     const chatContainer = document.getElementById("chatMessages");
     if (!chatContainer) return;
-
 
     const { data, error } = await db
       .from("messages")
       .select("*")
       .order("created_at", { ascending: true })
       .limit(60);
-
 
     if (error) {
       chatContainer.innerHTML = `
@@ -4353,7 +3834,6 @@ const BLOCKED_WORDS = [
       return;
     }
 
-
     if (!data || !data.length) {
       chatContainer.innerHTML = `
         <div class="empty">
@@ -4364,20 +3844,16 @@ const BLOCKED_WORDS = [
       return;
     }
 
-
     renderAllMessages(data);
   }
-
 
   function renderAllMessages(msgs) {
     const chatContainer = document.getElementById("chatMessages");
     if (!chatContainer) return;
 
-
     chatContainer.innerHTML = msgs.map(createMessageNode).join("");
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
-
 
   function createMessageNode(m) {
     const isSelf = user && m.user_id === user.id;
@@ -4386,15 +3862,12 @@ const BLOCKED_WORDS = [
       ? new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       : "";
 
-
     const canDelete = isAdmin || (user && m.user_id === user.id);
     const deleteBtn = canDelete
       ? `<button class="chat-delete-btn" onclick="window.deleteChatMessage('${escText(m.id)}')" title="Delete message">✕</button>`
       : "";
 
-
     const displayContent = cleanMessage(m.content || "");
-
 
     return `
       <div class="chat-msg ${isSelf ? "self" : ""}" id="chat-msg-${escText(m.id)}">
@@ -4411,7 +3884,6 @@ const BLOCKED_WORDS = [
     `;
   }
 
-
   window.deleteChatMessage = async function(id) {
     if (!user) {
       if (typeof toast === "function") toast("You must be signed in to delete messages.");
@@ -4419,19 +3891,16 @@ const BLOCKED_WORDS = [
     }
     if (!confirm("Are you sure you want to delete this message?")) return;
 
-
     const { error } = await db.from("messages").delete().eq("id", id);
     if (error) {
       if (typeof toast === "function") toast("Failed to delete message: " + error.message);
       return;
     }
 
-
     const el = document.getElementById(`chat-msg-${id}`);
     if (el) el.remove();
     if (typeof toast === "function") toast("Message deleted.");
   };
-
 
   async function sendChatMessage(e) {
     e.preventDefault();
@@ -4439,18 +3908,15 @@ const BLOCKED_WORDS = [
     const sendBtn = document.getElementById("chatSendBtn");
     const text = input?.value.trim();
 
-
     if (!text) return;
     if (text.length > 500) {
       if (typeof toast === "function") toast("Messages can be up to 500 characters.");
       return;
     }
 
-
     const hasBlockedContent = containsBlockedContent(text);
     const sanitizedText = cleanMessage(text);
     if (!sanitizedText.trim()) return;
-
 
     let senderName = "Guest";
     if (user) {
@@ -4460,10 +3926,8 @@ const BLOCKED_WORDS = [
       senderName = typeof anonymousName === "function" ? anonymousName(crypto.randomUUID()) : "Guest";
     }
 
-
     input.value = "";
     if (sendBtn) sendBtn.disabled = true;
-
 
     const { error } = await db.from("messages").insert({
       user_id: user?.id || null,
@@ -4471,40 +3935,32 @@ const BLOCKED_WORDS = [
       content: sanitizedText
     });
 
-
     if (sendBtn) sendBtn.disabled = false;
-
 
     if (error) {
       if (typeof toast === "function") toast("Message failed to send: " + error.message);
       return;
     }
 
-
     if (hasBlockedContent && typeof toast === "function") {
       toast("Some words were automatically censored.");
     }
   }
 
-
   let chatSubscribed = false;
-
 
   function subscribeChat() {
     if (chatSubscribed) return;
-
 
     db.channel("public:messages")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
         const chatContainer = document.getElementById("chatMessages");
         if (!chatContainer) return;
 
-
         if (chatContainer.querySelector(".empty")) {
           chatContainer.innerHTML = "";
         }
         if (document.getElementById(`chat-msg-${payload.new.id}`)) return;
-
 
         const temp = document.createElement("div");
         temp.innerHTML = createMessageNode(payload.new);
@@ -4520,10 +3976,8 @@ const BLOCKED_WORDS = [
       })
       .subscribe();
 
-
     chatSubscribed = true;
   }
-
 
   const origLoadSession = window.loadSession;
   if (typeof origLoadSession === "function") {
@@ -4536,7 +3990,6 @@ const BLOCKED_WORDS = [
     };
   }
 
-
   window.VEXOChatFilter = {
     cleanMessage,
     containsBlockedContent,
@@ -4544,41 +3997,7 @@ const BLOCKED_WORDS = [
     compactText
   };
 
-
   window.addEventListener("DOMContentLoaded", injectChatUI);
   injectChatUI();
 })();
-
-
-  /* Sidebar scrolling */
-@media(max-width:720px){.link-checker-row{grid-template-columns:1fr auto;}.check-status{grid-column:1/-1;}}
-
-
-/* Sidebar scrolling */
-.side{
-  overflow-y:auto;
-  overflow-x:hidden;
-}
-
-
-.side::-webkit-scrollbar{
-  width:7px;
-}
-
-
-.side::-webkit-scrollbar-track{
-  background:transparent;
-}
-
-
-.side::-webkit-scrollbar-thumb{
-  background:rgba(124,92,255,.35);
-  border-radius:99px;
-}
-
-
-.side::-webkit-scrollbar-thumb:hover{
-  background:rgba(124,92,255,.6);
-}
-</styles>
 </script>
