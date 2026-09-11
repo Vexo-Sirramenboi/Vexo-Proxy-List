@@ -4002,12 +4002,14 @@ const BLOCKED_WORDS = [
 })();
 
   /* Sidebar scrolling */
+@media(max-width:720px){.link-checker-row{grid-template-columns:1fr auto;}.check-status{grid-column:1/-1;}}
+
+/* Sidebar scrolling */
 .side{
   overflow-y:auto;
   overflow-x:hidden;
 }
 
-/* Sidebar scrollbar */
 .side::-webkit-scrollbar{
   width:7px;
 }
@@ -4023,5 +4025,6 @@ const BLOCKED_WORDS = [
 
 .side::-webkit-scrollbar-thumb:hover{
   background:rgba(124,92,255,.6);
-}s
+}
+</styles
 </script>
