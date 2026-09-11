@@ -3559,20 +3559,69 @@ async function runVirusTotalChecker(){
 
   const CHAT_PAGE_ID = "chatPage";
 
-  const BLOCKED_WORDS = [
-    "fuck", "fucks", "fucked", "fucking", "fucker", "fuckers", "motherfuck", "motherfucker", "motherfuckers",
-    "shit", "shits", "shitty", "bullshit", "shithead", "shitheads",
-    "bitch", "bitches", "bitchy", "asshole", "assholes",
-    "dick", "dicks", "dickhead", "dickheads", "cock", "cocks",
-    "pussy", "pussies", "cunt", "cunts", "whore", "whores",
-    "slut", "sluts", "slutty", "bastard", "bastards",
-    "piss", "pissed", "pissing", "damn", "dammit", "goddamn",
-    "dumbass", "dumbasses", "jackass", "jackasses", "smartass", "smartasses",
-    "dipshit", "dipshits", "douche", "douchebag", "douchebags", "prick", "pricks",
-    "scumbag", "scumbags", "asswipe", "asswipes", "dumbfuck", "dumbfucks",
-    "fuckwit", "fuckwits", "twat", "twats", "wanker", "wankers", "bollocks",
-    "blowjob", "blowjobs", "handjob", "handjobs", "horny"
-  ];
+const BLOCKED_WORDS = [
+  // Existing words
+  "fuck", "fucks", "fucked", "fucking", "fucker", "fuckers",
+  "motherfuck", "motherfucker", "motherfuckers",
+  "shit", "shits", "shitty", "bullshit", "shithead", "shitheads",
+  "bitch", "bitches", "bitchy",
+  "asshole", "assholes",
+  "dick", "dicks", "dickhead", "dickheads",
+  "cock", "cocks",
+  "pussy", "pussies",
+  "cunt", "cunts",
+  "whore", "whores",
+  "slut", "sluts", "slutty",
+  "bastard", "bastards",
+  "piss", "pissed", "pissing",
+  "damn", "dammit", "goddamn",
+  "dumbass", "dumbasses",
+  "jackass", "jackasses",
+  "smartass", "smartasses",
+  "dipshit", "dipshits",
+  "douche", "douchebag", "douchebags",
+  "prick", "pricks",
+  "scumbag", "scumbags",
+  "asswipe", "asswipes",
+  "dumbfuck", "dumbfucks",
+  "fuckwit", "fuckwits",
+  "twat", "twats",
+  "wanker", "wankers",
+  "bollocks",
+  "blowjob", "blowjobs",
+  "handjob", "handjobs",
+  "horny", "nigga", 
+  "nigger", "niggers",
+  "niggas", "cum",
+
+  // Common spelling variations
+  "fuk", "fuking", "fukin", "fck", "fcking", "fcked",
+  "fuq", "fuqing", "f*ck", "f**k",
+  "sh1t", "sh!t", "5hit",
+  "b1tch", "b!tch",
+  "d1ck", "d!ck",
+  "c0ck", "c*ck",
+  "p1ss", "p!ss",
+  "d4mn", "d@mn",
+  "a55", "a55hole",
+  "a$$", "a$$hole",
+
+  // Repeated-letter variants
+  "fuuuck", "fuuuck", "fuuucking",
+  "shiiit", "shiiiit",
+  "biiitch", "biiitch",
+  "diiick",
+  "cooock",
+  "daaaamn",
+
+  // Common shortened forms
+  "fk", "fck",
+  "fkin", "fking",
+  "bs",
+  "stfu",
+  "wtf",
+  "lmfao"
+];
 
   const BLOCKED_PHRASES = [
     "fuck you", "fuck off", "fucking idiot", "fucking stupid", "shut the fuck up", "go fuck yourself",
