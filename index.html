@@ -3403,338 +3403,1745 @@ async function runVirusTotalChecker(){
   
 </script>
 <!-- ══════════════════════════════════════════════════════════════ -->
-<!-- VEXO COMMUNITY CHAT ADD-ON (WITH ADMIN/SELF DELETE)           -->
+<!-- VEXO COMMUNITY CHAT ADD-ON                                   -->
+<!-- COMPACT CHAT BUBBLES + CENSORSHIP + ANTI-BYPASS             -->
 <!-- ══════════════════════════════════════════════════════════════ -->
+
 <style>
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 160px);
-  min-height: 500px;
+
+  /* Overall chat window */
+  height: 500px;
+  min-height: 0;
+
   background: rgba(10, 15, 28, 0.65);
   border: 1px solid var(--line);
   border-radius: var(--r);
   overflow: hidden;
 }
+
+/* ================================================================
+   MESSAGE AREA
+================================================================ */
+
 .chat-messages {
   flex: 1;
+  min-height: 0;
+
   overflow-y: auto;
-  padding: 20px;
+
+  padding: 16px;
+
   display: flex;
   flex-direction: column;
-  gap: 12px;
+
+  gap: 8px;
 }
+
+/* ================================================================
+   MESSAGE ROW
+================================================================ */
+
 .chat-msg {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
+
+  /*
+    Important:
+    Don't force every message to use the full width.
+  */
+  width: fit-content;
   max-width: 85%;
+
   position: relative;
 }
+
 .chat-msg.self {
   align-self: flex-end;
   flex-direction: row-reverse;
 }
+
+/* ================================================================
+   AVATAR
+================================================================ */
+
 .chat-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+
+  border-radius: 9px;
+
   background: var(--grad);
+
   display: grid;
   place-items: center;
-  font-size: 13px;
+
+  font-size: 12px;
   font-weight: 700;
+
   color: #fff;
+
   flex-shrink: 0;
 }
+
+/* ================================================================
+   MESSAGE BUBBLE
+================================================================ */
+
 .chat-bubble {
   background: var(--card);
+
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 10px 14px;
+
+  /*
+    This makes the bubble shrink around the message.
+  */
+  width: fit-content;
+
+  /*
+    But don't allow extremely long messages to
+    create a huge horizontal bubble.
+  */
+  max-width: min(70vw, 500px);
+
+  min-width: 0;
+
+  padding: 7px 11px;
+
   position: relative;
+
+  /*
+    Long URLs / spammy strings won't stretch
+    the bubble outside the chat window.
+  */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
+
 .chat-msg.self .chat-bubble {
-  background: linear-gradient(135deg, rgba(124, 92, 255, 0.25), rgba(25, 211, 255, 0.1));
+  background:
+    linear-gradient(
+      135deg,
+      rgba(124, 92, 255, 0.25),
+      rgba(25, 211, 255, 0.1)
+    );
+
   border-color: rgba(124, 92, 255, 0.35);
 }
+
+/* ================================================================
+   MESSAGE HEADER
+================================================================ */
+
 .chat-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
+
+  gap: 6px;
+
+  margin-bottom: 3px;
+
+  line-height: 1;
 }
+
 .chat-user {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
+
   color: var(--accent2);
 }
+
 .chat-time {
-  font-size: 10px;
+  font-size: 9px;
+
   color: var(--muted);
 }
+
+/* ================================================================
+   MESSAGE TEXT
+================================================================ */
+
 .chat-text {
   font-size: 13px;
-  line-height: 1.5;
+
+  line-height: 1.4;
+
   color: var(--text);
+
+  margin: 0;
+
+  /*
+    Preserve normal spaces and line breaks,
+    but still wrap naturally.
+  */
+  white-space: pre-wrap;
+
+  overflow-wrap: anywhere;
   word-break: break-word;
 }
+
+/* ================================================================
+   DELETE BUTTON
+================================================================ */
+
 .chat-delete-btn {
   background: none;
+
   border: none;
+
   color: var(--muted);
-  font-size: 11px;
+
+  font-size: 10px;
+
   cursor: pointer;
-  padding: 0 4px;
+
+  padding: 0 3px;
+
   border-radius: 4px;
-  transition: color 0.2s;
+
+  transition:
+    color 0.2s,
+    background 0.2s;
+
   display: inline-flex;
+
   align-items: center;
-  margin-left: 6px;
+
+  margin-left: 2px;
 }
+
 .chat-delete-btn:hover {
   color: var(--red);
+
+  background: rgba(255, 70, 70, 0.1);
 }
+
+/* ================================================================
+   INPUT
+================================================================ */
+
 .chat-input-bar {
   display: flex;
-  gap: 10px;
-  padding: 16px 20px;
+
+  gap: 8px;
+
+  padding: 12px 16px;
+
   background: rgba(8, 12, 22, 0.7);
+
   border-top: 1px solid var(--line);
 }
+
 .chat-input-bar input {
   flex: 1;
+
+  min-width: 0;
+}
+
+/* ================================================================
+   MOBILE
+================================================================ */
+
+@media (max-width: 600px) {
+
+  .chat-container {
+    height: 450px;
+  }
+
+  .chat-messages {
+    padding: 12px;
+  }
+
+  .chat-msg {
+    max-width: 92%;
+  }
+
+  .chat-bubble {
+    max-width: calc(100vw - 100px);
+  }
+
 }
 </style>
 
+
 <script>
 (() => {
+
+  "use strict";
+
+
+  /* ============================================================
+     CONFIGURATION
+  ============================================================ */
+
   const CHAT_PAGE_ID = "chatPage";
 
-  function escText(str = "") {
-    return String(str).replace(/[&<>"']/g, m => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
-    }[m]));
+
+  /* ============================================================
+     BLOCKED WORDS
+  ============================================================ */
+
+  const BLOCKED_WORDS = [
+
+    /* Profanity */
+    "fuck",
+    "fucks",
+    "fucked",
+    "fucking",
+    "fucker",
+    "fuckers",
+    "motherfuck",
+    "motherfucker",
+    "motherfuckers",
+
+    "shit",
+    "shits",
+    "shitty",
+    "bullshit",
+    "shithead",
+    "shitheads",
+
+    "bitch",
+    "bitches",
+    "bitchy",
+
+    "asshole",
+    "assholes",
+
+    "dick",
+    "dicks",
+    "dickhead",
+    "dickheads",
+
+    "cock",
+    "cocks",
+
+    "pussy",
+    "pussies",
+
+    "cunt",
+    "cunts",
+
+    "whore",
+    "whores",
+
+    "slut",
+    "sluts",
+    "slutty",
+
+    "bastard",
+    "bastards",
+
+    "piss",
+    "pissed",
+    "pissing",
+
+    "damn",
+    "dammit",
+    "goddamn",
+
+    /* Insults */
+    "dumbass",
+    "dumbasses",
+
+    "jackass",
+    "jackasses",
+
+    "smartass",
+    "smartasses",
+
+    "dipshit",
+    "dipshits",
+
+    "douche",
+    "douchebag",
+    "douchebags",
+
+    "prick",
+    "pricks",
+
+    "scumbag",
+    "scumbags",
+
+    "asswipe",
+    "asswipes",
+
+    "dumbfuck",
+    "dumbfucks",
+
+    "fuckwit",
+    "fuckwits",
+
+    "twat",
+    "twats",
+
+    "wanker",
+    "wankers",
+
+    "bollocks",
+
+    /* Sexual profanity */
+    "blowjob",
+    "blowjobs",
+
+    "handjob",
+    "handjobs",
+
+    "horny"
+  ];
+
+
+  /* ============================================================
+     BLOCKED PHRASES
+  ============================================================ */
+
+  const BLOCKED_PHRASES = [
+
+    "fuck you",
+    "fuck off",
+    "fucking idiot",
+    "fucking stupid",
+    "shut the fuck up",
+    "go fuck yourself",
+
+    "piece of shit",
+    "son of a bitch",
+
+    "you bitch",
+    "you asshole",
+
+    "dumb fucking",
+    "stupid fuck"
+  ];
+
+
+  /* ============================================================
+     LEETSPEAK / LOOKALIKE MAP
+  ============================================================ */
+
+  const CHAR_MAP = {
+
+    "0": "o",
+    "1": "i",
+    "!": "i",
+    "3": "e",
+    "4": "a",
+    "@": "a",
+    "5": "s",
+    "$": "s",
+    "7": "t",
+    "8": "b",
+    "9": "g",
+
+    "€": "e",
+    "£": "l",
+    "¢": "c",
+    "¥": "y",
+
+    /* Some Unicode lookalikes */
+    "а": "a",
+    "Α": "a",
+
+    "е": "e",
+    "Ε": "e",
+
+    "і": "i",
+    "Ι": "i",
+
+    "ο": "o",
+    "Ο": "o",
+
+    "ѕ": "s",
+
+    "τ": "t",
+    "Τ": "t"
+  };
+
+
+  /* ============================================================
+     UNICODE NORMALIZATION
+  ============================================================ */
+
+  function normalizeUnicode(text) {
+
+    return String(text || "")
+      .normalize("NFKD")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      );
   }
 
-  function injectChatUI() {
-    if (document.getElementById(CHAT_PAGE_ID)) return;
 
-    // Sidebar button
-    const nav = document.querySelector(".nav");
-    const favBtn = nav?.querySelector('[data-page="favorites"]');
-    if (nav && !nav.querySelector('[data-page="chat"]')) {
-      const chatNavBtn = document.createElement("button");
-      chatNavBtn.dataset.page = "chat";
-      chatNavBtn.innerHTML = '<span class="ic">💬</span><span class="lbl">Community Chat</span>';
-      chatNavBtn.onclick = () => showChatPage();
-      if (favBtn) {
-        favBtn.insertAdjacentElement("afterend", chatNavBtn);
-      } else {
-        nav.appendChild(chatNavBtn);
+  /* ============================================================
+     LOOKALIKE CONVERSION
+  ============================================================ */
+
+  function replaceLookalikes(text) {
+
+    let result = "";
+
+    for (const char of text) {
+
+      result +=
+        CHAR_MAP[char] ||
+        CHAR_MAP[char.toLowerCase()] ||
+        char;
+    }
+
+    return result;
+  }
+
+
+  /* ============================================================
+     NORMALIZE TEXT
+  ============================================================ */
+
+  function normalizeText(text) {
+
+    let s =
+      normalizeUnicode(text)
+        .toLowerCase();
+
+    s = replaceLookalikes(s);
+
+
+    /*
+      Multi-character leetspeak.
+    */
+
+    s = s
+      .replace(/\/\\+/g, "a")
+      .replace(/\\\/+/g, "v")
+      .replace(/\\\/\\\/+/g, "w")
+      .replace(/vv+/g, "w")
+      .replace(/\(\(/g, "c");
+
+
+    /*
+      Remove invisible Unicode characters.
+    */
+
+    s = s.replace(
+      /[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g,
+      ""
+    );
+
+
+    /*
+      Collapse extreme repeated letters.
+
+      fuuuuuck -> fuuck -> fuck-ish
+      shiiiiit -> shiit
+    */
+
+    s = s.replace(
+      /(.)\1{2,}/g,
+      "$1$1"
+    );
+
+
+    return s;
+  }
+
+
+  /* ============================================================
+     COMPACT TEXT
+  ============================================================ */
+
+  function compactText(text) {
+
+    return normalizeText(text)
+      .replace(
+        /[^a-z0-9]/g,
+        ""
+      );
+  }
+
+
+  /* ============================================================
+     ESCAPE REGEX
+  ============================================================ */
+
+  function escapeRegex(text) {
+
+    return text.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
+  }
+
+
+  /* ============================================================
+     FLEXIBLE PROFANITY REGEX
+  ============================================================ */
+
+  function buildFlexibleRegex(word) {
+
+    const chars =
+      word.split("");
+
+    const pattern =
+      chars
+        .map(char => {
+
+          const equivalents = {
+
+            a: "a4@",
+            b: "b8",
+            c: "c(<",
+            e: "e3€",
+            g: "g69",
+            h: "h#",
+            i: "i1!|",
+            o: "o0",
+            s: "s5$",
+            t: "t7+",
+            v: "v",
+            w: "w",
+            x: "x%"
+          };
+
+          const allowed =
+            equivalents[char] ||
+            char;
+
+          return `[${escapeRegex(allowed)}]+`;
+        })
+        .join(
+          "[\\s._\\-*~^`'\"|\\\\/]*"
+        );
+
+    return new RegExp(
+      pattern,
+      "gi"
+    );
+  }
+
+
+  /* ============================================================
+     DETECT BAD CONTENT
+  ============================================================ */
+
+  function containsBlockedContent(text) {
+
+    const normalized =
+      normalizeText(text);
+
+    const compact =
+      compactText(text);
+
+
+    /*
+      Catch:
+
+      f u c k
+      f.u.c.k
+      f-u-c-k
+      f_u_c_k
+    */
+
+    for (
+      const word of BLOCKED_WORDS
+    ) {
+
+      if (
+        compact.includes(word)
+      ) {
+        return true;
       }
     }
 
-    // Main section
-    const main = document.querySelector("main.main");
-    if (!main) return;
 
-    const chatSection = document.createElement("section");
-    chatSection.id = CHAT_PAGE_ID;
-    chatSection.className = "page hidden";
-    chatSection.innerHTML = `
-      <div class="panel">
-        <div class="panel-head">
-          <div>
-            <h3>Community Live Chat</h3>
-            <div class="muted-sm">Real-time messaging with members of VEXO.</div>
-          </div>
-        </div>
-        <div class="chat-container">
-          <div class="chat-messages" id="chatMessages">
-            <div class="empty"><div class="empty-icon">💬</div><p>Loading conversation...</p></div>
-          </div>
-          <form class="chat-input-bar" id="chatForm">
-            <input class="input" id="chatInput" placeholder="Write a message..." maxlength="500" autocomplete="off" required>
-            <button class="btn primary" type="submit" id="chatSendBtn">Send</button>
-          </form>
-        </div>
-      </div>
-    `;
-    main.appendChild(chatSection);
+    /*
+      Flexible matching.
+    */
 
-    document.getElementById("chatForm")?.addEventListener("submit", sendChatMessage);
+    for (
+      const word of BLOCKED_WORDS
+    ) {
+
+      const regex =
+        buildFlexibleRegex(word);
+
+      if (
+        regex.test(normalized)
+      ) {
+        return true;
+      }
+    }
+
+
+    /*
+      Phrase matching.
+    */
+
+    const phraseText =
+      normalized
+        .replace(
+          /[^a-z0-9]+/g,
+          " "
+        )
+        .replace(
+          /\s+/g,
+          " "
+        )
+        .trim();
+
+
+    for (
+      const phrase of BLOCKED_PHRASES
+    ) {
+
+      if (
+        phraseText.includes(
+          phrase.toLowerCase()
+        )
+      ) {
+        return true;
+      }
+    }
+
+
+    return false;
   }
 
+
+  /* ============================================================
+     CLEAN MESSAGE
+  ============================================================ */
+
+  function cleanMessage(rawText) {
+
+    let filtered =
+      String(rawText || "");
+
+
+    /*
+      Phrases first.
+    */
+
+    for (
+      const phrase of BLOCKED_PHRASES
+    ) {
+
+      const words =
+        phrase
+          .split(/\s+/)
+          .map(escapeRegex);
+
+      const pattern =
+        words.join(
+          "[\\s._\\-*~^`'\"|\\\\/]+"
+        );
+
+      const regex =
+        new RegExp(
+          pattern,
+          "gi"
+        );
+
+      filtered =
+        filtered.replace(
+          regex,
+          match =>
+            "*".repeat(
+              match.length
+            )
+        );
+    }
+
+
+    /*
+      Individual words.
+    */
+
+    for (
+      const word of BLOCKED_WORDS
+    ) {
+
+      const regex =
+        buildFlexibleRegex(word);
+
+      filtered =
+        filtered.replace(
+          regex,
+          match =>
+            "*".repeat(
+              match.length
+            )
+        );
+    }
+
+
+    return filtered;
+  }
+
+
+  /* ============================================================
+     HTML ESCAPE
+  ============================================================ */
+
+  function escText(str = "") {
+
+    return String(str).replace(
+      /[&<>"']/g,
+      m => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[m])
+    );
+  }
+
+
+  /* ============================================================
+     CREATE CHAT UI
+  ============================================================ */
+
+  function injectChatUI() {
+
+    if (
+      document.getElementById(
+        CHAT_PAGE_ID
+      )
+    ) {
+      return;
+    }
+
+
+    /*
+      Sidebar button.
+    */
+
+    const nav =
+      document.querySelector(
+        ".nav"
+      );
+
+    const favBtn =
+      nav?.querySelector(
+        '[data-page="favorites"]'
+      );
+
+
+    if (
+      nav &&
+      !nav.querySelector(
+        '[data-page="chat"]'
+      )
+    ) {
+
+      const chatNavBtn =
+        document.createElement(
+          "button"
+        );
+
+      chatNavBtn.dataset.page =
+        "chat";
+
+      chatNavBtn.innerHTML =
+        '<span class="ic">💬</span>' +
+        '<span class="lbl">Community Chat</span>';
+
+      chatNavBtn.onclick =
+        showChatPage;
+
+
+      if (favBtn) {
+
+        favBtn.insertAdjacentElement(
+          "afterend",
+          chatNavBtn
+        );
+
+      } else {
+
+        nav.appendChild(
+          chatNavBtn
+        );
+      }
+    }
+
+
+    /*
+      Main chat section.
+    */
+
+    const main =
+      document.querySelector(
+        "main.main"
+      );
+
+    if (!main) {
+      return;
+    }
+
+
+    const chatSection =
+      document.createElement(
+        "section"
+      );
+
+    chatSection.id =
+      CHAT_PAGE_ID;
+
+    chatSection.className =
+      "page hidden";
+
+
+    chatSection.innerHTML = `
+
+      <div class="panel">
+
+        <div class="panel-head">
+
+          <div>
+
+            <h3>
+              Community Live Chat
+            </h3>
+
+            <div class="muted-sm">
+              Real-time messaging with members of VEXO.
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="chat-container">
+
+          <div
+            class="chat-messages"
+            id="chatMessages"
+          >
+
+            <div class="empty">
+
+              <div class="empty-icon">
+                💬
+              </div>
+
+              <p>
+                Loading conversation...
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <form
+            class="chat-input-bar"
+            id="chatForm"
+          >
+
+            <input
+              class="input"
+              id="chatInput"
+              placeholder="Write a message..."
+              maxlength="500"
+              autocomplete="off"
+              required
+            >
+
+            <button
+              class="btn primary"
+              type="submit"
+              id="chatSendBtn"
+            >
+              Send
+            </button>
+
+          </form>
+
+        </div>
+
+      </div>
+    `;
+
+
+    main.appendChild(
+      chatSection
+    );
+
+
+    document
+      .getElementById(
+        "chatForm"
+      )
+      ?.addEventListener(
+        "submit",
+        sendChatMessage
+      );
+  }
+
+
+  /* ============================================================
+     SHOW CHAT
+  ============================================================ */
+
   function showChatPage() {
+
     injectChatUI();
-    document.querySelectorAll(".page").forEach(x => x.classList.add("hidden"));
-    const chatSection = document.getElementById(CHAT_PAGE_ID);
-    chatSection?.classList.remove("hidden");
 
-    document.querySelectorAll(".nav button").forEach(b => {
-      b.classList.toggle("active", b.dataset.page === "chat");
-    });
 
-    const titleEl = document.getElementById("pageTitle");
-    const subEl = document.getElementById("pageSub");
-    const crumbEl = document.getElementById("crumbPage");
+    document
+      .querySelectorAll(
+        ".page"
+      )
+      .forEach(x =>
+        x.classList.add(
+          "hidden"
+        )
+      );
 
-    if (titleEl) titleEl.textContent = "Community Chat";
-    if (subEl) subEl.textContent = "Real-time conversation with the VEXO community.";
-    if (crumbEl) crumbEl.textContent = "Chat";
+
+    const chatSection =
+      document.getElementById(
+        CHAT_PAGE_ID
+      );
+
+
+    chatSection?.classList.remove(
+      "hidden"
+    );
+
+
+    document
+      .querySelectorAll(
+        ".nav button"
+      )
+      .forEach(b => {
+
+        b.classList.toggle(
+          "active",
+          b.dataset.page === "chat"
+        );
+
+      });
+
+
+    const titleEl =
+      document.getElementById(
+        "pageTitle"
+      );
+
+    const subEl =
+      document.getElementById(
+        "pageSub"
+      );
+
+    const crumbEl =
+      document.getElementById(
+        "crumbPage"
+      );
+
+
+    if (titleEl) {
+
+      titleEl.textContent =
+        "Community Chat";
+    }
+
+
+    if (subEl) {
+
+      subEl.textContent =
+        "Real-time conversation with the VEXO community.";
+    }
+
+
+    if (crumbEl) {
+
+      crumbEl.textContent =
+        "Chat";
+    }
+
 
     loadMessages();
+
     subscribeChat();
   }
 
-  async function loadMessages() {
-    const chatContainer = document.getElementById("chatMessages");
-    if (!chatContainer) return;
 
-    const { data, error } = await db
+  /* ============================================================
+     LOAD MESSAGES
+  ============================================================ */
+
+  async function loadMessages() {
+
+    const chatContainer =
+      document.getElementById(
+        "chatMessages"
+      );
+
+
+    if (!chatContainer) {
+      return;
+    }
+
+
+    const {
+      data,
+      error
+    } = await db
       .from("messages")
       .select("*")
-      .order("created_at", { ascending: true })
+      .order(
+        "created_at",
+        {
+          ascending: true
+        }
+      )
       .limit(60);
 
+
     if (error) {
-      chatContainer.innerHTML = '<div class="empty"><div class="empty-icon">!</div><p>Unable to load chat history.</p></div>';
+
+      chatContainer.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">!</div>
+          <p>
+            Unable to load chat history.
+          </p>
+        </div>
+      `;
+
       return;
     }
 
-    if (!data || !data.length) {
-      chatContainer.innerHTML = '<div class="empty"><div class="empty-icon">💬</div><p>No messages yet. Say hello!</p></div>';
+
+    if (
+      !data ||
+      !data.length
+    ) {
+
+      chatContainer.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">💬</div>
+          <p>
+            No messages yet. Say hello!
+          </p>
+        </div>
+      `;
+
       return;
     }
+
 
     renderAllMessages(data);
   }
 
-  function renderAllMessages(msgs) {
-    const chatContainer = document.getElementById("chatMessages");
-    if (!chatContainer) return;
 
-    chatContainer.innerHTML = msgs.map(m => createMessageNode(m)).join("");
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+  /* ============================================================
+     RENDER MESSAGES
+  ============================================================ */
+
+  function renderAllMessages(msgs) {
+
+    const chatContainer =
+      document.getElementById(
+        "chatMessages"
+      );
+
+
+    if (!chatContainer) {
+      return;
+    }
+
+
+    chatContainer.innerHTML =
+      msgs
+        .map(
+          createMessageNode
+        )
+        .join("");
+
+
+    chatContainer.scrollTop =
+      chatContainer.scrollHeight;
   }
 
-  function createMessageNode(m) {
-    const isSelf = user && m.user_id === user.id;
-    const initial = (m.username || "G").charAt(0).toUpperCase();
-    const timeStr = m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
 
-    // Can delete if user is an admin OR if the user owns the message
-    const canDelete = isAdmin || (user && m.user_id === user.id);
-    const deleteBtn = canDelete
-      ? `<button class="chat-delete-btn" onclick="window.deleteChatMessage('${m.id}')" title="Delete message">✕</button>`
-      : "";
+  /* ============================================================
+     CREATE MESSAGE NODE
+  ============================================================ */
+
+  function createMessageNode(m) {
+
+    const isSelf =
+      user &&
+      m.user_id === user.id;
+
+
+    const initial =
+      (
+        m.username ||
+        "G"
+      )
+        .charAt(0)
+        .toUpperCase();
+
+
+    const timeStr =
+      m.created_at
+        ? new Date(
+            m.created_at
+          ).toLocaleTimeString(
+            [],
+            {
+              hour: "2-digit",
+              minute: "2-digit"
+            }
+          )
+        : "";
+
+
+    const canDelete =
+      isAdmin ||
+      (
+        user &&
+        m.user_id === user.id
+      );
+
+
+    const deleteBtn =
+      canDelete
+        ? `
+          <button
+            class="chat-delete-btn"
+            onclick="window.deleteChatMessage('${escText(m.id)}')"
+            title="Delete message"
+          >
+            ✕
+          </button>
+        `
+        : "";
+
+
+    /*
+      Filter on display as well.
+    */
+
+    const displayContent =
+      cleanMessage(
+        m.content || ""
+      );
+
 
     return `
-      <div class="chat-msg ${isSelf ? 'self' : ''}" id="chat-msg-${m.id}">
-        <div class="chat-avatar">${escText(initial)}</div>
-        <div class="chat-bubble">
-          <div class="chat-meta">
-            <span class="chat-user">${escText(m.username)}</span>
-            <span class="chat-time">${escText(timeStr)}</span>
-            ${deleteBtn}
-          </div>
-          <div class="chat-text">${escText(m.content)}</div>
+
+      <div
+        class="chat-msg ${
+          isSelf ? "self" : ""
+        }"
+        id="chat-msg-${escText(m.id)}"
+      >
+
+        <div class="chat-avatar">
+          ${escText(initial)}
         </div>
+
+
+        <div class="chat-bubble">
+
+          <div class="chat-meta">
+
+            <span class="chat-user">
+              ${escText(
+                m.username ||
+                "Guest"
+              )}
+            </span>
+
+            <span class="chat-time">
+              ${escText(timeStr)}
+            </span>
+
+            ${deleteBtn}
+
+          </div>
+
+
+          <div class="chat-text">
+            ${escText(
+              displayContent
+            )}
+          </div>
+
+        </div>
+
       </div>
     `;
   }
 
-  window.deleteChatMessage = async function(id) {
-    if (!user) {
-      if (typeof toast === "function") toast("You must be signed in to delete messages.");
-      return;
-    }
 
-    if (!confirm("Are you sure you want to delete this message?")) return;
+  /* ============================================================
+     DELETE MESSAGE
+  ============================================================ */
 
-    const { error } = await db.from("messages").delete().eq("id", id);
-    if (error) {
-      if (typeof toast === "function") toast("Failed to delete message: " + error.message);
-      return;
-    }
+  window.deleteChatMessage =
+    async function(id) {
 
-    const el = document.getElementById(`chat-msg-${id}`);
-    if (el) el.remove();
-    if (typeof toast === "function") toast("Message deleted.");
-  };
+      if (!user) {
+
+        if (
+          typeof toast ===
+          "function"
+        ) {
+
+          toast(
+            "You must be signed in to delete messages."
+          );
+        }
+
+        return;
+      }
+
+
+      if (
+        !confirm(
+          "Are you sure you want to delete this message?"
+        )
+      ) {
+        return;
+      }
+
+
+      const {
+        error
+      } = await db
+        .from("messages")
+        .delete()
+        .eq(
+          "id",
+          id
+        );
+
+
+      if (error) {
+
+        if (
+          typeof toast ===
+          "function"
+        ) {
+
+          toast(
+            "Failed to delete message: " +
+            error.message
+          );
+        }
+
+        return;
+      }
+
+
+      const el =
+        document.getElementById(
+          `chat-msg-${id}`
+        );
+
+
+      if (el) {
+        el.remove();
+      }
+
+
+      if (
+        typeof toast ===
+        "function"
+      ) {
+
+        toast(
+          "Message deleted."
+        );
+      }
+    };
+
+
+  /* ============================================================
+     SEND MESSAGE
+  ============================================================ */
 
   async function sendChatMessage(e) {
-    e.preventDefault();
-    const input = document.getElementById("chatInput");
-    const text = input.value.trim();
-    if (!text) return;
 
-    let senderName = "Guest";
-    if (user) {
-      const { data: p } = await db.from("profiles").select("username").eq("id", user.id).maybeSingle();
-      senderName = p?.username || user.email?.split("@")[0] || "Member";
-    } else {
-      senderName = typeof anonymousName === "function" ? anonymousName(crypto.randomUUID()) : "Guest";
+    e.preventDefault();
+
+
+    const input =
+      document.getElementById(
+        "chatInput"
+      );
+
+
+    const sendBtn =
+      document.getElementById(
+        "chatSendBtn"
+      );
+
+
+    const text =
+      input?.value.trim();
+
+
+    if (!text) {
+      return;
     }
+
+
+    if (text.length > 500) {
+
+      if (
+        typeof toast ===
+        "function"
+      ) {
+
+        toast(
+          "Messages can be up to 500 characters."
+        );
+      }
+
+      return;
+    }
+
+
+    /*
+      Detect and censor.
+    */
+
+    const hasBlockedContent =
+      containsBlockedContent(
+        text
+      );
+
+
+    const sanitizedText =
+      cleanMessage(
+        text
+      );
+
+
+    if (
+      !sanitizedText.trim()
+    ) {
+      return;
+    }
+
+
+    /* Determine username */
+
+    let senderName =
+      "Guest";
+
+
+    if (user) {
+
+      const {
+        data: p
+      } = await db
+        .from("profiles")
+        .select(
+          "username"
+        )
+        .eq(
+          "id",
+          user.id
+        )
+        .maybeSingle();
+
+
+      senderName =
+        p?.username ||
+        user.email?.split(
+          "@"
+        )[0] ||
+        "Member";
+
+    } else {
+
+      senderName =
+        typeof anonymousName ===
+        "function"
+
+          ? anonymousName(
+              crypto.randomUUID()
+            )
+
+          : "Guest";
+    }
+
 
     input.value = "";
 
-    const { error } = await db.from("messages").insert({
-      user_id: user?.id || null,
-      username: senderName,
-      content: text
-    });
 
-    if (error && typeof toast === "function") {
-      toast("Message failed to send: " + error.message);
+    if (sendBtn) {
+      sendBtn.disabled = true;
+    }
+
+
+    const {
+      error
+    } = await db
+      .from("messages")
+      .insert({
+
+        user_id:
+          user?.id ||
+          null,
+
+        username:
+          senderName,
+
+        content:
+          sanitizedText
+      });
+
+
+    if (sendBtn) {
+      sendBtn.disabled = false;
+    }
+
+
+    if (error) {
+
+      if (
+        typeof toast ===
+        "function"
+      ) {
+
+        toast(
+          "Message failed to send: " +
+          error.message
+        );
+      }
+
+      return;
+    }
+
+
+    if (
+      hasBlockedContent &&
+      typeof toast ===
+      "function"
+    ) {
+
+      toast(
+        "Some words were automatically censored."
+      );
     }
   }
 
-  let chatSubscribed = false;
+
+  /* ============================================================
+     REALTIME
+  ============================================================ */
+
+  let chatSubscribed =
+    false;
+
+
   function subscribeChat() {
-    if (chatSubscribed) return;
 
-    db.channel("public:messages")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
-        const chatContainer = document.getElementById("chatMessages");
-        if (!chatContainer) return;
+    if (chatSubscribed) {
+      return;
+    }
 
-        if (chatContainer.querySelector(".empty")) {
-          chatContainer.innerHTML = "";
+
+    db.channel(
+      "public:messages"
+    )
+
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages"
+        },
+
+        payload => {
+
+          const chatContainer =
+            document.getElementById(
+              "chatMessages"
+            );
+
+
+          if (!chatContainer) {
+            return;
+          }
+
+
+          if (
+            chatContainer.querySelector(
+              ".empty"
+            )
+          ) {
+
+            chatContainer.innerHTML =
+              "";
+          }
+
+
+          /*
+            Don't add the same message twice.
+          */
+
+          if (
+            document.getElementById(
+              `chat-msg-${payload.new.id}`
+            )
+          ) {
+            return;
+          }
+
+
+          const temp =
+            document.createElement(
+              "div"
+            );
+
+
+          temp.innerHTML =
+            createMessageNode(
+              payload.new
+            );
+
+
+          const node =
+            temp.firstElementChild;
+
+
+          if (node) {
+
+            chatContainer.appendChild(
+              node
+            );
+          }
+
+
+          chatContainer.scrollTop =
+            chatContainer.scrollHeight;
         }
+      )
 
-        const temp = document.createElement("div");
-        temp.innerHTML = createMessageNode(payload.new);
-        chatContainer.appendChild(temp.firstElementChild);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      })
-      .on("postgres_changes", { event: "DELETE", schema: "public", table: "messages" }, payload => {
-        const el = document.getElementById(`chat-msg-${payload.old.id}`);
-        if (el) el.remove();
-      })
+
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "messages"
+        },
+
+        payload => {
+
+          const id =
+            payload.old?.id;
+
+
+          if (!id) {
+            return;
+          }
+
+
+          const el =
+            document.getElementById(
+              `chat-msg-${id}`
+            );
+
+
+          if (el) {
+            el.remove();
+          }
+        }
+      )
+
+
       .subscribe();
 
-    chatSubscribed = true;
+
+    chatSubscribed =
+      true;
   }
 
-  // Hook into auth/session updates so delete buttons update when permissions change
-  const origLoadSession = window.loadSession;
-  if (typeof origLoadSession === "function") {
-    window.loadSession = async function() {
-      await origLoadSession.apply(this, arguments);
-      const chatSection = document.getElementById(CHAT_PAGE_ID);
-      if (chatSection && !chatSection.classList.contains("hidden")) {
-        loadMessages();
-      }
-    };
+
+  /* ============================================================
+     SESSION REFRESH
+  ============================================================ */
+
+  const origLoadSession =
+    window.loadSession;
+
+
+  if (
+    typeof origLoadSession ===
+    "function"
+  ) {
+
+    window.loadSession =
+      async function() {
+
+        await origLoadSession.apply(
+          this,
+          arguments
+        );
+
+
+        const chatSection =
+          document.getElementById(
+            CHAT_PAGE_ID
+          );
+
+
+        if (
+          chatSection &&
+          !chatSection.classList.contains(
+            "hidden"
+          )
+        ) {
+
+          loadMessages();
+        }
+      };
   }
 
-  window.addEventListener("DOMContentLoaded", injectChatUI);
+
+  /* ============================================================
+     OPTIONAL DEBUG API
+  ============================================================ */
+
+  window.VEXOChatFilter = {
+
+    cleanMessage,
+
+    containsBlockedContent,
+
+    normalizeText,
+
+    compactText
+  };
+
+
+  /* ============================================================
+     START
+  ============================================================ */
+
+  window.addEventListener(
+    "DOMContentLoaded",
+    injectChatUI
+  );
+
   injectChatUI();
+
 })();
 </script>
