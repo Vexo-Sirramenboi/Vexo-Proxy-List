@@ -3400,5 +3400,282 @@ async function runVirusTotalChecker(){
   setTimeout(hookAnnouncementRefresh, 250);
   setTimeout(hookAnnouncementRefresh, 1000);
 })();
+  
 </script>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- VEXO COMMUNITY CHAT ADD-ON (APPEND-ONLY)                     -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<style>
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 160px);
+  min-height: 500px;
+  background: rgba(10, 15, 28, 0.65);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.chat-msg {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  max-width: 85%;
+}
+.chat-msg.self {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+.chat-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--grad);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.chat-bubble {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 14px;
+  position: relative;
+}
+.chat-msg.self .chat-bubble {
+  background: linear-gradient(135deg, rgba(124, 92, 255, 0.25), rgba(25, 211, 255, 0.1));
+  border-color: rgba(124, 92, 255, 0.35);
+}
+.chat-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.chat-user {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent2);
+}
+.chat-time {
+  font-size: 10px;
+  color: var(--muted);
+}
+.chat-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  word-break: break-word;
+}
+.chat-input-bar {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px;
+  background: rgba(8, 12, 22, 0.7);
+  border-top: 1px solid var(--line);
+}
+.chat-input-bar input {
+  flex: 1;
+}
+</style>
 
+<script>
+(() => {
+  const CHAT_PAGE_ID = "chatPage";
+
+  function escText(str = "") {
+    return String(str).replace(/[&<>"']/g, m => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    }[m]));
+  }
+
+  function injectChatUI() {
+    if (document.getElementById(CHAT_PAGE_ID)) return;
+
+    // 1. Inject sidebar button
+    const nav = document.querySelector(".nav");
+    const favBtn = nav?.querySelector('[data-page="favorites"]');
+    if (nav && !nav.querySelector('[data-page="chat"]')) {
+      const chatNavBtn = document.createElement("button");
+      chatNavBtn.dataset.page = "chat";
+      chatNavBtn.innerHTML = '<span class="ic">💬</span><span class="lbl">Community Chat</span>';
+      chatNavBtn.onclick = () => showChatPage();
+      if (favBtn) {
+        favBtn.insertAdjacentElement("afterend", chatNavBtn);
+      } else {
+        nav.appendChild(chatNavBtn);
+      }
+    }
+
+    // 2. Inject Chat Page Section
+    const main = document.querySelector("main.main");
+    if (!main) return;
+
+    const chatSection = document.createElement("section");
+    chatSection.id = CHAT_PAGE_ID;
+    chatSection.className = "page hidden";
+    chatSection.innerHTML = `
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Community Live Chat</h3>
+            <div class="muted-sm">Real-time messaging with members of VEXO.</div>
+          </div>
+        </div>
+        <div class="chat-container">
+          <div class="chat-messages" id="chatMessages">
+            <div class="empty"><div class="empty-icon">💬</div><p>Loading conversation...</p></div>
+          </div>
+          <form class="chat-input-bar" id="chatForm">
+            <input class="input" id="chatInput" placeholder="Write a message..." maxlength="500" autocomplete="off" required>
+            <button class="btn primary" type="submit" id="chatSendBtn">Send</button>
+          </form>
+        </div>
+      </div>
+    `;
+    main.appendChild(chatSection);
+
+    document.getElementById("chatForm")?.addEventListener("submit", sendChatMessage);
+  }
+
+  function showChatPage() {
+    injectChatUI();
+    document.querySelectorAll(".page").forEach(x => x.classList.add("hidden"));
+    const chatSection = document.getElementById(CHAT_PAGE_ID);
+    chatSection?.classList.remove("hidden");
+
+    document.querySelectorAll(".nav button").forEach(b => {
+      b.classList.toggle("active", b.dataset.page === "chat");
+    });
+
+    const titleEl = document.getElementById("pageTitle");
+    const subEl = document.getElementById("pageSub");
+    const crumbEl = document.getElementById("crumbPage");
+
+    if (titleEl) titleEl.textContent = "Community Chat";
+    if (subEl) subEl.textContent = "Real-time conversation with the VEXO community.";
+    if (crumbEl) crumbEl.textContent = "Chat";
+
+    loadMessages();
+    subscribeChat();
+  }
+
+  async function loadMessages() {
+    const chatContainer = document.getElementById("chatMessages");
+    if (!chatContainer) return;
+
+    const { data, error } = await db
+      .from("messages")
+      .select("*")
+      .order("created_at", { ascending: true })
+      .limit(60);
+
+    if (error) {
+      chatContainer.innerHTML = '<div class="empty"><div class="empty-icon">!</div><p>Unable to load chat history.</p></div>';
+      return;
+    }
+
+    if (!data || !data.length) {
+      chatContainer.innerHTML = '<div class="empty"><div class="empty-icon">💬</div><p>No messages yet. Say hello!</p></div>';
+      return;
+    }
+
+    renderAllMessages(data);
+  }
+
+  function renderAllMessages(msgs) {
+    const chatContainer = document.getElementById("chatMessages");
+    if (!chatContainer) return;
+
+    chatContainer.innerHTML = msgs.map(m => createMessageNode(m)).join("");
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  function createMessageNode(m) {
+    const isSelf = user && m.user_id === user.id;
+    const initial = (m.username || "G").charAt(0).toUpperCase();
+    const timeStr = m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+
+    return `
+      <div class="chat-msg ${isSelf ? 'self' : ''}">
+        <div class="chat-avatar">${escText(initial)}</div>
+        <div class="chat-bubble">
+          <div class="chat-meta">
+            <span class="chat-user">${escText(m.username)}</span>
+            <span class="chat-time">${escText(timeStr)}</span>
+          </div>
+          <div class="chat-text">${escText(m.content)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function sendChatMessage(e) {
+    e.preventDefault();
+    const input = document.getElementById("chatInput");
+    const text = input.value.trim();
+    if (!text) return;
+
+    let senderName = "Guest";
+    if (user) {
+      const { data: p } = await db.from("profiles").select("username").eq("id", user.id).maybeSingle();
+      senderName = p?.username || user.email?.split("@")[0] || "Member";
+    } else {
+      senderName = typeof anonymousName === "function" ? anonymousName(crypto.randomUUID()) : "Guest";
+    }
+
+    input.value = "";
+
+    const { error } = await db.from("messages").insert({
+      user_id: user?.id || null,
+      username: senderName,
+      content: text
+    });
+
+    if (error && typeof toast === "function") {
+      toast("Message failed to send: " + error.message);
+    }
+  }
+
+  let chatSubscribed = false;
+  function subscribeChat() {
+    if (chatSubscribed) return;
+
+    db.channel("public:messages")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
+        const chatContainer = document.getElementById("chatMessages");
+        if (!chatContainer) return;
+
+        if (chatContainer.querySelector(".empty")) {
+          chatContainer.innerHTML = "";
+        }
+
+        const temp = document.createElement("div");
+        temp.innerHTML = createMessageNode(payload.new);
+        chatContainer.appendChild(temp.firstElementChild);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      })
+      .subscribe();
+
+    chatSubscribed = true;
+  }
+
+  window.addEventListener("DOMContentLoaded", injectChatUI);
+  injectChatUI();
+})();
+</script>
