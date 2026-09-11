@@ -295,7 +295,6 @@ body.no-motion *{animation:none!important;transition:none!important;}
 body.no-cursor,body.no-cursor button{cursor:auto!important;}
 body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
 
-
 /* VEXO VIRUSTOTAL SAFETY CHECKER — APPEND-ONLY */
 .vt-summary{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 13px;}
 .vt-stat{padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.03);font-size:11px;color:var(--muted);}
@@ -1131,8 +1130,6 @@ $("linkForm").onsubmit = async e => {
   const category = $("linkCategory").value.trim() || "General";
   const tags = $("linkTags").value.split(",").map(x => x.trim().toLowerCase()).filter(Boolean);
   const description = $("linkDesc").value.trim();
-  // Guests get their own UUID so the admin panel can generate the same
-  // Anonymous + 5-letter name later without needing a SELECT policy.
   const submissionId = user ? undefined : crypto.randomUUID();
   const row = {
     ...(submissionId ? {id: submissionId} : {}),
@@ -1149,13 +1146,10 @@ $("linkForm").onsubmit = async e => {
   let error = null;
 
   if(user){
-    // Signed-in users can use the existing SELECT policy to receive the new row.
     const result = await db.from("links").insert(row).select().single();
     newLink = result.data;
     error = result.error;
   } else {
-    // Guests only need INSERT. Do not add .select(), because that would require
-    // a SELECT policy for pending anonymous rows.
     const result = await db.from("links").insert(row);
     error = result.error;
   }
@@ -1373,7 +1367,7 @@ async function renderAdminQueue(){
     const submitter = x.user_id ? (profile?.username || "Unknown user") : anonymousName(x.id);
     const initial = submitter.charAt(0).toUpperCase();
     const statusClass = x.status === "approved" ? "approved" : x.status === "rejected" ? "rejected" : "pending";
-const date = x.created_at ? new Date(x.created_at).toLocaleString() : "Unknown date";
+    const date = x.created_at ? new Date(x.created_at).toLocaleString() : "Unknown date";
     return `
     <div class="submission">
       <div class="avatar">${esc(initial)}</div>
@@ -1501,8 +1495,8 @@ db.auth.onAuthStateChange(() => setTimeout(loadSession, 0));
 
 /* START */
 loadSession();
-  /* ═══ VEXO SETTINGS ENGINE — APPENDED ═══ */
 
+/* ═══ VEXO SETTINGS ENGINE — APPENDED ═══ */
 (() => {
   const SETTINGS_KEY = "vexo-settings";
 
@@ -1649,7 +1643,6 @@ loadSession();
   }
 
   /* ACCENT SWATCHES */
-
   function buildSwatches(){
     const container = $("accentSwatches");
     if(!container) return;
@@ -1686,7 +1679,6 @@ loadSession();
   }
 
   /* BACKGROUND */
-
   document.querySelectorAll("[data-bg]").forEach(btn => {
     btn.onclick = () => {
       settings.bg = btn.dataset.bg;
@@ -1705,7 +1697,6 @@ loadSession();
   });
 
   /* COMPACT */
-
   $("setCompact")?.addEventListener("change", e => {
     settings.compact = e.target.checked;
 
@@ -1720,7 +1711,6 @@ loadSession();
   });
 
   /* MOTION */
-
   $("setMotion")?.addEventListener("change", e => {
     settings.motion = e.target.checked;
 
@@ -1735,7 +1725,6 @@ loadSession();
   });
 
   /* CURSOR */
-
   $("setCursor")?.addEventListener("change", e => {
     settings.cursor = e.target.checked;
 
@@ -1750,7 +1739,6 @@ loadSession();
   });
 
   /* STATUS */
-
   $("setStatus")?.addEventListener("change", e => {
     settings.status = e.target.checked;
 
@@ -1765,7 +1753,6 @@ loadSession();
   });
 
   /* LANDING PAGE */
-
   $("setLanding")?.addEventListener("change", e => {
     settings.landing = e.target.value;
 
@@ -1775,7 +1762,6 @@ loadSession();
   });
 
   /* EXPORT */
-
   $("exportSettings")?.addEventListener("click", () => {
     const data = JSON.stringify(settings, null, 2);
 
@@ -1799,7 +1785,6 @@ loadSession();
   });
 
   /* IMPORT */
-
   $("importSettings")?.addEventListener("click", () => {
     $("importFile")?.click();
   });
@@ -1836,7 +1821,6 @@ loadSession();
   });
 
   /* RESET */
-
   $("resetSettings")?.addEventListener("click", () => {
     if(!confirm("Reset all VEXO settings?")) return;
 
@@ -1849,13 +1833,11 @@ loadSession();
   });
 
   /* START */
-
   loadSettings();
   buildSwatches();
   applyAll();
 
   /* OPEN SAVED LANDING PAGE */
-
   setTimeout(() => {
     if(
       settings.landing &&
@@ -2022,8 +2004,6 @@ loadSession();
         const { data, error } = await db.from("links").insert(payload);
         if (error) throw error;
 
-        // Admin notifications only work from a signed-in session.
-        // Guest bulk submissions remain pending and appear in the admin queue.
         if (user) {
           const { data: admins } = await db.from("user_roles").select("user_id").eq("role", "admin");
           if (admins?.length) {
@@ -2095,7 +2075,6 @@ loadSession();
       }
 
       if (e.target.checked) {
-        // Start Enrollment
         try {
           const { data, error } = await db.auth.mfa.enroll({ factorType: "totp" });
           if (error) throw error;
@@ -2109,7 +2088,6 @@ loadSession();
           if (typeof toast === "function") toast("Could not start 2FA enrollment: " + err.message);
         }
       } else {
-        // Disable 2FA
         if (!confirm("Disable Two-Factor Authentication for your account?")) {
           toggle.checked = true;
           return;
@@ -2130,7 +2108,6 @@ loadSession();
       }
     });
 
-    // Re-check 2FA state on session updates
     const origLoadSession = window.loadSession;
     if (typeof origLoadSession === "function") {
       window.loadSession = async function() {
@@ -2217,7 +2194,6 @@ loadSession();
     }
   });
 
-  // Initialize elements once DOM is ready
   window.addEventListener("DOMContentLoaded", () => {
     injectBulkSubmissionUI();
     inject2FASettingsUI();
@@ -2228,11 +2204,9 @@ loadSession();
 })();
 </script>
 
-
-
-<!-- VEXO VIRUSTOTAL SAFETY CHECKER — APPEND-ONLY -->
+<!-- VEXO VIRUSTOTAL SAFETY CHECKER & LINK CHECKER (FIXED INVOCATION) -->
 <script>
-/* VEXO UPTIME LINK CHECKER — APPEND-ONLY */
+/* VEXO UPTIME LINK CHECKER — REVISED */
 async function runLinkChecker(){
   if(!isAdmin){
     toast("Admin access required.");
@@ -2249,8 +2223,28 @@ async function runLinkChecker(){
   results.innerHTML = emptyState("Checking approved links...", "↻");
 
   try{
-    const { data, error } = await db.functions.invoke("link-checker");
-    if(error) throw error;
+    const { data: sessionData } = await db.auth.getSession();
+    const token = sessionData?.session?.access_token;
+    
+    const invokeHeaders = {};
+    if (token) {
+      invokeHeaders["Authorization"] = `Bearer ${token}`;
+    }
+
+    const { data, error } = await db.functions.invoke("link-checker", {
+      headers: invokeHeaders
+    });
+
+    if(error) {
+      let serverErrorMsg = error.message;
+      if (error.context && typeof error.context.json === 'function') {
+        try {
+          const errJson = await error.context.json();
+          if (errJson?.error || errJson?.message) serverErrorMsg = errJson.error || errJson.message;
+        } catch (e) {}
+      }
+      throw new Error(serverErrorMsg);
+    }
     if(data?.error) throw new Error(data.error);
 
     const checked = Array.isArray(data?.results) ? data.results : [];
@@ -2275,8 +2269,6 @@ async function runLinkChecker(){
       </div>
     `).join("");
 
-    // Only offer deletion for URLs that clearly no longer exist.
-    // 404 = Not Found, 410 = Gone. Temporary outages are left alone.
     const definitelyGone = checked.filter(x =>
       !x.ok && (Number(x.status) === 404 || Number(x.status) === 410)
     );
@@ -2331,7 +2323,7 @@ async function runLinkChecker(){
     console.error("Link checker:", err);
     results.innerHTML = emptyState("The server-side link checker could not run.", "!");
     summary.textContent = err?.message || "Could not contact the Edge Function.";
-    toast("Link checker failed.");
+    toast("Link checker failed: " + (err?.message || "Edge Function error"));
   }finally{
     btn.disabled = false;
     btn.textContent = "Check all links";
@@ -2340,6 +2332,7 @@ async function runLinkChecker(){
 </script>
 
 <script>
+/* VEXO VIRUSTOTAL SAFETY CHECKER — REVISED */
 async function runVirusTotalChecker(){
   if(!isAdmin){
     toast("Admin access required.");
@@ -2356,8 +2349,28 @@ async function runVirusTotalChecker(){
   results.innerHTML = emptyState("Checking approved links with VirusTotal...", "↻");
 
   try{
-    const { data, error } = await db.functions.invoke("link-safety-checker");
-    if(error) throw error;
+    const { data: sessionData } = await db.auth.getSession();
+    const token = sessionData?.session?.access_token;
+    
+    const invokeHeaders = {};
+    if (token) {
+      invokeHeaders["Authorization"] = `Bearer ${token}`;
+    }
+
+    const { data, error } = await db.functions.invoke("link-safety-checker", {
+      headers: invokeHeaders
+    });
+
+    if(error) {
+      let serverErrorMsg = error.message;
+      if (error.context && typeof error.context.json === 'function') {
+        try {
+          const errJson = await error.context.json();
+          if (errJson?.error || errJson?.message) serverErrorMsg = errJson.error || errJson.message;
+        } catch (e) {}
+      }
+      throw new Error(serverErrorMsg);
+    }
     if(data?.error) throw new Error(data.error);
 
     const checked = Array.isArray(data?.results) ? data.results : [];
@@ -2421,14 +2434,13 @@ async function runVirusTotalChecker(){
     console.error("VirusTotal checker:", err);
     results.innerHTML = emptyState("The VirusTotal safety checker could not run.", "!");
     summary.innerHTML = `<span class="vt-stat">${esc(err?.message || "Could not contact the safety checker.")}</span>`;
-    toast("VirusTotal safety check failed.");
+    toast("VirusTotal safety check failed: " + (err?.message || "Edge Function error"));
   }finally{
     btn.disabled = false;
     btn.textContent = "Check safety";
   }
 }
 </script>
-
 
 <script>
 /* VEXO DEDICATED BACKGROUND CONTROLLER */
@@ -2480,7 +2492,6 @@ async function runVirusTotalChecker(){
 
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- VEXO TERMS / ANNOUNCEMENTS / TAKEDOWN MANAGEMENT — ADD-ON -->
-<!-- Append-only: existing VEXO functionality above is preserved. -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <style>
 .vexo-announcements-home{margin-top:20px;}
@@ -2527,7 +2538,6 @@ async function runVirusTotalChecker(){
 
   function isAdminNow(){ return !!isAdmin; }
 
-  /* ---------------- SIDEBAR + TERMS PAGE ---------------- */
   function injectTermsPage(){
     if(document.getElementById(TERMS_PAGE_ID)) return;
 
@@ -2643,7 +2653,6 @@ async function runVirusTotalChecker(){
     $("crumbPage").textContent = "Terms of Use";
   }
 
-  /* ---------------- PUBLIC ANNOUNCEMENTS ---------------- */
   function injectHomeAnnouncements(){
     const home = document.getElementById("homePage");
     const hero = home?.querySelector(".hero");
@@ -2694,7 +2703,6 @@ async function runVirusTotalChecker(){
       </article>`).join("");
   }
 
-  /* ---------------- TAKEDOWN REQUEST ---------------- */
   async function submitTakedown(e){
     e.preventDefault();
     const btn = document.getElementById("tdSubmit");
@@ -2723,7 +2731,6 @@ async function runVirusTotalChecker(){
     }
   }
 
-  /* ---------------- ADMIN ANNOUNCEMENTS ---------------- */
   function injectAnnouncementAdmin(){
     const adminPage = document.getElementById("adminPage");
     const queuePanel = document.getElementById("adminQueue")?.closest(".panel");
@@ -2855,7 +2862,6 @@ async function runVirusTotalChecker(){
     await loadPublicAnnouncements();
   };
 
-  /* ---------------- ADMIN TAKEDOWN REQUESTS ---------------- */
   function injectTakedownAdmin(){
     const adminPage = document.getElementById("adminPage");
     const notifPanel = document.getElementById("adminNotifications")?.closest(".panel");
@@ -2928,7 +2934,6 @@ async function runVirusTotalChecker(){
     await loadTakedownAdmin();
   };
 
-  /* ---------------- WRAP EXISTING ADMIN LOAD ---------------- */
   const originalLoadAdminData = window.loadAdminData;
   if(typeof originalLoadAdminData === "function"){
     window.loadAdminData = async function(){
@@ -2943,7 +2948,6 @@ async function runVirusTotalChecker(){
     };
   }
 
-  /* ---------------- INITIALIZATION ---------------- */
   function init(){
     injectTermsPage();
     injectHomeAnnouncements();
@@ -2961,10 +2965,8 @@ async function runVirusTotalChecker(){
 
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- VEXO FLASHY HOMEPAGE ANNOUNCEMENTS — APPEND-ONLY -->
-<!-- Makes the newest announcement highly visible and adds changelog -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <style>
-/* Main announcement container */
 #vexoAnnouncementsHome.vexo-announcement-featured{
   position:relative;
   z-index:5;
@@ -3359,7 +3361,6 @@ async function runVirusTotalChecker(){
     panel.classList.remove("hidden");
     buildFeatured(data);
 
-    // Put the announcement BEFORE the main hero so it is the first thing users see.
     const home = document.getElementById("homePage");
     const hero = home?.querySelector(".hero");
     if(home && hero && panel.parentElement === home){
@@ -3372,8 +3373,6 @@ async function runVirusTotalChecker(){
     if(!panel) return;
 
     refreshFeaturedAnnouncements();
-
-    // Keep the old announcement loader compatible with this redesign.
     window.refreshVexoFeaturedAnnouncements = refreshFeaturedAnnouncements;
   }
 
@@ -3400,62 +3399,39 @@ async function runVirusTotalChecker(){
   setTimeout(hookAnnouncementRefresh, 250);
   setTimeout(hookAnnouncementRefresh, 1000);
 })();
-  
 </script>
+
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- VEXO COMMUNITY CHAT ADD-ON                                   -->
-<!-- COMPACT CHAT BUBBLES + CENSORSHIP + ANTI-BYPASS             -->
 <!-- ══════════════════════════════════════════════════════════════ -->
-
 <style>
 .chat-container {
   display: flex;
   flex-direction: column;
-
-  /* Overall chat window */
   height: 500px;
   min-height: 0;
-
   background: rgba(10, 15, 28, 0.65);
   border: 1px solid var(--line);
   border-radius: var(--r);
   overflow: hidden;
 }
 
-/* ================================================================
-   MESSAGE AREA
-================================================================ */
-
 .chat-messages {
   flex: 1;
   min-height: 0;
-
   overflow-y: auto;
-
   padding: 16px;
-
   display: flex;
   flex-direction: column;
-
   gap: 8px;
 }
-
-/* ================================================================
-   MESSAGE ROW
-================================================================ */
 
 .chat-msg {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-
-  /*
-    Important:
-    Don't force every message to use the full width.
-  */
   width: fit-content;
   max-width: 85%;
-
   position: relative;
 }
 
@@ -3464,60 +3440,28 @@ async function runVirusTotalChecker(){
   flex-direction: row-reverse;
 }
 
-/* ================================================================
-   AVATAR
-================================================================ */
-
 .chat-avatar {
   width: 32px;
   height: 32px;
-
   border-radius: 9px;
-
   background: var(--grad);
-
   display: grid;
   place-items: center;
-
   font-size: 12px;
   font-weight: 700;
-
   color: #fff;
-
   flex-shrink: 0;
 }
 
-/* ================================================================
-   MESSAGE BUBBLE
-================================================================ */
-
 .chat-bubble {
   background: var(--card);
-
   border: 1px solid var(--line);
   border-radius: 14px;
-
-  /*
-    This makes the bubble shrink around the message.
-  */
   width: fit-content;
-
-  /*
-    But don't allow extremely long messages to
-    create a huge horizontal bubble.
-  */
   max-width: min(70vw, 500px);
-
   min-width: 0;
-
   padding: 7px 11px;
-
   position: relative;
-
-  /*
-    Long URLs / spammy strings won't stretch
-    the bubble outside the chat window.
-  */
   overflow-wrap: anywhere;
   word-break: break-word;
 }
@@ -3529,821 +3473,258 @@ async function runVirusTotalChecker(){
       rgba(124, 92, 255, 0.25),
       rgba(25, 211, 255, 0.1)
     );
-
   border-color: rgba(124, 92, 255, 0.35);
 }
-
-/* ================================================================
-   MESSAGE HEADER
-================================================================ */
 
 .chat-meta {
   display: flex;
   align-items: center;
-
   gap: 6px;
-
   margin-bottom: 3px;
-
   line-height: 1;
 }
 
 .chat-user {
   font-size: 11px;
   font-weight: 700;
-
   color: var(--accent2);
 }
 
 .chat-time {
   font-size: 9px;
-
   color: var(--muted);
 }
-
-/* ================================================================
-   MESSAGE TEXT
-================================================================ */
-
-.chat-text {
-  font-size: 13px;
-
-  line-height: 1.4;
-
-  color: var(--text);
-
-  margin: 0;
-
-  /*
-    Preserve normal spaces and line breaks,
-    but still wrap naturally.
-  */
-  white-space: pre-wrap;
-
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
-/* ================================================================
-   DELETE BUTTON
-================================================================ */
 
 .chat-delete-btn {
   background: none;
-
   border: none;
-
   color: var(--muted);
-
   font-size: 10px;
-
   cursor: pointer;
-
   padding: 0 3px;
-
   border-radius: 4px;
-
-  transition:
-    color 0.2s,
-    background 0.2s;
-
+  transition: color 0.2s, background 0.2s;
   display: inline-flex;
-
   align-items: center;
-
   margin-left: 2px;
 }
 
 .chat-delete-btn:hover {
   color: var(--red);
-
   background: rgba(255, 70, 70, 0.1);
 }
 
-/* ================================================================
-   INPUT
-================================================================ */
+.chat-text {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text);
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 
 .chat-input-bar {
   display: flex;
-
   gap: 8px;
-
   padding: 12px 16px;
-
   background: rgba(8, 12, 22, 0.7);
-
   border-top: 1px solid var(--line);
 }
 
 .chat-input-bar input {
   flex: 1;
-
   min-width: 0;
 }
 
-/* ================================================================
-   MOBILE
-================================================================ */
-
 @media (max-width: 600px) {
-
   .chat-container {
     height: 450px;
   }
-
   .chat-messages {
     padding: 12px;
   }
-
   .chat-msg {
     max-width: 92%;
   }
-
   .chat-bubble {
     max-width: calc(100vw - 100px);
   }
-
 }
 </style>
 
-
 <script>
 (() => {
-
   "use strict";
-
-
-  /* ============================================================
-     CONFIGURATION
-  ============================================================ */
 
   const CHAT_PAGE_ID = "chatPage";
 
-
-  /* ============================================================
-     BLOCKED WORDS
-  ============================================================ */
-
   const BLOCKED_WORDS = [
-
-    /* Profanity */
-    "fuck",
-    "fucks",
-    "fucked",
-    "fucking",
-    "fucker",
-    "fuckers",
-    "motherfuck",
-    "motherfucker",
-    "motherfuckers",
-
-    "shit",
-    "shits",
-    "shitty",
-    "bullshit",
-    "shithead",
-    "shitheads",
-
-    "bitch",
-    "bitches",
-    "bitchy",
-
-    "asshole",
-    "assholes",
-
-    "dick",
-    "dicks",
-    "dickhead",
-    "dickheads",
-
-    "cock",
-    "cocks",
-
-    "pussy",
-    "pussies",
-
-    "cunt",
-    "cunts",
-
-    "whore",
-    "whores",
-
-    "slut",
-    "sluts",
-    "slutty",
-
-    "bastard",
-    "bastards",
-
-    "piss",
-    "pissed",
-    "pissing",
-
-    "damn",
-    "dammit",
-    "goddamn",
-
-    /* Insults */
-    "dumbass",
-    "dumbasses",
-
-    "jackass",
-    "jackasses",
-
-    "smartass",
-    "smartasses",
-
-    "dipshit",
-    "dipshits",
-
-    "douche",
-    "douchebag",
-    "douchebags",
-
-    "prick",
-    "pricks",
-
-    "scumbag",
-    "scumbags",
-
-    "asswipe",
-    "asswipes",
-
-    "dumbfuck",
-    "dumbfucks",
-
-    "fuckwit",
-    "fuckwits",
-
-    "twat",
-    "twats",
-
-    "wanker",
-    "wankers",
-
-    "bollocks",
-
-    /* Sexual profanity */
-    "blowjob",
-    "blowjobs",
-
-    "handjob",
-    "handjobs",
-
-    "horny"
+    "fuck", "fucks", "fucked", "fucking", "fucker", "fuckers", "motherfuck", "motherfucker", "motherfuckers",
+    "shit", "shits", "shitty", "bullshit", "shithead", "shitheads",
+    "bitch", "bitches", "bitchy", "asshole", "assholes",
+    "dick", "dicks", "dickhead", "dickheads", "cock", "cocks",
+    "pussy", "pussies", "cunt", "cunts", "whore", "whores",
+    "slut", "sluts", "slutty", "bastard", "bastards",
+    "piss", "pissed", "pissing", "damn", "dammit", "goddamn",
+    "dumbass", "dumbasses", "jackass", "jackasses", "smartass", "smartasses",
+    "dipshit", "dipshits", "douche", "douchebag", "douchebags", "prick", "pricks",
+    "scumbag", "scumbags", "asswipe", "asswipes", "dumbfuck", "dumbfucks",
+    "fuckwit", "fuckwits", "twat", "twats", "wanker", "wankers", "bollocks",
+    "blowjob", "blowjobs", "handjob", "handjobs", "horny"
   ];
-
-
-  /* ============================================================
-     BLOCKED PHRASES
-  ============================================================ */
 
   const BLOCKED_PHRASES = [
-
-    "fuck you",
-    "fuck off",
-    "fucking idiot",
-    "fucking stupid",
-    "shut the fuck up",
-    "go fuck yourself",
-
-    "piece of shit",
-    "son of a bitch",
-
-    "you bitch",
-    "you asshole",
-
-    "dumb fucking",
-    "stupid fuck"
+    "fuck you", "fuck off", "fucking idiot", "fucking stupid", "shut the fuck up", "go fuck yourself",
+    "piece of shit", "son of a bitch", "you bitch", "you asshole", "dumb fucking", "stupid fuck"
   ];
 
-
-  /* ============================================================
-     LEETSPEAK / LOOKALIKE MAP
-  ============================================================ */
-
   const CHAR_MAP = {
-
-    "0": "o",
-    "1": "i",
-    "!": "i",
-    "3": "e",
-    "4": "a",
-    "@": "a",
-    "5": "s",
-    "$": "s",
-    "7": "t",
-    "8": "b",
-    "9": "g",
-
-    "€": "e",
-    "£": "l",
-    "¢": "c",
-    "¥": "y",
-
-    /* Some Unicode lookalikes */
-    "а": "a",
-    "Α": "a",
-
-    "е": "e",
-    "Ε": "e",
-
-    "і": "i",
-    "Ι": "i",
-
-    "ο": "o",
-    "Ο": "o",
-
-    "ѕ": "s",
-
-    "τ": "t",
-    "Τ": "t"
+    "0": "o", "1": "i", "!": "i", "3": "e", "4": "a", "@": "a",
+    "5": "s", "$": "s", "7": "t", "8": "b", "9": "g",
+    "€": "e", "£": "l", "¢": "c", "¥": "y",
+    "а": "a", "Α": "a", "е": "e", "Ε": "e", "і": "i", "Ι": "i",
+    "ο": "o", "Ο": "o", "ѕ": "s", "τ": "t", "Τ": "t"
   };
 
-
-  /* ============================================================
-     UNICODE NORMALIZATION
-  ============================================================ */
-
   function normalizeUnicode(text) {
-
     return String(text || "")
       .normalize("NFKD")
-      .replace(
-        /[\u0300-\u036f]/g,
-        ""
-      );
+      .replace(/[\u0300-\u036f]/g, "");
   }
 
-
-  /* ============================================================
-     LOOKALIKE CONVERSION
-  ============================================================ */
-
   function replaceLookalikes(text) {
-
     let result = "";
-
     for (const char of text) {
-
-      result +=
-        CHAR_MAP[char] ||
-        CHAR_MAP[char.toLowerCase()] ||
-        char;
+      result += CHAR_MAP[char] || CHAR_MAP[char.toLowerCase()] || char;
     }
-
     return result;
   }
 
-
-  /* ============================================================
-     NORMALIZE TEXT
-  ============================================================ */
-
   function normalizeText(text) {
-
-    let s =
-      normalizeUnicode(text)
-        .toLowerCase();
-
+    let s = normalizeUnicode(text).toLowerCase();
     s = replaceLookalikes(s);
-
-
-    /*
-      Multi-character leetspeak.
-    */
-
     s = s
       .replace(/\/\\+/g, "a")
       .replace(/\\\/+/g, "v")
       .replace(/\\\/\\\/+/g, "w")
       .replace(/vv+/g, "w")
       .replace(/\(\(/g, "c");
-
-
-    /*
-      Remove invisible Unicode characters.
-    */
-
-    s = s.replace(
-      /[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g,
-      ""
-    );
-
-
-    /*
-      Collapse extreme repeated letters.
-
-      fuuuuuck -> fuuck -> fuck-ish
-      shiiiiit -> shiit
-    */
-
-    s = s.replace(
-      /(.)\1{2,}/g,
-      "$1$1"
-    );
-
-
+    s = s.replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, "");
+    s = s.replace(/(.)\1{2,}/g, "$1$1");
     return s;
   }
 
-
-  /* ============================================================
-     COMPACT TEXT
-  ============================================================ */
-
   function compactText(text) {
-
-    return normalizeText(text)
-      .replace(
-        /[^a-z0-9]/g,
-        ""
-      );
+    return normalizeText(text).replace(/[^a-z0-9]/g, "");
   }
-
-
-  /* ============================================================
-     ESCAPE REGEX
-  ============================================================ */
 
   function escapeRegex(text) {
-
-    return text.replace(
-      /[.*+?^${}()|[\]\\]/g,
-      "\\$&"
-    );
+    return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
-
-
-  /* ============================================================
-     FLEXIBLE PROFANITY REGEX
-  ============================================================ */
 
   function buildFlexibleRegex(word) {
-
-    const chars =
-      word.split("");
-
-    const pattern =
-      chars
-        .map(char => {
-
-          const equivalents = {
-
-            a: "a4@",
-            b: "b8",
-            c: "c(<",
-            e: "e3€",
-            g: "g69",
-            h: "h#",
-            i: "i1!|",
-            o: "o0",
-            s: "s5$",
-            t: "t7+",
-            v: "v",
-            w: "w",
-            x: "x%"
-          };
-
-          const allowed =
-            equivalents[char] ||
-            char;
-
-          return `[${escapeRegex(allowed)}]+`;
-        })
-        .join(
-          "[\\s._\\-*~^`'\"|\\\\/]*"
-        );
-
-    return new RegExp(
-      pattern,
-      "gi"
-    );
+    const chars = word.split("");
+    const pattern = chars.map(char => {
+      const equivalents = {
+        a: "a4@", b: "b8", c: "c(<", e: "e3€", g: "g69", h: "h#",
+        i: "i1!|", o: "o0", s: "s5$", t: "t7+", v: "v", w: "w", x: "x%"
+      };
+      const allowed = equivalents[char] || char;
+      return `[${escapeRegex(allowed)}]+`;
+    }).join("[\\s._\\-*~^`'\"|\\\\/]*");
+    return new RegExp(pattern, "gi");
   }
 
-
-  /* ============================================================
-     DETECT BAD CONTENT
-  ============================================================ */
-
   function containsBlockedContent(text) {
+    const normalized = normalizeText(text);
+    const compact = compactText(text);
 
-    const normalized =
-      normalizeText(text);
-
-    const compact =
-      compactText(text);
-
-
-    /*
-      Catch:
-
-      f u c k
-      f.u.c.k
-      f-u-c-k
-      f_u_c_k
-    */
-
-    for (
-      const word of BLOCKED_WORDS
-    ) {
-
-      if (
-        compact.includes(word)
-      ) {
-        return true;
-      }
+    for (const word of BLOCKED_WORDS) {
+      if (compact.includes(word)) return true;
     }
 
-
-    /*
-      Flexible matching.
-    */
-
-    for (
-      const word of BLOCKED_WORDS
-    ) {
-
-      const regex =
-        buildFlexibleRegex(word);
-
-      if (
-        regex.test(normalized)
-      ) {
-        return true;
-      }
+    for (const word of BLOCKED_WORDS) {
+      const regex = buildFlexibleRegex(word);
+      if (regex.test(normalized)) return true;
     }
 
-
-    /*
-      Phrase matching.
-    */
-
-    const phraseText =
-      normalized
-        .replace(
-          /[^a-z0-9]+/g,
-          " "
-        )
-        .replace(
-          /\s+/g,
-          " "
-        )
-        .trim();
-
-
-    for (
-      const phrase of BLOCKED_PHRASES
-    ) {
-
-      if (
-        phraseText.includes(
-          phrase.toLowerCase()
-        )
-      ) {
-        return true;
-      }
+    const phraseText = normalized.replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+    for (const phrase of BLOCKED_PHRASES) {
+      if (phraseText.includes(phrase.toLowerCase())) return true;
     }
-
 
     return false;
   }
 
-
-  /* ============================================================
-     CLEAN MESSAGE
-  ============================================================ */
-
   function cleanMessage(rawText) {
+    let filtered = String(rawText || "");
 
-    let filtered =
-      String(rawText || "");
-
-
-    /*
-      Phrases first.
-    */
-
-    for (
-      const phrase of BLOCKED_PHRASES
-    ) {
-
-      const words =
-        phrase
-          .split(/\s+/)
-          .map(escapeRegex);
-
-      const pattern =
-        words.join(
-          "[\\s._\\-*~^`'\"|\\\\/]+"
-        );
-
-      const regex =
-        new RegExp(
-          pattern,
-          "gi"
-        );
-
-      filtered =
-        filtered.replace(
-          regex,
-          match =>
-            "*".repeat(
-              match.length
-            )
-        );
+    for (const phrase of BLOCKED_PHRASES) {
+      const words = phrase.split(/\s+/).map(escapeRegex);
+      const pattern = words.join("[\\s._\\-*~^`'\"|\\\\/]+");
+      const regex = new RegExp(pattern, "gi");
+      filtered = filtered.replace(regex, match => "*".repeat(match.length));
     }
 
-
-    /*
-      Individual words.
-    */
-
-    for (
-      const word of BLOCKED_WORDS
-    ) {
-
-      const regex =
-        buildFlexibleRegex(word);
-
-      filtered =
-        filtered.replace(
-          regex,
-          match =>
-            "*".repeat(
-              match.length
-            )
-        );
+    for (const word of BLOCKED_WORDS) {
+      const regex = buildFlexibleRegex(word);
+      filtered = filtered.replace(regex, match => "*".repeat(match.length));
     }
-
 
     return filtered;
   }
 
-
-  /* ============================================================
-     HTML ESCAPE
-  ============================================================ */
-
   function escText(str = "") {
-
-    return String(str).replace(
-      /[&<>"']/g,
-      m => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      }[m])
-    );
+    return String(str).replace(/[&<>"']/g, m => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+    }[m]));
   }
 
-
-  /* ============================================================
-     CREATE CHAT UI
-  ============================================================ */
-
   function injectChatUI() {
+    if (document.getElementById(CHAT_PAGE_ID)) return;
 
-    if (
-      document.getElementById(
-        CHAT_PAGE_ID
-      )
-    ) {
-      return;
-    }
+    const nav = document.querySelector(".nav");
+    const favBtn = nav?.querySelector('[data-page="favorites"]');
 
-
-    /*
-      Sidebar button.
-    */
-
-    const nav =
-      document.querySelector(
-        ".nav"
-      );
-
-    const favBtn =
-      nav?.querySelector(
-        '[data-page="favorites"]'
-      );
-
-
-    if (
-      nav &&
-      !nav.querySelector(
-        '[data-page="chat"]'
-      )
-    ) {
-
-      const chatNavBtn =
-        document.createElement(
-          "button"
-        );
-
-      chatNavBtn.dataset.page =
-        "chat";
-
-      chatNavBtn.innerHTML =
-        '<span class="ic">💬</span>' +
-        '<span class="lbl">Community Chat</span>';
-
-      chatNavBtn.onclick =
-        showChatPage;
-
+    if (nav && !nav.querySelector('[data-page="chat"]')) {
+      const chatNavBtn = document.createElement("button");
+      chatNavBtn.dataset.page = "chat";
+      chatNavBtn.innerHTML = '<span class="ic">💬</span><span class="lbl">Community Chat</span>';
+      chatNavBtn.onclick = showChatPage;
 
       if (favBtn) {
-
-        favBtn.insertAdjacentElement(
-          "afterend",
-          chatNavBtn
-        );
-
+        favBtn.insertAdjacentElement("afterend", chatNavBtn);
       } else {
-
-        nav.appendChild(
-          chatNavBtn
-        );
+        nav.appendChild(chatNavBtn);
       }
     }
 
+    const main = document.querySelector("main.main");
+    if (!main) return;
 
-    /*
-      Main chat section.
-    */
-
-    const main =
-      document.querySelector(
-        "main.main"
-      );
-
-    if (!main) {
-      return;
-    }
-
-
-    const chatSection =
-      document.createElement(
-        "section"
-      );
-
-    chatSection.id =
-      CHAT_PAGE_ID;
-
-    chatSection.className =
-      "page hidden";
-
+    const chatSection = document.createElement("section");
+    chatSection.id = CHAT_PAGE_ID;
+    chatSection.className = "page hidden";
 
     chatSection.innerHTML = `
-
       <div class="panel">
-
         <div class="panel-head">
-
           <div>
-
-            <h3>
-              Community Live Chat
-            </h3>
-
-            <div class="muted-sm">
-              Real-time messaging with members of VEXO.
-            </div>
-
+            <h3>Community Live Chat</h3>
+            <div class="muted-sm">Real-time messaging with members of VEXO.</div>
           </div>
-
         </div>
 
-
         <div class="chat-container">
-
-          <div
-            class="chat-messages"
-            id="chatMessages"
-          >
-
+          <div class="chat-messages" id="chatMessages">
             <div class="empty">
-
-              <div class="empty-icon">
-                💬
-              </div>
-
-              <p>
-                Loading conversation...
-              </p>
-
+              <div class="empty-icon">💬</div>
+              <p>Loading conversation...</p>
             </div>
-
           </div>
 
-
-          <form
-            class="chat-input-bar"
-            id="chatForm"
-          >
-
+          <form class="chat-input-bar" id="chatForm">
             <input
               class="input"
               id="chatInput"
@@ -4352,796 +3733,222 @@ async function runVirusTotalChecker(){
               autocomplete="off"
               required
             >
-
-            <button
-              class="btn primary"
-              type="submit"
-              id="chatSendBtn"
-            >
-              Send
-            </button>
-
+            <button class="btn primary" type="submit" id="chatSendBtn">Send</button>
           </form>
-
         </div>
-
       </div>
     `;
 
-
-    main.appendChild(
-      chatSection
-    );
-
-
-    document
-      .getElementById(
-        "chatForm"
-      )
-      ?.addEventListener(
-        "submit",
-        sendChatMessage
-      );
+    main.appendChild(chatSection);
+    document.getElementById("chatForm")?.addEventListener("submit", sendChatMessage);
   }
 
-
-  /* ============================================================
-     SHOW CHAT
-  ============================================================ */
-
   function showChatPage() {
-
     injectChatUI();
+    document.querySelectorAll(".page").forEach(x => x.classList.add("hidden"));
+    const chatSection = document.getElementById(CHAT_PAGE_ID);
+    chatSection?.classList.remove("hidden");
 
+    document.querySelectorAll(".nav button").forEach(b => {
+      b.classList.toggle("active", b.dataset.page === "chat");
+    });
 
-    document
-      .querySelectorAll(
-        ".page"
-      )
-      .forEach(x =>
-        x.classList.add(
-          "hidden"
-        )
-      );
+    const titleEl = document.getElementById("pageTitle");
+    const subEl = document.getElementById("pageSub");
+    const crumbEl = document.getElementById("crumbPage");
 
-
-    const chatSection =
-      document.getElementById(
-        CHAT_PAGE_ID
-      );
-
-
-    chatSection?.classList.remove(
-      "hidden"
-    );
-
-
-    document
-      .querySelectorAll(
-        ".nav button"
-      )
-      .forEach(b => {
-
-        b.classList.toggle(
-          "active",
-          b.dataset.page === "chat"
-        );
-
-      });
-
-
-    const titleEl =
-      document.getElementById(
-        "pageTitle"
-      );
-
-    const subEl =
-      document.getElementById(
-        "pageSub"
-      );
-
-    const crumbEl =
-      document.getElementById(
-        "crumbPage"
-      );
-
-
-    if (titleEl) {
-
-      titleEl.textContent =
-        "Community Chat";
-    }
-
-
-    if (subEl) {
-
-      subEl.textContent =
-        "Real-time conversation with the VEXO community.";
-    }
-
-
-    if (crumbEl) {
-
-      crumbEl.textContent =
-        "Chat";
-    }
-
+    if (titleEl) titleEl.textContent = "Community Chat";
+    if (subEl) subEl.textContent = "Real-time conversation with the VEXO community.";
+    if (crumbEl) crumbEl.textContent = "Chat";
 
     loadMessages();
-
     subscribeChat();
   }
 
-
-  /* ============================================================
-     LOAD MESSAGES
-  ============================================================ */
-
   async function loadMessages() {
+    const chatContainer = document.getElementById("chatMessages");
+    if (!chatContainer) return;
 
-    const chatContainer =
-      document.getElementById(
-        "chatMessages"
-      );
-
-
-    if (!chatContainer) {
-      return;
-    }
-
-
-    const {
-      data,
-      error
-    } = await db
+    const { data, error } = await db
       .from("messages")
       .select("*")
-      .order(
-        "created_at",
-        {
-          ascending: true
-        }
-      )
+      .order("created_at", { ascending: true })
       .limit(60);
 
-
     if (error) {
-
       chatContainer.innerHTML = `
         <div class="empty">
           <div class="empty-icon">!</div>
-          <p>
-            Unable to load chat history.
-          </p>
+          <p>Unable to load chat history.</p>
         </div>
       `;
-
       return;
     }
 
-
-    if (
-      !data ||
-      !data.length
-    ) {
-
+    if (!data || !data.length) {
       chatContainer.innerHTML = `
         <div class="empty">
           <div class="empty-icon">💬</div>
-          <p>
-            No messages yet. Say hello!
-          </p>
+          <p>No messages yet. Say hello!</p>
         </div>
       `;
-
       return;
     }
-
 
     renderAllMessages(data);
   }
 
-
-  /* ============================================================
-     RENDER MESSAGES
-  ============================================================ */
-
   function renderAllMessages(msgs) {
+    const chatContainer = document.getElementById("chatMessages");
+    if (!chatContainer) return;
 
-    const chatContainer =
-      document.getElementById(
-        "chatMessages"
-      );
-
-
-    if (!chatContainer) {
-      return;
-    }
-
-
-    chatContainer.innerHTML =
-      msgs
-        .map(
-          createMessageNode
-        )
-        .join("");
-
-
-    chatContainer.scrollTop =
-      chatContainer.scrollHeight;
+    chatContainer.innerHTML = msgs.map(createMessageNode).join("");
+    chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
-
-  /* ============================================================
-     CREATE MESSAGE NODE
-  ============================================================ */
-
   function createMessageNode(m) {
+    const isSelf = user && m.user_id === user.id;
+    const initial = (m.username || "G").charAt(0).toUpperCase();
+    const timeStr = m.created_at
+      ? new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      : "";
 
-    const isSelf =
-      user &&
-      m.user_id === user.id;
+    const canDelete = isAdmin || (user && m.user_id === user.id);
+    const deleteBtn = canDelete
+      ? `<button class="chat-delete-btn" onclick="window.deleteChatMessage('${escText(m.id)}')" title="Delete message">✕</button>`
+      : "";
 
-
-    const initial =
-      (
-        m.username ||
-        "G"
-      )
-        .charAt(0)
-        .toUpperCase();
-
-
-    const timeStr =
-      m.created_at
-        ? new Date(
-            m.created_at
-          ).toLocaleTimeString(
-            [],
-            {
-              hour: "2-digit",
-              minute: "2-digit"
-            }
-          )
-        : "";
-
-
-    const canDelete =
-      isAdmin ||
-      (
-        user &&
-        m.user_id === user.id
-      );
-
-
-    const deleteBtn =
-      canDelete
-        ? `
-          <button
-            class="chat-delete-btn"
-            onclick="window.deleteChatMessage('${escText(m.id)}')"
-            title="Delete message"
-          >
-            ✕
-          </button>
-        `
-        : "";
-
-
-    /*
-      Filter on display as well.
-    */
-
-    const displayContent =
-      cleanMessage(
-        m.content || ""
-      );
-
+    const displayContent = cleanMessage(m.content || "");
 
     return `
-
-      <div
-        class="chat-msg ${
-          isSelf ? "self" : ""
-        }"
-        id="chat-msg-${escText(m.id)}"
-      >
-
-        <div class="chat-avatar">
-          ${escText(initial)}
-        </div>
-
-
+      <div class="chat-msg ${isSelf ? "self" : ""}" id="chat-msg-${escText(m.id)}">
+        <div class="chat-avatar">${escText(initial)}</div>
         <div class="chat-bubble">
-
           <div class="chat-meta">
-
-            <span class="chat-user">
-              ${escText(
-                m.username ||
-                "Guest"
-              )}
-            </span>
-
-            <span class="chat-time">
-              ${escText(timeStr)}
-            </span>
-
+            <span class="chat-user">${escText(m.username || "Guest")}</span>
+            <span class="chat-time">${escText(timeStr)}</span>
             ${deleteBtn}
-
           </div>
-
-
-          <div class="chat-text">
-            ${escText(
-              displayContent
-            )}
-          </div>
-
+          <div class="chat-text">${escText(displayContent)}</div>
         </div>
-
       </div>
     `;
   }
 
+  window.deleteChatMessage = async function(id) {
+    if (!user) {
+      if (typeof toast === "function") toast("You must be signed in to delete messages.");
+      return;
+    }
+    if (!confirm("Are you sure you want to delete this message?")) return;
 
-  /* ============================================================
-     DELETE MESSAGE
-  ============================================================ */
+    const { error } = await db.from("messages").delete().eq("id", id);
+    if (error) {
+      if (typeof toast === "function") toast("Failed to delete message: " + error.message);
+      return;
+    }
 
-  window.deleteChatMessage =
-    async function(id) {
-
-      if (!user) {
-
-        if (
-          typeof toast ===
-          "function"
-        ) {
-
-          toast(
-            "You must be signed in to delete messages."
-          );
-        }
-
-        return;
-      }
-
-
-      if (
-        !confirm(
-          "Are you sure you want to delete this message?"
-        )
-      ) {
-        return;
-      }
-
-
-      const {
-        error
-      } = await db
-        .from("messages")
-        .delete()
-        .eq(
-          "id",
-          id
-        );
-
-
-      if (error) {
-
-        if (
-          typeof toast ===
-          "function"
-        ) {
-
-          toast(
-            "Failed to delete message: " +
-            error.message
-          );
-        }
-
-        return;
-      }
-
-
-      const el =
-        document.getElementById(
-          `chat-msg-${id}`
-        );
-
-
-      if (el) {
-        el.remove();
-      }
-
-
-      if (
-        typeof toast ===
-        "function"
-      ) {
-
-        toast(
-          "Message deleted."
-        );
-      }
-    };
-
-
-  /* ============================================================
-     SEND MESSAGE
-  ============================================================ */
+    const el = document.getElementById(`chat-msg-${id}`);
+    if (el) el.remove();
+    if (typeof toast === "function") toast("Message deleted.");
+  };
 
   async function sendChatMessage(e) {
-
     e.preventDefault();
+    const input = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("chatSendBtn");
+    const text = input?.value.trim();
 
-
-    const input =
-      document.getElementById(
-        "chatInput"
-      );
-
-
-    const sendBtn =
-      document.getElementById(
-        "chatSendBtn"
-      );
-
-
-    const text =
-      input?.value.trim();
-
-
-    if (!text) {
-      return;
-    }
-
-
+    if (!text) return;
     if (text.length > 500) {
-
-      if (
-        typeof toast ===
-        "function"
-      ) {
-
-        toast(
-          "Messages can be up to 500 characters."
-        );
-      }
-
+      if (typeof toast === "function") toast("Messages can be up to 500 characters.");
       return;
     }
 
+    const hasBlockedContent = containsBlockedContent(text);
+    const sanitizedText = cleanMessage(text);
+    if (!sanitizedText.trim()) return;
 
-    /*
-      Detect and censor.
-    */
-
-    const hasBlockedContent =
-      containsBlockedContent(
-        text
-      );
-
-
-    const sanitizedText =
-      cleanMessage(
-        text
-      );
-
-
-    if (
-      !sanitizedText.trim()
-    ) {
-      return;
-    }
-
-
-    /* Determine username */
-
-    let senderName =
-      "Guest";
-
-
+    let senderName = "Guest";
     if (user) {
-
-      const {
-        data: p
-      } = await db
-        .from("profiles")
-        .select(
-          "username"
-        )
-        .eq(
-          "id",
-          user.id
-        )
-        .maybeSingle();
-
-
-      senderName =
-        p?.username ||
-        user.email?.split(
-          "@"
-        )[0] ||
-        "Member";
-
+      const { data: p } = await db.from("profiles").select("username").eq("id", user.id).maybeSingle();
+      senderName = p?.username || user.email?.split("@")[0] || "Member";
     } else {
-
-      senderName =
-        typeof anonymousName ===
-        "function"
-
-          ? anonymousName(
-              crypto.randomUUID()
-            )
-
-          : "Guest";
+      senderName = typeof anonymousName === "function" ? anonymousName(crypto.randomUUID()) : "Guest";
     }
-
 
     input.value = "";
+    if (sendBtn) sendBtn.disabled = true;
 
+    const { error } = await db.from("messages").insert({
+      user_id: user?.id || null,
+      username: senderName,
+      content: sanitizedText
+    });
 
-    if (sendBtn) {
-      sendBtn.disabled = true;
-    }
-
-
-    const {
-      error
-    } = await db
-      .from("messages")
-      .insert({
-
-        user_id:
-          user?.id ||
-          null,
-
-        username:
-          senderName,
-
-        content:
-          sanitizedText
-      });
-
-
-    if (sendBtn) {
-      sendBtn.disabled = false;
-    }
-
+    if (sendBtn) sendBtn.disabled = false;
 
     if (error) {
-
-      if (
-        typeof toast ===
-        "function"
-      ) {
-
-        toast(
-          "Message failed to send: " +
-          error.message
-        );
-      }
-
+      if (typeof toast === "function") toast("Message failed to send: " + error.message);
       return;
     }
 
-
-    if (
-      hasBlockedContent &&
-      typeof toast ===
-      "function"
-    ) {
-
-      toast(
-        "Some words were automatically censored."
-      );
+    if (hasBlockedContent && typeof toast === "function") {
+      toast("Some words were automatically censored.");
     }
   }
 
-
-  /* ============================================================
-     REALTIME
-  ============================================================ */
-
-  let chatSubscribed =
-    false;
-
+  let chatSubscribed = false;
 
   function subscribeChat() {
+    if (chatSubscribed) return;
 
-    if (chatSubscribed) {
-      return;
-    }
+    db.channel("public:messages")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
+        const chatContainer = document.getElementById("chatMessages");
+        if (!chatContainer) return;
 
-
-    db.channel(
-      "public:messages"
-    )
-
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages"
-        },
-
-        payload => {
-
-          const chatContainer =
-            document.getElementById(
-              "chatMessages"
-            );
-
-
-          if (!chatContainer) {
-            return;
-          }
-
-
-          if (
-            chatContainer.querySelector(
-              ".empty"
-            )
-          ) {
-
-            chatContainer.innerHTML =
-              "";
-          }
-
-
-          /*
-            Don't add the same message twice.
-          */
-
-          if (
-            document.getElementById(
-              `chat-msg-${payload.new.id}`
-            )
-          ) {
-            return;
-          }
-
-
-          const temp =
-            document.createElement(
-              "div"
-            );
-
-
-          temp.innerHTML =
-            createMessageNode(
-              payload.new
-            );
-
-
-          const node =
-            temp.firstElementChild;
-
-
-          if (node) {
-
-            chatContainer.appendChild(
-              node
-            );
-          }
-
-
-          chatContainer.scrollTop =
-            chatContainer.scrollHeight;
+        if (chatContainer.querySelector(".empty")) {
+          chatContainer.innerHTML = "";
         }
-      )
+        if (document.getElementById(`chat-msg-${payload.new.id}`)) return;
 
-
-      .on(
-        "postgres_changes",
-        {
-          event: "DELETE",
-          schema: "public",
-          table: "messages"
-        },
-
-        payload => {
-
-          const id =
-            payload.old?.id;
-
-
-          if (!id) {
-            return;
-          }
-
-
-          const el =
-            document.getElementById(
-              `chat-msg-${id}`
-            );
-
-
-          if (el) {
-            el.remove();
-          }
-        }
-      )
-
-
+        const temp = document.createElement("div");
+        temp.innerHTML = createMessageNode(payload.new);
+        const node = temp.firstElementChild;
+        if (node) chatContainer.appendChild(node);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "messages" }, payload => {
+        const id = payload.old?.id;
+        if (!id) return;
+        const el = document.getElementById(`chat-msg-${id}`);
+        if (el) el.remove();
+      })
       .subscribe();
 
-
-    chatSubscribed =
-      true;
+    chatSubscribed = true;
   }
 
-
-  /* ============================================================
-     SESSION REFRESH
-  ============================================================ */
-
-  const origLoadSession =
-    window.loadSession;
-
-
-  if (
-    typeof origLoadSession ===
-    "function"
-  ) {
-
-    window.loadSession =
-      async function() {
-
-        await origLoadSession.apply(
-          this,
-          arguments
-        );
-
-
-        const chatSection =
-          document.getElementById(
-            CHAT_PAGE_ID
-          );
-
-
-        if (
-          chatSection &&
-          !chatSection.classList.contains(
-            "hidden"
-          )
-        ) {
-
-          loadMessages();
-        }
-      };
+  const origLoadSession = window.loadSession;
+  if (typeof origLoadSession === "function") {
+    window.loadSession = async function() {
+      await origLoadSession.apply(this, arguments);
+      const chatSection = document.getElementById(CHAT_PAGE_ID);
+      if (chatSection && !chatSection.classList.contains("hidden")) {
+        loadMessages();
+      }
+    };
   }
-
-
-  /* ============================================================
-     OPTIONAL DEBUG API
-  ============================================================ */
 
   window.VEXOChatFilter = {
-
     cleanMessage,
-
     containsBlockedContent,
-
     normalizeText,
-
     compactText
   };
 
-
-  /* ============================================================
-     START
-  ============================================================ */
-
-  window.addEventListener(
-    "DOMContentLoaded",
-    injectChatUI
-  );
-
+  window.addEventListener("DOMContentLoaded", injectChatUI);
   injectChatUI();
-
 })();
 </script>
