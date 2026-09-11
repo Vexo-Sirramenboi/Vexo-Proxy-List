@@ -2880,3 +2880,445 @@ async function runVirusTotalChecker(){
 })();
 </script>
 
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- VEXO FLASHY HOMEPAGE ANNOUNCEMENTS — APPEND-ONLY -->
+<!-- Makes the newest announcement highly visible and adds changelog -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<style>
+/* Main announcement container */
+#vexoAnnouncementsHome.vexo-announcement-featured{
+  position:relative;
+  z-index:5;
+  overflow:hidden;
+  margin:0 0 24px;
+  padding:0;
+  border:1px solid rgba(124,92,255,.58);
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 8% 15%,rgba(124,92,255,.30),transparent 28%),
+    radial-gradient(circle at 92% 85%,rgba(25,211,255,.22),transparent 30%),
+    linear-gradient(135deg,rgba(15,21,42,.97),rgba(10,16,31,.97));
+  box-shadow:
+    0 0 0 1px rgba(25,211,255,.08),
+    0 18px 70px rgba(0,0,0,.48),
+    0 0 55px rgba(124,92,255,.18);
+  animation:vexoAnnounceFloat 5s ease-in-out infinite;
+}
+
+#vexoAnnouncementsHome.vexo-announcement-featured::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:24px;
+  padding:1px;
+  background:linear-gradient(120deg,rgba(124,92,255,.9),rgba(25,211,255,.8),rgba(255,63,157,.7),rgba(124,92,255,.9));
+  background-size:240% 240%;
+  animation:vexoAnnounceBorder 7s linear infinite;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  pointer-events:none;
+}
+
+#vexoAnnouncementsHome.vexo-announcement-featured::after{
+  content:"";
+  position:absolute;
+  left:-30%;
+  top:0;
+  width:28%;
+  height:100%;
+  transform:skewX(-18deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);
+  animation:vexoAnnounceSweep 4.8s ease-in-out infinite;
+  pointer-events:none;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-featured-head{
+  position:relative;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  padding:17px 20px 13px;
+  border-bottom:1px solid rgba(148,163,184,.12);
+}
+
+#vexoAnnouncementsHome .vexo-announcement-featured-label{
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.17em;
+  text-transform:uppercase;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-live{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:var(--accent2);
+  box-shadow:0 0 10px var(--accent2),0 0 22px rgba(25,211,255,.65);
+  animation:vexoAnnouncePulse 1.35s ease-in-out infinite;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-team{
+  color:var(--muted);
+  font-size:10.5px;
+  font-weight:700;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-featured-body{
+  position:relative;
+  padding:22px 20px 20px;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-primary{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:20px;
+  align-items:center;
+  padding:4px 0 0;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-primary-copy{
+  min-width:0;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-primary-title{
+  margin:0 0 9px;
+  font-family:'Space Grotesk',sans-serif;
+  font-size:clamp(24px,3.2vw,38px);
+  line-height:1.04;
+  letter-spacing:-.03em;
+  font-weight:700;
+  color:#fff;
+  text-shadow:0 0 26px rgba(124,92,255,.24);
+}
+
+#vexoAnnouncementsHome .vexo-announcement-primary-date{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  margin-bottom:12px;
+  color:var(--accent2);
+  font-size:10.5px;
+  font-weight:800;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-primary-date::before{
+  content:"";
+  width:18px;
+  height:1px;
+  background:currentColor;
+  opacity:.65;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-primary-text{
+  color:#b8c3da;
+  font-size:13.5px;
+  line-height:1.75;
+  white-space:pre-wrap;
+  max-width:950px;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-changelog-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-width:155px;
+  padding:11px 15px;
+  border-radius:11px;
+  border:1px solid rgba(25,211,255,.30);
+  background:rgba(25,211,255,.07);
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+  transition:.2s;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-changelog-button:hover{
+  transform:translateY(-2px);
+  border-color:rgba(25,211,255,.65);
+  background:rgba(25,211,255,.12);
+  box-shadow:0 10px 30px rgba(25,211,255,.12);
+}
+
+#vexoAnnouncementsHome .vexo-announcement-history{
+  display:none;
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid rgba(148,163,184,.11);
+}
+
+#vexoAnnouncementsHome.vexo-announcement-history-open .vexo-announcement-history{
+  display:grid;
+  gap:9px;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-history-title{
+  margin:0 0 4px;
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-history-list{
+  display:grid;
+  gap:8px;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-history-item{
+  padding:12px 13px;
+  border:1px solid rgba(148,163,184,.11);
+  border-radius:11px;
+  background:rgba(255,255,255,.025);
+}
+
+#vexoAnnouncementsHome .vexo-announcement-history-item strong{
+  display:block;
+  color:#fff;
+  font-size:12.5px;
+  margin-bottom:4px;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-history-item small{
+  display:block;
+  color:var(--accent2);
+  font-size:10px;
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-history-item p{
+  margin:0;
+  color:var(--muted);
+  font-size:11.5px;
+  line-height:1.55;
+  white-space:pre-wrap;
+}
+
+#vexoAnnouncementsHome .vexo-announcement-mobile-note{
+  display:none;
+}
+
+@keyframes vexoAnnounceFloat{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-2px);}
+}
+
+@keyframes vexoAnnounceBorder{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+@keyframes vexoAnnounceSweep{
+  0%,55%{left:-35%;opacity:0;}
+  65%{opacity:1;}
+  90%,100%{left:115%;opacity:0;}
+}
+
+@keyframes vexoAnnouncePulse{
+  0%,100%{transform:scale(1);opacity:1;}
+  50%{transform:scale(.72);opacity:.55;}
+}
+
+@media(max-width:700px){
+  #vexoAnnouncementsHome .vexo-announcement-featured-head{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:7px;
+  }
+
+  #vexoAnnouncementsHome .vexo-announcement-primary{
+    grid-template-columns:1fr;
+  }
+
+  #vexoAnnouncementsHome .vexo-announcement-changelog-button{
+    width:100%;
+  }
+
+  #vexoAnnouncementsHome .vexo-announcement-mobile-note{
+    display:block;
+    margin-top:9px;
+    color:var(--muted);
+    font-size:10.5px;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  #vexoAnnouncementsHome.vexo-announcement-featured,
+  #vexoAnnouncementsHome.vexo-announcement-featured::before,
+  #vexoAnnouncementsHome.vexo-announcement-featured::after,
+  #vexoAnnouncementsHome .vexo-announcement-live{
+    animation:none!important;
+  }
+}
+</style>
+
+<script>
+(() => {
+  const ANN_ID = "vexoAnnouncementsHome";
+  let cachedAnnouncements = [];
+
+  function e(v=""){
+    return String(v).replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  function fd(v){
+    if(!v) return "Unknown date";
+    try{
+      return new Date(v).toLocaleDateString(undefined,{
+        month:"short",day:"numeric",year:"numeric"
+      });
+    }catch(err){
+      return "Unknown date";
+    }
+  }
+
+  function buildFeatured(announcements){
+    const panel = document.getElementById(ANN_ID);
+    if(!panel || !announcements?.length) return;
+
+    cachedAnnouncements = announcements;
+
+    panel.classList.add("vexo-announcement-featured");
+
+    panel.innerHTML = `
+      <div class="vexo-announcement-featured-head">
+        <div class="vexo-announcement-featured-label">
+          <span class="vexo-announcement-live"></span>
+          VEXO Official Announcement
+        </div>
+        <div class="vexo-announcement-team">Updates from the VEXO community team</div>
+      </div>
+
+      <div class="vexo-announcement-featured-body">
+        <div class="vexo-announcement-primary">
+          <div class="vexo-announcement-primary-copy">
+            <div class="vexo-announcement-primary-date">
+              ${e(fd(announcements[0].updated_at || announcements[0].created_at))}
+            </div>
+            <h2 class="vexo-announcement-primary-title">${e(announcements[0].title)}</h2>
+            <div class="vexo-announcement-primary-text">${e(announcements[0].body)}</div>
+            <div class="vexo-announcement-mobile-note">
+              This message is posted by the VEXO community team.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="vexo-announcement-changelog-button"
+            id="vexoOpenChangelog"
+          >
+            View Changelog ↗
+          </button>
+        </div>
+
+        <div class="vexo-announcement-history" id="vexoAnnouncementHistory">
+          <div class="vexo-announcement-history-title">Recent updates</div>
+          <div class="vexo-announcement-history-list">
+            ${announcements.slice(1).map(a => `
+              <article class="vexo-announcement-history-item">
+                <strong>${e(a.title)}</strong>
+                <small>${e(fd(a.updated_at || a.created_at))}</small>
+                <p>${e(a.body)}</p>
+              </article>
+            `).join("") || `
+              <div class="vexo-announcement-history-item">
+                <p>No previous changelog entries yet.</p>
+              </div>
+            `}
+          </div>
+        </div>
+      </div>
+    `;
+
+    const button = document.getElementById("vexoOpenChangelog");
+    button?.addEventListener("click", () => {
+      const open = panel.classList.toggle("vexo-announcement-history-open");
+      button.textContent = open ? "Hide Changelog ↑" : "View Changelog ↗";
+
+      if(open){
+        document.getElementById("vexoAnnouncementHistory")?.scrollIntoView({
+          behavior:"smooth",
+          block:"nearest"
+        });
+      }
+    });
+  }
+
+  async function refreshFeaturedAnnouncements(){
+    const panel = document.getElementById(ANN_ID);
+    if(!panel) return;
+
+    const {data,error} = await db.from("announcements")
+      .select("id,title,body,created_at,updated_at")
+      .eq("active",true)
+      .order("created_at",{ascending:false})
+      .limit(10);
+
+    if(error){
+      console.error("Featured announcements:", error);
+      return;
+    }
+
+    if(!data?.length){
+      panel.classList.add("hidden");
+      return;
+    }
+
+    panel.classList.remove("hidden");
+    buildFeatured(data);
+
+    // Put the announcement BEFORE the main hero so it is the first thing users see.
+    const home = document.getElementById("homePage");
+    const hero = home?.querySelector(".hero");
+    if(home && hero && panel.parentElement === home){
+      home.insertBefore(panel, hero);
+    }
+  }
+
+  function start(){
+    const panel = document.getElementById(ANN_ID);
+    if(!panel) return;
+
+    refreshFeaturedAnnouncements();
+
+    // Keep the old announcement loader compatible with this redesign.
+    window.refreshVexoFeaturedAnnouncements = refreshFeaturedAnnouncements;
+  }
+
+  window.addEventListener("DOMContentLoaded", start);
+  start();
+})();
+</script>
+
+<script>
+(() => {
+  function hookAnnouncementRefresh(){
+    const original = window.loadAnnouncementsAdmin;
+    if(typeof original === "function" && !window.__vexoAnnRefreshHooked){
+      window.__vexoAnnRefreshHooked = true;
+      window.loadAnnouncementsAdmin = async function(){
+        const result = await original.apply(this, arguments);
+        window.refreshVexoFeaturedAnnouncements?.();
+        return result;
+      };
+    }
+  }
+
+  hookAnnouncementRefresh();
+  setTimeout(hookAnnouncementRefresh, 250);
+  setTimeout(hookAnnouncementRefresh, 1000);
+})();
+</script>
