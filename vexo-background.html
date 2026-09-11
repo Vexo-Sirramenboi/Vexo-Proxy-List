@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VEXO Background</title>
+<style>
+:root{
+  --accent:#7c5cff;
+  --accent2:#19d3ff;
+  --pink:#ff3f9d;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#050711;
+}
+body{
+  position:relative;
+}
+#scene{
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 50% 20%,rgba(124,92,255,.16),transparent 35%),
+    linear-gradient(120deg,#050711,#0a0d1c 55%,#070914);
+  transition:background .35s ease;
+}
+#grid{
+  position:absolute;
+  inset:-20%;
+  background-image:
+    linear-gradient(rgba(124,92,255,.08) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(25,211,255,.07) 1px,transparent 1px);
+  background-size:55px 55px;
+  transform:perspective(600px) rotateX(58deg) translateY(20%);
+  animation:drift 18s linear infinite;
+  -webkit-mask-image:linear-gradient(transparent,#000 25%,#000 70%,transparent);
+  mask-image:linear-gradient(transparent,#000 25%,#000 70%,transparent);
+  opacity:1;
+  transition:opacity .35s ease;
+}
+.orb{
+  position:absolute;
+  width:260px;
+  height:260px;
+  border-radius:50%;
+  filter:blur(45px);
+  opacity:.16;
+  animation:float 12s ease-in-out infinite;
+  transition:opacity .35s ease;
+}
+.o1{background:#7c5cff;left:8%;top:15%}
+.o2{background:#19d3ff;right:7%;top:42%;animation-delay:-4s}
+.o3{background:#ff3f9d;left:45%;bottom:-80px;animation-delay:-8s}
+@keyframes drift{
+  to{transform:perspective(600px) rotateX(58deg) translateY(30%)}
+}
+@keyframes float{
+  50%{transform:translate(40px,-35px) scale(1.15)}
+}
+@media(prefers-reduced-motion:reduce){
+  #grid,.orb{animation:none!important}
+}
+</style>
+</head>
+<body>
+<div id="scene"></div>
+<div id="grid"></div>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+<div class="orb o3"></div>
+
+<script>
+(() => {
+  const scene = document.getElementById("scene");
+  const grid = document.getElementById("grid");
+  const orbs = document.querySelectorAll(".orb");
+
+  function apply(mode){
+    mode = ["grid","plain","stars"].includes(mode) ? mode : "grid";
+
+    if(mode === "grid"){
+      grid.style.display = "block";
+      grid.style.opacity = "1";
+      orbs.forEach(o => o.style.opacity = ".16");
+      scene.style.background =
+        "radial-gradient(circle at 50% 20%,rgba(124,92,255,.16),transparent 35%)," +
+        "linear-gradient(120deg,#050711,#0a0d1c 55%,#070914)";
+    }
+
+    if(mode === "plain"){
+      grid.style.display = "none";
+      orbs.forEach(o => o.style.opacity = "0");
+      scene.style.background = "#070914";
+    }
+
+    if(mode === "stars"){
+      grid.style.display = "block";
+      grid.style.opacity = ".18";
+      orbs.forEach(o => o.style.opacity = ".16");
+      scene.style.background =
+        "radial-gradient(circle at 20% 20%,rgba(124,92,255,.2),transparent 25%)," +
+        "radial-gradient(circle at 80% 60%,rgba(25,211,255,.14),transparent 25%),#03040a";
+    }
+
+    try{ parent.localStorage.setItem("vexo-bg", mode); }catch(e){}
+  }
+
+  window.addEventListener("message", event => {
+    if(!event.data || event.data.type !== "VEXO_BACKGROUND") return;
+    apply(event.data.mode);
+  });
+
+  let initial = "grid";
+  try{
+    initial = parent.localStorage.getItem("vexo-bg") || "grid";
+  }catch(e){}
+
+  apply(initial);
+
+  try{
+    parent.postMessage({type:"VEXO_BACKGROUND_READY"}, "*");
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
