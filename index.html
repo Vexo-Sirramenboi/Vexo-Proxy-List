@@ -4001,3 +4001,290 @@ const BLOCKED_WORDS = [
   injectChatUI();
 })();
 </script>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- VEXO SUPABASE WEB PROXY — APPEND-ONLY                        -->
+<!-- Does not replace the existing Web Proxy tab.                 -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+
+<style>
+/* VEXO SUPABASE PROXY ADDITIONS */
+#proxyLoading{
+  display:none;
+  align-items:center;
+  gap:9px;
+  padding:10px 0;
+  color:var(--accent2);
+  font-size:12px;
+  font-weight:700;
+}
+#proxyLoading.show{display:flex;}
+#proxyLoading .spin{
+  width:15px;
+  height:15px;
+  border:2px solid rgba(25,211,255,.2);
+  border-top-color:var(--accent2);
+  border-radius:50%;
+  animation:vexoProxySpin .8s linear infinite;
+}
+@keyframes vexoProxySpin{
+  to{transform:rotate(360deg);}
+}
+#proxyError{
+  display:none;
+  padding:13px;
+  border:1px solid rgba(251,113,133,.25);
+  border-radius:12px;
+  background:rgba(251,113,133,.06);
+  color:var(--red);
+  font-size:12px;
+  line-height:1.6;
+  margin-bottom:12px;
+}
+#proxyError.show{display:block;}
+#proxyFrame{
+  background:#fff;
+}
+</style>
+
+<script>
+/* VEXO SUPABASE WEB PROXY
+   APPEND-ONLY FRONTEND OVERRIDE
+*/
+
+(() => {
+  "use strict";
+
+  /*
+   * CHANGE ONLY THIS VALUE.
+   * Use the URL of your deployed Supabase Edge Function.
+   */
+  const VEXO_PROXY_ENDPOINT =
+    "https://YOUR_PROJECT_REF.supabase.co/functions/v1/vexo-proxy";
+
+  const VEXO_PROXY_DEFAULT =
+    "https://example.com/";
+
+  let vexoProxyBusy = false;
+
+  function proxyElement(id){
+    return document.getElementById(id);
+  }
+
+  function proxyLoading(show){
+    let el = proxyElement("proxyLoading");
+
+    if(!el){
+      const wrap = proxyElement("proxyFrame")?.parentElement;
+      if(!wrap) return;
+
+      el = document.createElement("div");
+      el.id = "proxyLoading";
+      el.innerHTML =
+        '<span class="spin"></span><span>Loading through VEXO...</span>';
+
+      wrap.parentElement.insertBefore(el, wrap);
+    }
+
+    el.classList.toggle("show", show);
+  }
+
+  function proxyError(message){
+    let el = proxyElement("proxyError");
+
+    if(!el){
+      const wrap = proxyElement("proxyFrame")?.parentElement;
+      if(!wrap) return;
+
+      el = document.createElement("div");
+      el.id = "proxyError";
+      wrap.parentElement.insertBefore(el, wrap);
+    }
+
+    el.textContent = message;
+    el.classList.add("show");
+  }
+
+  function clearProxyError(){
+    proxyElement("proxyError")?.classList.remove("show");
+  }
+
+  function setProxyHost(url){
+    try{
+      const host = new URL(url).host;
+      const el = proxyElement("proxyHost");
+      if(el) el.textContent = host;
+    }catch(e){}
+  }
+
+  /*
+   * Load through Supabase instead of directly opening
+   * the target URL in the iframe.
+   */
+  window.loadProxy = async function(){
+
+    if(vexoProxyBusy) return;
+
+    let input = proxyElement("proxyUrl");
+    let frame = proxyElement("proxyFrame");
+
+    if(!input || !frame) return;
+
+    let url = input.value.trim();
+
+    if(!url){
+      url = VEXO_PROXY_DEFAULT;
+      input.value = url;
+    }
+
+    if(!/^https?:\/\//i.test(url)){
+      url = "https://" + url;
+      input.value = url;
+    }
+
+    try{
+      const parsed = new URL(url);
+
+      if(parsed.protocol !== "https:"){
+        throw new Error("Only HTTPS URLs are supported.");
+      }
+
+    }catch(e){
+      proxyError("Please enter a valid HTTPS URL.");
+      return;
+    }
+
+    if(
+      VEXO_PROXY_ENDPOINT.includes("YOUR_PROJECT_REF")
+    ){
+      proxyError(
+        "Your Supabase proxy endpoint has not been configured yet."
+      );
+      return;
+    }
+
+    vexoProxyBusy = true;
+    clearProxyError();
+    proxyLoading(true);
+
+    const loadButton = document.querySelector(
+      '#proxyPage button[onclick="loadProxy()"]'
+    );
+
+    if(loadButton){
+      loadButton.disabled = true;
+      loadButton.textContent = "Loading...";
+    }
+
+    try{
+
+      const response = await fetch(VEXO_PROXY_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          url: url
+        })
+      });
+
+      let data;
+
+      try{
+        data = await response.json();
+      }catch(e){
+        throw new Error(
+          "The proxy returned an invalid response."
+        );
+      }
+
+      if(!response.ok){
+        throw new Error(
+          data.error || "The proxy request failed."
+        );
+      }
+
+      if(!data.content){
+        throw new Error(
+          "The proxy returned no page content."
+        );
+      }
+
+      /*
+       * Render the returned HTML inside the existing iframe.
+       * This is a basic content viewer, not a full browser.
+       */
+      frame.removeAttribute("src");
+
+      frame.srcdoc = data.content;
+
+      setProxyHost(data.url || url);
+
+      if(typeof toast === "function"){
+        toast("Page loaded through VEXO.");
+      }
+
+    }catch(error){
+
+      console.error("VEXO proxy error:", error);
+
+      proxyError(
+        error.message ||
+        "The Supabase proxy could not load this page."
+      );
+
+    }finally{
+
+      vexoProxyBusy = false;
+      proxyLoading(false);
+
+      if(loadButton){
+        loadButton.disabled = false;
+        loadButton.textContent = "↻ Load";
+      }
+
+    }
+  };
+
+  /*
+   * Open the current URL in a new tab.
+   */
+  window.openProxyNewTab = function(){
+
+    const input = proxyElement("proxyUrl");
+    if(!input) return;
+
+    let url = input.value.trim();
+
+    if(!url) url = VEXO_PROXY_DEFAULT;
+
+    if(!/^https?:\/\//i.test(url)){
+      url = "https://" + url;
+    }
+
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  /*
+   * Reset the existing Web Proxy tab.
+   */
+  window.resetProxy = function(){
+
+    const input = proxyElement("proxyUrl");
+    const frame = proxyElement("proxyFrame");
+
+    if(input){
+      input.value = VEXO_PROXY_DEFAULT;
+    }
+
+    if(frame){
+      frame.removeAttribute("srcdoc");
+      frame.src = VEXO_PROXY_DEFAULT;
+    }
+
+    setProxyHost(VEXO_PROXY_DEFAULT);
+    clearProxyError();
+  };
+
+})();
+</script>
