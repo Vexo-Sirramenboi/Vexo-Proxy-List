@@ -4621,3 +4621,299 @@ const BLOCKED_WORDS = [
   setTimeout(start,1500);
 })();
 </script>
+<!-- ============================================================
+     VEXO CHAT PERSISTENCE PATCH — APPEND-ONLY
+     Fixes PFP/reply UI being reset when leaving and returning to Chat.
+     Existing code above is not modified.
+     ============================================================ -->
+<style>
+  .vexo-persist-avatar{overflow:hidden;padding:0;}
+  .vexo-persist-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+  .vexo-persist-reply{margin-bottom:7px;padding:7px 9px;border-left:3px solid var(--accent);background:rgba(124,92,255,.08);border-radius:7px;font-size:11px;cursor:pointer;}
+  .vexo-persist-reply strong{display:block;color:var(--accent2);font-size:10px;margin-bottom:2px;}
+  .vexo-persist-reply span{opacity:.72;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .vexo-persist-actions{display:flex;align-items:center;gap:5px;margin-top:5px;}
+  .vexo-persist-reply-btn{border:0;background:transparent;color:var(--muted);font-size:10px;cursor:pointer;padding:3px 5px;border-radius:5px;}
+  .vexo-persist-reply-btn:hover{color:var(--accent2);background:rgba(255,255,255,.05)}
+</style>
+<script>
+(() => {
+  "use strict";
+
+  const REPLY_KEY = "vexo-chat-reply-target";
+  const esc = v => String(v ?? "").replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;", "'":"&#039;"}[m]));
+  const initial = n => String(n || "G").trim().charAt(0).toUpperCase() || "G";
+  const clean = v => typeof cleanMessage === "function" ? cleanMessage(v || "") : String(v || "");
+  const notify = m => typeof toast === "function" ? toast(m) : console.log("[VEXO]",m);
+
+  let messages = [];
+  let profiles = new Map();
+  let rendering = false;
+  let lastChatRender = 0;
+
+  function saveReplyId(id){
+    try{ if(id) localStorage.setItem(REPLY_KEY, String(id)); else localStorage.removeItem(REPLY_KEY); }catch(e){}
+  }
+
+  function getSavedReplyId(){
+    try{return localStorage.getItem(REPLY_KEY) || "";}catch(e){return "";}
+  }
+
+  function profileFor(m){
+    const p = m?.user_id ? profiles.get(m.user_id) : null;
+    return p || null;
+  }
+
+  function nameFor(m){
+    const p = profileFor(m);
+    return p?.username || m?.username || "Guest";
+  }
+
+  function avatarHtml(m){
+    const p = profileFor(m);
+    const url = p?.avatar_url;
+    const name = nameFor(m);
+    return url
+      ? `<div class="chat-avatar vexo-persist-avatar"><img src="${esc(url)}" alt=""></div>`
+      : `<div class="chat-avatar">${esc(initial(name))}</div>`;
+  }
+
+  function canDelete(m){
+    return !!(isAdmin || (user && m.user_id === user.id));
+  }
+
+  function deleteHtml(m){
+    return canDelete(m)
+      ? `<button class="chat-delete-btn" onclick="window.deleteChatMessage('${esc(m.id)}')" title="Delete message">✕</button>`
+      : "";
+  }
+
+  function messageHtml(m, byId){
+    const self = !!(user && m.user_id === user.id);
+    const parent = m.reply_to ? byId.get(m.reply_to) : null;
+    const replyHtml = parent
+      ? `<div class="vexo-persist-reply" data-jump-id="${esc(parent.id)}"><strong>Replying to ${esc(nameFor(parent))}</strong><span>${esc(clean(parent.content))}</span></div>`
+      : "";
+    const time = m.created_at
+      ? new Date(m.created_at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})
+      : "";
+
+    return `<div class="chat-msg ${self ? "self" : ""}" id="chat-msg-${esc(m.id)}" data-vexo-persist-msg="1">
+      ${avatarHtml(m)}
+      <div class="chat-bubble">
+        <div class="chat-meta">
+          <span class="chat-user">${esc(nameFor(m))}</span>
+          <span class="chat-time">${esc(time)}</span>
+          ${deleteHtml(m)}
+        </div>
+        ${replyHtml}
+        <div class="chat-text">${esc(clean(m.content))}</div>
+        <div class="vexo-persist-actions">
+          <button type="button" class="vexo-persist-reply-btn vexo-reply-btn" data-reply-id="${esc(m.id)}">Reply</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  async function loadChatData(){
+    const {data,error} = await db.from("messages")
+      .select("*")
+      .order("created_at", {ascending:true})
+      .limit(60);
+
+    if(error){
+      console.error("VEXO persistent chat load:", error);
+      return null;
+    }
+
+    messages = data || [];
+    profiles = new Map();
+
+    const ids = [...new Set(messages.map(m => m.user_id).filter(Boolean))];
+    if(ids.length){
+      const {data:pdata,error:perr} = await db.from("profiles")
+        .select("id,username,avatar_url")
+        .in("id", ids);
+      if(perr) console.error("VEXO persistent profile load:", perr);
+      (pdata || []).forEach(p => profiles.set(p.id,p));
+    }
+
+    return messages;
+  }
+
+  function renderChat(){
+    const box = document.getElementById("chatMessages");
+    if(!box) return;
+    if(!messages.length){
+      box.innerHTML = `<div class="empty"><div class="empty-icon">CHAT</div><p>No messages yet. Say hello!</p></div>`;
+      return;
+    }
+    const byId = new Map(messages.map(m => [m.id,m]));
+    box.innerHTML = messages.map(m => messageHtml(m,byId)).join("");
+    box.scrollTop = box.scrollHeight;
+  }
+
+  async function rerenderChat(reason){
+    const box = document.getElementById("chatMessages");
+    if(!box || rendering) return;
+    rendering = true;
+    const stamp = Date.now();
+    lastChatRender = stamp;
+    try{
+      const data = await loadChatData();
+      if(data) renderChat();
+      restoreReplyTarget();
+    }catch(err){
+      console.error("VEXO chat persistence:", err);
+      notify("Could not refresh chat.");
+    }finally{
+      rendering = false;
+    }
+  }
+
+  function activateSavedReplyButton(){
+    const id = getSavedReplyId();
+    if(!id) return false;
+    const btn = document.querySelector(`.vexo-persist-reply-btn[data-reply-id="${CSS.escape(id)}"]`);
+    if(!btn) return false;
+    btn.click();
+    return true;
+  }
+
+  function restoreReplyTarget(){
+    const id = getSavedReplyId();
+    if(!id) return;
+    if(activateSavedReplyButton()) return;
+
+    // The existing addon may have rendered the enhanced button instead.
+    const existing = document.querySelector(`.vexo-reply-btn[data-reply-id="${CSS.escape(id)}"]`);
+    if(existing){ existing.click(); return; }
+
+    // Last resort: rebuild the reply bar ourselves so the target survives navigation.
+    const m = messages.find(x => String(x.id) === String(id));
+    if(!m) return;
+    const form = document.getElementById("chatForm");
+    if(!form) return;
+    let bar = document.getElementById("vexoReplyPersistBar");
+    if(!bar){
+      bar=document.createElement("div");
+      bar.id="vexoReplyPersistBar";
+      bar.className="vexo-reply-bar show";
+      bar.style.display="flex";
+      bar.style.alignItems="center";
+      bar.style.gap="10px";
+      bar.innerHTML=`<div class="vexo-reply-bar-content"><div class="vexo-reply-bar-title">Replying to <span id="vexoPersistReplyName"></span></div><div class="vexo-reply-bar-text" id="vexoPersistReplyText"></div></div><button type="button" class="vexo-reply-cancel" id="vexoPersistReplyCancel">×</button>`;
+      form.parentElement.insertBefore(bar,form);
+      document.getElementById("vexoPersistReplyCancel").onclick=()=>{saveReplyId("");bar.remove();};
+    }
+    document.getElementById("vexoPersistReplyName").textContent=nameFor(m);
+    document.getElementById("vexoPersistReplyText").textContent=clean(m.content);
+  }
+
+  function patchExistingEnhancedReplyBar(){
+    const id = getSavedReplyId();
+    if(!id) return;
+    const btn = document.querySelector(`.vexo-reply-btn[data-reply-id="${CSS.escape(id)}"]`);
+    if(btn) btn.click();
+  }
+
+  // Remember reply choice and cancellation without replacing existing handlers.
+  document.addEventListener("click", e => {
+    const replyBtn = e.target.closest(".vexo-reply-btn, .vexo-persist-reply-btn");
+    if(replyBtn){ saveReplyId(replyBtn.dataset.replyId || ""); return; }
+
+    if(e.target.closest(".vexo-reply-cancel")){
+      // Let the existing handler perform its work, then clear persisted state.
+      setTimeout(()=>saveReplyId(""),0);
+      return;
+    }
+
+    const jump = e.target.closest("[data-jump-id]");
+    if(jump){
+      const el=document.getElementById(`chat-msg-${jump.dataset.jumpId}`);
+      if(el){
+        el.scrollIntoView({behavior:"smooth",block:"center"});
+        el.style.boxShadow="0 0 0 2px var(--accent)";
+        setTimeout(()=>el.style.boxShadow="",1200);
+      }
+    }
+  });
+
+  document.addEventListener("submit", e => {
+    if(e.target?.id === "chatForm"){
+      // A submitted message consumes the current reply target.
+      setTimeout(()=>saveReplyId(""),120);
+    }
+  }, true);
+
+  // Wrap the original chat page function. The original code is left intact;
+  // this simply repairs the markup it recreates when the page is opened again.
+  const originalShowChatPage = window.showChatPage;
+  if(typeof originalShowChatPage === "function" && !window.__vexoPersistentChatShowPatched){
+    window.__vexoPersistentChatShowPatched = true;
+    window.showChatPage = function(){
+      const result = originalShowChatPage.apply(this,arguments);
+      setTimeout(()=>rerenderChat("showChatPage"),60);
+      setTimeout(()=>rerenderChat("showChatPage-late"),350);
+      return result;
+    };
+  }
+
+  // Also watch page visibility/navigation because some code paths call showPage().
+  const originalShowPage = window.showPage;
+  if(typeof originalShowPage === "function" && !window.__vexoPersistentChatPagePatched){
+    window.__vexoPersistentChatPagePatched = true;
+    window.showPage = function(name){
+      const result = originalShowPage.apply(this,arguments);
+      if(name === "chat"){
+        setTimeout(()=>rerenderChat("showPage-chat"),60);
+        setTimeout(()=>rerenderChat("showPage-chat-late"),350);
+      } else {
+        // Keep saved reply target/PFP state in browser storage while navigating.
+        // No DOM work is necessary here.
+      }
+      return result;
+    };
+  }
+
+  // Keep the chat corrected if another script rewrites chatMessages.
+  const observer = new MutationObserver(() => {
+    bindChatNav();
+    const box=document.getElementById("chatMessages");
+    const chat=document.getElementById("chatPage");
+    if(!box || !chat || chat.classList.contains("hidden")) return;
+    const plainNodes = box.querySelectorAll(".chat-msg:not([data-vexo-persist-msg]):not([data-vexo-message])").length;
+    if(plainNodes > 0 && !rendering){
+      clearTimeout(window.__vexoChatPersistTimer);
+      window.__vexoChatPersistTimer=setTimeout(()=>rerenderChat("mutation"),30);
+    }
+  });
+
+  function bindChatNav(){
+    document.querySelectorAll('.nav button[data-page="chat"]').forEach(btn => {
+      if(btn.dataset.vexoPersistNavBound !== "1"){
+        // Preserve the original Chat navigation handler. The original
+        // showChatPage() lives inside its own script scope, so it is not
+        // available as window.showChatPage.
+        const originalClick = btn.onclick;
+        btn.dataset.vexoPersistNavBound = "1";
+        btn.onclick = function(event){
+          if(typeof originalClick === "function") originalClick.call(this,event);
+          setTimeout(()=>rerenderChat("chat-nav"),60);
+          setTimeout(()=>rerenderChat("chat-nav-late"),350);
+        };
+      }
+    });
+  }
+
+  function start(){
+    bindChatNav();
+    const box=document.getElementById("chatMessages");
+    if(box) setTimeout(()=>rerenderChat("start"),80);
+  }
+
+  if(document.body) observer.observe(document.body,{childList:true,subtree:true});
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded",start); else start();
+  setTimeout(start,500);
+})();
+</script>
