@@ -9,122 +9,123 @@
   --accent:#7c5cff;
   --accent2:#19d3ff;
   --pink:#ff3f9d;
+  --scene:#050711;
+  --grid1:rgba(124,92,255,.08);
+  --grid2:rgba(25,211,255,.07);
+  --orb1:#7c5cff;
+  --orb2:#19d3ff;
+  --orb3:#ff3f9d;
+  --glow1:.16;
+  --glow2:.16;
+  --glow3:.16;
 }
 *{box-sizing:border-box}
-html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#050711;
-}
-body{
-  position:relative;
-}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050711}
+body{position:relative}
 #scene{
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(circle at 50% 20%,rgba(124,92,255,.16),transparent 35%),
-    linear-gradient(120deg,#050711,#0a0d1c 55%,#070914);
-  transition:background .35s ease;
+  position:absolute;inset:0;background:var(--scene);transition:background .5s ease;
 }
 #grid{
-  position:absolute;
-  inset:-20%;
+  position:absolute;inset:-20%;
   background-image:
-    linear-gradient(rgba(124,92,255,.08) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(25,211,255,.07) 1px,transparent 1px);
+    linear-gradient(var(--grid1) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid2) 1px,transparent 1px);
   background-size:55px 55px;
   transform:perspective(600px) rotateX(58deg) translateY(20%);
   animation:drift 18s linear infinite;
   -webkit-mask-image:linear-gradient(transparent,#000 25%,#000 70%,transparent);
   mask-image:linear-gradient(transparent,#000 25%,#000 70%,transparent);
-  opacity:1;
-  transition:opacity .35s ease;
+  opacity:1;transition:opacity .35s ease,background-image .5s ease;
 }
 .orb{
-  position:absolute;
-  width:260px;
-  height:260px;
-  border-radius:50%;
-  filter:blur(45px);
-  opacity:.16;
-  animation:float 12s ease-in-out infinite;
-  transition:opacity .35s ease;
+  position:absolute;width:260px;height:260px;border-radius:50%;filter:blur(45px);
+  animation:float 12s ease-in-out infinite;transition:background .5s ease,opacity .5s ease,filter .5s ease;
 }
-.o1{background:#7c5cff;left:8%;top:15%}
-.o2{background:#19d3ff;right:7%;top:42%;animation-delay:-4s}
-.o3{background:#ff3f9d;left:45%;bottom:-80px;animation-delay:-8s}
-@keyframes drift{
-  to{transform:perspective(600px) rotateX(58deg) translateY(30%)}
-}
-@keyframes float{
-  50%{transform:translate(40px,-35px) scale(1.15)}
-}
-@media(prefers-reduced-motion:reduce){
-  #grid,.orb{animation:none!important}
-}
+.o1{background:var(--orb1);left:8%;top:15%;opacity:var(--glow1)}
+.o2{background:var(--orb2);right:7%;top:42%;opacity:var(--glow2);animation-delay:-4s}
+.o3{background:var(--orb3);left:45%;bottom:-80px;opacity:var(--glow3);animation-delay:-8s}
+#particles{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .5s ease}
+.particle{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--accent2);box-shadow:0 0 9px var(--accent2);animation:twinkle 3.5s ease-in-out infinite}
+#aurora{position:absolute;inset:-20%;pointer-events:none;opacity:0;transition:opacity .5s ease;background:radial-gradient(ellipse at 20% 20%,rgba(0,245,212,.12),transparent 40%),radial-gradient(ellipse at 80% 25%,rgba(124,92,255,.12),transparent 45%),radial-gradient(ellipse at 50% 80%,rgba(25,211,255,.09),transparent 45%);filter:blur(24px);animation:aurora 14s ease-in-out infinite alternate}
+@keyframes drift{to{transform:perspective(600px) rotateX(58deg) translateY(30%)}}
+@keyframes float{50%{transform:translate(40px,-35px) scale(1.15)}}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.8)}50%{opacity:1;transform:scale(1.4)}}
+@keyframes aurora{from{transform:translate3d(-2%,-1%,0) scale(1)}to{transform:translate3d(2%,2%,0) scale(1.08)}}
+@media(prefers-reduced-motion:reduce){#grid,.orb,.particle,#aurora{animation:none!important}}
 </style>
 </head>
 <body>
 <div id="scene"></div>
 <div id="grid"></div>
+<div id="aurora"></div>
+<div id="particles"></div>
 <div class="orb o1"></div>
 <div class="orb o2"></div>
 <div class="orb o3"></div>
 
 <script>
 (() => {
-  const scene = document.getElementById("scene");
-  const grid = document.getElementById("grid");
-  const orbs = document.querySelectorAll(".orb");
+  const scene=document.getElementById("scene");
+  const grid=document.getElementById("grid");
+  const aurora=document.getElementById("aurora");
+  const particles=document.getElementById("particles");
+  const orbs=[...document.querySelectorAll(".orb")];
 
-  function apply(mode){
-    mode = ["grid","plain","stars"].includes(mode) ? mode : "grid";
+  const THEMES={
+    grid:{scene:'radial-gradient(circle at 50% 20%,rgba(124,92,255,.16),transparent 35%),linear-gradient(120deg,#050711,#0a0d1c 55%,#070914)',grid1:'rgba(124,92,255,.08)',grid2:'rgba(25,211,255,.07)',orb:['#7c5cff','#19d3ff','#ff3f9d'],glow:[.16,.16,.16],stars:false,aurora:false},
+    plain:{scene:'#070914',grid1:'transparent',grid2:'transparent',orb:['#7c5cff','#19d3ff','#ff3f9d'],glow:[0,0,0],stars:false,aurora:false},
+    stars:{scene:'radial-gradient(circle at 20% 20%,rgba(124,92,255,.2),transparent 25%),radial-gradient(circle at 80% 60%,rgba(25,211,255,.14),transparent 25%),#03040a',grid1:'rgba(124,92,255,.025)',grid2:'rgba(25,211,255,.025)',orb:['#7c5cff','#19d3ff','#ff3f9d'],glow:[.16,.16,.16],stars:true,aurora:false},
+    'mocha-midnight':{scene:'radial-gradient(circle at 15% 15%,rgba(176,122,90,.22),transparent 28%),radial-gradient(circle at 85% 75%,rgba(216,164,126,.12),transparent 30%),linear-gradient(120deg,#120e11,#17121b 55%,#0a0b12)',grid1:'rgba(176,122,90,.045)',grid2:'rgba(216,164,126,.035)',orb:['#b07a5a','#d8a47e','#7c5cff'],glow:[.18,.13,.08],stars:false,aurora:false},
+    'midnight-neon':{scene:'radial-gradient(circle at 20% 20%,rgba(139,92,246,.24),transparent 28%),radial-gradient(circle at 80% 70%,rgba(34,211,238,.16),transparent 30%),#03040a',grid1:'rgba(139,92,246,.08)',grid2:'rgba(34,211,238,.08)',orb:['#8b5cf6','#22d3ee','#ff3f9d'],glow:[.19,.16,.12],stars:true,aurora:false},
+    neon:{scene:'radial-gradient(circle at 35% 25%,rgba(0,245,212,.17),transparent 30%),radial-gradient(circle at 80% 65%,rgba(0,187,249,.14),transparent 34%),#031014',grid1:'rgba(0,245,212,.08)',grid2:'rgba(0,187,249,.08)',orb:['#00f5d4','#00bbf9','#7c5cff'],glow:[.16,.15,.1],stars:true,aurora:false},
+    'neon-pink':{scene:'radial-gradient(circle at 20% 20%,rgba(255,63,157,.2),transparent 28%),radial-gradient(circle at 80% 65%,rgba(255,122,191,.13),transparent 30%),#12040d',grid1:'rgba(255,63,157,.07)',grid2:'rgba(255,122,191,.06)',orb:['#ff3f9d','#ff7abf','#7c5cff'],glow:[.19,.14,.11],stars:true,aurora:false},
+    'cyber-ice':{scene:'radial-gradient(circle at 25% 20%,rgba(56,189,248,.17),transparent 30%),linear-gradient(135deg,#031018,#07131c 55%,#061015)',grid1:'rgba(56,189,248,.08)',grid2:'rgba(165,243,252,.06)',orb:['#38bdf8','#a5f3fc','#6366f1'],glow:[.16,.12,.09],stars:false,aurora:false},
+    ocean:{scene:'radial-gradient(circle at 20% 25%,rgba(14,165,233,.2),transparent 30%),radial-gradient(circle at 80% 65%,rgba(20,184,166,.15),transparent 32%),#031018',grid1:'rgba(14,165,233,.075)',grid2:'rgba(20,184,166,.065)',orb:['#0ea5e9','#14b8a6','#38bdf8'],glow:[.17,.14,.1],stars:false,aurora:false},
+    forest:{scene:'radial-gradient(circle at 20% 20%,rgba(34,197,94,.17),transparent 30%),radial-gradient(circle at 80% 75%,rgba(132,204,22,.1),transparent 30%),#061008',grid1:'rgba(34,197,94,.06)',grid2:'rgba(132,204,22,.05)',orb:['#22c55e','#84cc16','#14b8a6'],glow:[.16,.12,.08],stars:false,aurora:true},
+    ember:{scene:'radial-gradient(circle at 20% 20%,rgba(249,115,22,.19),transparent 30%),radial-gradient(circle at 80% 70%,rgba(239,68,68,.14),transparent 32%),#120705',grid1:'rgba(249,115,22,.065)',grid2:'rgba(239,68,68,.055)',orb:['#f97316','#ef4444','#f59e0b'],glow:[.17,.15,.1],stars:false,aurora:false},
+    'rose-gold':{scene:'radial-gradient(circle at 18% 18%,rgba(232,121,168,.19),transparent 30%),radial-gradient(circle at 80% 70%,rgba(246,184,200,.12),transparent 32%),#11080e',grid1:'rgba(232,121,168,.065)',grid2:'rgba(246,184,200,.05)',orb:['#e879a8','#f6b8c8','#b76e79'],glow:[.17,.12,.08],stars:false,aurora:false},
+    monochrome:{scene:'radial-gradient(circle at 50% 20%,rgba(212,212,216,.08),transparent 35%),#070709',grid1:'rgba(212,212,216,.045)',grid2:'rgba(161,161,170,.04)',orb:['#d4d4d8','#a1a1aa','#71717a'],glow:[.1,.08,.06],stars:false,aurora:false},
+    'violet-storm':{scene:'radial-gradient(circle at 20% 15%,rgba(168,85,247,.21),transparent 30%),radial-gradient(circle at 80% 70%,rgba(99,102,241,.16),transparent 32%),#070514',grid1:'rgba(168,85,247,.075)',grid2:'rgba(99,102,241,.065)',orb:['#a855f7','#6366f1','#818cf8'],glow:[.18,.14,.11],stars:true,aurora:false},
+    aurora:{scene:'radial-gradient(circle at 50% 20%,rgba(34,197,94,.12),transparent 32%),radial-gradient(circle at 25% 60%,rgba(34,211,238,.12),transparent 28%),#030a0a',grid1:'rgba(34,211,238,.035)',grid2:'rgba(34,197,94,.035)',orb:['#22c55e','#22d3ee','#8b5cf6'],glow:[.12,.12,.1],stars:true,aurora:true},
+    'cyber-grid':{scene:'radial-gradient(circle at 50% 15%,rgba(0,245,212,.13),transparent 30%),linear-gradient(120deg,#03060a,#071119 60%,#02090e)',grid1:'rgba(0,245,212,.11)',grid2:'rgba(34,211,238,.09)',orb:['#00f5d4','#22d3ee','#7c5cff'],glow:[.18,.14,.1],stars:false,aurora:false}
+  };
 
-    if(mode === "grid"){
-      grid.style.display = "block";
-      grid.style.opacity = "1";
-      orbs.forEach(o => o.style.opacity = ".16");
-      scene.style.background =
-        "radial-gradient(circle at 50% 20%,rgba(124,92,255,.16),transparent 35%)," +
-        "linear-gradient(120deg,#050711,#0a0d1c 55%,#070914)";
+  function makeParticles(){
+    if(particles.children.length) return;
+    for(let i=0;i<55;i++){
+      const p=document.createElement('span');
+      p.className='particle';
+      p.style.left=(Math.random()*100)+'%';
+      p.style.top=(Math.random()*100)+'%';
+      p.style.animationDelay=(-Math.random()*3.5)+'s';
+      p.style.animationDuration=(2.5+Math.random()*3.5)+'s';
+      particles.appendChild(p);
     }
-
-    if(mode === "plain"){
-      grid.style.display = "none";
-      orbs.forEach(o => o.style.opacity = "0");
-      scene.style.background = "#070914";
-    }
-
-    if(mode === "stars"){
-      grid.style.display = "block";
-      grid.style.opacity = ".18";
-      orbs.forEach(o => o.style.opacity = ".16");
-      scene.style.background =
-        "radial-gradient(circle at 20% 20%,rgba(124,92,255,.2),transparent 25%)," +
-        "radial-gradient(circle at 80% 60%,rgba(25,211,255,.14),transparent 25%),#03040a";
-    }
-
-    try{ parent.localStorage.setItem("vexo-bg", mode); }catch(e){}
   }
 
-  window.addEventListener("message", event => {
-    if(!event.data || event.data.type !== "VEXO_BACKGROUND") return;
+  function apply(mode){
+    mode=THEMES[mode] ? mode : 'grid';
+    const t=THEMES[mode];
+    scene.style.background=t.scene;
+    grid.style.backgroundImage=`linear-gradient(${t.grid1} 1px,transparent 1px),linear-gradient(90deg,${t.grid2} 1px,transparent 1px)`;
+    grid.style.display=['plain'].includes(mode) ? 'none' : 'block';
+    grid.style.opacity=mode==='stars' ? '.18' : mode==='plain' ? '0' : '1';
+    orbs.forEach((o,i)=>{o.style.background=t.orb[i];o.style.opacity=t.glow[i]});
+    particles.style.opacity=t.stars ? '.7' : '0';
+    aurora.style.opacity=t.aurora ? '.85' : '0';
+    try{parent.localStorage.setItem('vexo-bg',mode)}catch(e){}
+  }
+
+  makeParticles();
+  window.addEventListener('message',event=>{
+    if(!event.data || event.data.type!=='VEXO_BACKGROUND') return;
     apply(event.data.mode);
   });
 
-  let initial = "grid";
-  try{
-    initial = parent.localStorage.getItem("vexo-bg") || "grid";
-  }catch(e){}
-
+  let initial='grid';
+  try{initial=parent.localStorage.getItem('vexo-bg')||'grid'}catch(e){}
   apply(initial);
-
-  try{
-    parent.postMessage({type:"VEXO_BACKGROUND_READY"}, "*");
-  }catch(e){}
+  try{parent.postMessage({type:'VEXO_BACKGROUND_READY'},'*')}catch(e){}
 })();
 </script>
 </body>
