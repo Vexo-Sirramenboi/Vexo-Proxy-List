@@ -4917,3 +4917,758 @@ const BLOCKED_WORDS = [
   setTimeout(start,500);
 })();
 </script>
+
+
+<!-- VEXO CUSTOM COLOR + CLOCK + BATTERY — APPEND-ONLY -->
+<style>
+.vexo-custom-color-wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px;}
+.vexo-color-picker{width:58px;height:38px;padding:3px;border-radius:10px;border:1px solid var(--line2);background:rgba(255,255,255,.04);cursor:pointer;}
+.vexo-color-value{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--muted);}
+.vexo-color-preview{width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.18);box-shadow:0 0 18px color-mix(in srgb,var(--accent) 45%,transparent);}
+.vexo-top-widget{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.035);min-height:36px;backdrop-filter:blur(12px);}
+.vexo-top-widget-icon{display:grid;place-items:center;width:20px;height:20px;color:var(--accent2);font-size:12px;}
+.vexo-clock-main{font-size:12px;font-weight:800;letter-spacing:.03em;white-space:nowrap;}
+.vexo-clock-date{font-size:9px;color:var(--muted);margin-top:1px;white-space:nowrap;}
+.vexo-battery-bar{width:34px;height:14px;border:1.5px solid currentColor;border-radius:4px;position:relative;padding:2px;box-sizing:border-box;}
+.vexo-battery-bar::after{content:"";position:absolute;right:-4px;top:3px;width:3px;height:6px;border-radius:0 2px 2px 0;background:currentColor;}
+.vexo-battery-fill{height:100%;width:50%;border-radius:2px;background:currentColor;transition:width .35s ease;}
+.vexo-battery-text{font-size:11px;font-weight:800;white-space:nowrap;}
+.vexo-battery-sub{font-size:9px;color:var(--muted);margin-top:1px;white-space:nowrap;}
+.vexo-widget-hidden{display:none!important;}
+@media(max-width:900px){.vexo-clock-date,.vexo-battery-sub{display:none;}.vexo-top-widget{padding:6px 8px;}.top-right{gap:6px;}}
+@media(max-width:650px){.vexo-clock-widget{display:none;}.vexo-battery-widget{display:none;}}
+</style>
+<script>
+(() => {
+  const CUSTOM_COLOR_KEY = "vexo-custom-accent";
+  const WIDGET_KEY = "vexo-system-widgets";
+
+  const defaultWidgetSettings = {
+    clock: true,
+    battery: true
+  };
+
+  function getWidgetSettings(){
+    try{
+      const x = JSON.parse(localStorage.getItem(WIDGET_KEY));
+      return {...defaultWidgetSettings, ...(x && typeof x === "object" ? x : {})};
+    }catch(e){
+      return {...defaultWidgetSettings};
+    }
+  }
+
+  function saveWidgetSettings(settings){
+    localStorage.setItem(WIDGET_KEY, JSON.stringify(settings));
+  }
+
+  function hexToHsl(hex){
+    let h = String(hex || "").replace("#", "");
+    if(h.length === 3) h = h.split("").map(x => x+x).join("");
+    const r = parseInt(h.slice(0,2),16)/255;
+    const g = parseInt(h.slice(2,4),16)/255;
+    const b = parseInt(h.slice(4,6),16)/255;
+    const max = Math.max(r,g,b), min = Math.min(r,g,b);
+    let hh = 0, s = 0, l = (max + min) / 2;
+    if(max !== min){
+      const d = max - min;
+      s = l > .5 ? d / (2 - max - min) : d / (max + min);
+      switch(max){
+        case r: hh = (g-b)/d + (g < b ? 6 : 0); break;
+        case g: hh = (b-r)/d + 2; break;
+        default: hh = (r-g)/d + 4;
+      }
+      hh /= 6;
+    }
+    return [hh*360,s*100,l*100];
+  }
+
+  function hslToHex(h,s,l){
+    s/=100; l/=100;
+    const c=(1-Math.abs(2*l-1))*s;
+    const x=c*(1-Math.abs((h/60)%2-1));
+    const m=l-c/2;
+    let r=0,g=0,b=0;
+    if(h<60){r=c;g=x;}else if(h<120){r=x;g=c;}else if(h<180){g=c;b=x;}else if(h<240){g=x;b=c;}else if(h<300){r=x;b=c;}else{r=c;b=x;}
+    return "#"+[r,g,b].map(v=>Math.round((v+m)*255).toString(16).padStart(2,"0")).join("");
+  }
+
+  function validHex(v){
+    return /^#[0-9a-f]{6}$/i.test(v || "");
+  }
+
+  function applyCustomColor(hex){
+    if(!validHex(hex)) return;
+    const [h,s,l] = hexToHsl(hex);
+    const accent2 = hslToHex((h+42)%360, Math.min(100,s+8), Math.min(78, Math.max(48,l+8)));
+    const pink = hslToHex((h+310)%360, Math.min(100,s+10), Math.min(76, Math.max(46,l+4)));
+    const root = document.documentElement;
+    root.style.setProperty("--accent", hex.toLowerCase());
+    root.style.setProperty("--accent2", accent2);
+    root.style.setProperty("--pink", pink);
+    root.style.setProperty("--grad", `linear-gradient(135deg,${hex},${accent2})`);
+  }
+
+  function clearCustomColor(){
+    localStorage.removeItem(CUSTOM_COLOR_KEY);
+  }
+
+  function buildCustomColorSetting(){
+    const settingsPage = document.getElementById("settingsPage");
+    const panel = settingsPage?.querySelector(".panel");
+    if(!panel || document.getElementById("vexoCustomColorSetting")) return;
+
+    const wrap = document.createElement("div");
+    wrap.id = "vexoCustomColorSetting";
+    wrap.innerHTML = `
+      <div class="set-head">Custom color</div>
+      <div class="toggle-row" style="align-items:center;">
+        <div>
+          <strong>Choose any accent color</strong>
+          <div class="muted-sm">Use the color picker to make VEXO match your style.</div>
+        </div>
+        <div class="vexo-custom-color-wrap">
+          <div class="vexo-color-preview" id="vexoCustomColorPreview"></div>
+          <input class="vexo-color-picker" id="vexoCustomColorPicker" type="color" value="#7c5cff" aria-label="Choose custom VEXO accent color">
+          <span class="vexo-color-value" id="vexoCustomColorValue">#7C5CFF</span>
+          <button class="btn mini" type="button" id="vexoCustomColorReset">Use preset</button>
+        </div>
+      </div>
+    `;
+
+    const accentSwatches = document.getElementById("accentSwatches");
+    if(accentSwatches?.parentElement){
+      accentSwatches.parentElement.insertAdjacentElement("afterend", wrap);
+    }else{
+      panel.prepend(wrap);
+    }
+
+    const picker = document.getElementById("vexoCustomColorPicker");
+    const valueEl = document.getElementById("vexoCustomColorValue");
+    const preview = document.getElementById("vexoCustomColorPreview");
+    const saved = localStorage.getItem(CUSTOM_COLOR_KEY);
+    const initial = validHex(saved) ? saved : getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#7c5cff";
+
+    picker.value = validHex(initial) ? initial : "#7c5cff";
+    valueEl.textContent = picker.value.toUpperCase();
+    preview.style.background = picker.value;
+
+    picker.addEventListener("input", () => {
+      const hex = picker.value;
+      localStorage.setItem(CUSTOM_COLOR_KEY, hex);
+      applyCustomColor(hex);
+      valueEl.textContent = hex.toUpperCase();
+      preview.style.background = hex;
+      document.querySelectorAll(".swatch-btn").forEach(x => x.classList.remove("active"));
+    });
+
+    document.getElementById("vexoCustomColorReset")?.addEventListener("click", () => {
+      clearCustomColor();
+      const preset = "#7c5cff";
+      picker.value = preset;
+      valueEl.textContent = preset.toUpperCase();
+      preview.style.background = preset;
+      document.querySelector('.swatch-btn[data-accent="#7c5cff"]')?.click();
+      toast("Preset colors restored.");
+    });
+  }
+
+  // Built-in swatches should intentionally exit custom-color mode.
+  document.addEventListener("click", e => {
+    const swatch = e.target.closest?.(".swatch-btn");
+    if(swatch) clearCustomColor();
+  }, true);
+
+  function applySavedCustomColor(){
+    const saved = localStorage.getItem(CUSTOM_COLOR_KEY);
+    if(validHex(saved)) applyCustomColor(saved);
+  }
+
+  function injectSystemWidgets(){
+    const topRight = document.querySelector(".top-right");
+    if(!topRight) return;
+    if(!document.getElementById("vexoClockWidget")){
+      const clock = document.createElement("div");
+      clock.id = "vexoClockWidget";
+      clock.className = "vexo-top-widget vexo-clock-widget";
+      clock.innerHTML = `
+        <div class="vexo-top-widget-icon" aria-hidden="true">◷</div>
+        <div>
+          <div class="vexo-clock-main" id="vexoClockTime">--:--:--</div>
+          <div class="vexo-clock-date" id="vexoClockDate">Loading date...</div>
+        </div>`;
+      topRight.insertBefore(clock, topRight.querySelector(".status") || null);
+    }
+
+    if(!document.getElementById("vexoBatteryWidget")){
+      const battery = document.createElement("div");
+      battery.id = "vexoBatteryWidget";
+      battery.className = "vexo-top-widget vexo-battery-widget";
+      battery.innerHTML = `
+        <div class="vexo-top-widget-icon" id="vexoBatteryIcon" aria-hidden="true">
+          <div class="vexo-battery-bar"><div class="vexo-battery-fill" id="vexoBatteryFill"></div></div>
+        </div>
+        <div>
+          <div class="vexo-battery-text" id="vexoBatteryText">Battery —</div>
+          <div class="vexo-battery-sub" id="vexoBatterySub">Status unavailable</div>
+        </div>`;
+      topRight.insertBefore(battery, topRight.querySelector(".status") || null);
+    }
+
+    updateWidgetVisibility();
+    updateClock();
+    startBatteryMonitor();
+  }
+
+  function updateWidgetVisibility(){
+    const s = getWidgetSettings();
+    document.getElementById("vexoClockWidget")?.classList.toggle("vexo-widget-hidden", !s.clock);
+    document.getElementById("vexoBatteryWidget")?.classList.toggle("vexo-widget-hidden", !s.battery);
+  }
+
+  function updateClock(){
+    const now = new Date();
+    const time = now.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+    const date = now.toLocaleDateString([], {weekday:"short", month:"short", day:"numeric"});
+    const t = document.getElementById("vexoClockTime");
+    const d = document.getElementById("vexoClockDate");
+    if(t) t.textContent = time;
+    if(d) d.textContent = date;
+  }
+
+  let batteryStarted = false;
+  async function startBatteryMonitor(){
+    if(batteryStarted) return;
+    batteryStarted = true;
+
+    if(!navigator.getBattery){
+      const text = document.getElementById("vexoBatteryText");
+      const sub = document.getElementById("vexoBatterySub");
+      if(text) text.textContent = "Battery unavailable";
+      if(sub) sub.textContent = "Browser does not expose battery data";
+      return;
+    }
+
+    try{
+      const battery = await navigator.getBattery();
+      const render = () => {
+        const pct = Math.round((battery.level || 0) * 100);
+        const charging = !!battery.charging;
+        const fill = document.getElementById("vexoBatteryFill");
+        const text = document.getElementById("vexoBatteryText");
+        const sub = document.getElementById("vexoBatterySub");
+        if(fill) fill.style.width = `${pct}%`;
+        if(text) text.textContent = `Battery ${pct}%`;
+
+        let detail = charging ? "Charging" : "On battery";
+        const secs = charging ? battery.chargingTime : battery.dischargingTime;
+        if(Number.isFinite(secs) && secs > 0 && secs < 8640000){
+          const mins = Math.round(secs / 60);
+          const hrs = Math.floor(mins / 60);
+          const rem = mins % 60;
+          const eta = hrs ? `${hrs}h ${rem}m` : `${Math.max(1,rem)}m`;
+          detail += charging ? ` · ${eta} to full` : ` · ~${eta} left`;
+        }
+        if(sub) sub.textContent = detail;
+      };
+
+      render();
+      ["chargingchange","levelchange","chargingtimechange","dischargingtimechange"].forEach(evt => battery.addEventListener(evt, render));
+    }catch(err){
+      const text = document.getElementById("vexoBatteryText");
+      const sub = document.getElementById("vexoBatterySub");
+      if(text) text.textContent = "Battery unavailable";
+      if(sub) sub.textContent = "Permission or browser limitation";
+    }
+  }
+
+  function injectWidgetSettings(){
+    const settingsPage = document.getElementById("settingsPage");
+    const panel = settingsPage?.querySelector(".panel");
+    if(!panel || document.getElementById("vexoWidgetSettings")) return;
+
+    const box = document.createElement("div");
+    box.id = "vexoWidgetSettings";
+    box.innerHTML = `
+      <div class="set-head">System widgets</div>
+      <div class="settings-list">
+        <div class="toggle-row">
+          <div><strong>Top-right clock</strong><div class="muted-sm">Show your local time and date in the header.</div></div>
+          <label class="switch"><input type="checkbox" id="vexoSetClock"><i></i></label>
+        </div>
+        <div class="toggle-row">
+          <div><strong>Battery status</strong><div class="muted-sm">Show battery percentage, charging state, and estimate when available.</div></div>
+          <label class="switch"><input type="checkbox" id="vexoSetBattery"><i></i></label>
+        </div>
+      </div>
+    `;
+
+    const backup = panel.querySelector(".set-head:last-of-type");
+    if(backup) backup.insertAdjacentElement("beforebegin", box);
+    else panel.appendChild(box);
+
+    const settings = getWidgetSettings();
+    const clock = document.getElementById("vexoSetClock");
+    const battery = document.getElementById("vexoSetBattery");
+    if(clock) clock.checked = settings.clock;
+    if(battery) battery.checked = settings.battery;
+
+    clock?.addEventListener("change", e => {
+      const s = getWidgetSettings(); s.clock = e.target.checked; saveWidgetSettings(s); updateWidgetVisibility();
+    });
+    battery?.addEventListener("change", e => {
+      const s = getWidgetSettings(); s.battery = e.target.checked; saveWidgetSettings(s); updateWidgetVisibility();
+    });
+  }
+
+  function start(){
+    buildCustomColorSetting();
+    injectWidgetSettings();
+    injectSystemWidgets();
+    applySavedCustomColor();
+  }
+
+  setInterval(updateClock, 1000);
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+  setTimeout(start, 400);
+  setTimeout(start, 1200);
+  setTimeout(start, 2500);
+})();
+</script>
+
+<!-- VEXO SAVED THEMES — APPEND-ONLY -->
+<style>
+.vexo-saved-themes{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);}
+.vexo-saved-theme-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+.vexo-saved-theme-actions{display:flex;gap:7px;flex-wrap:wrap;}
+.vexo-saved-theme-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;}
+.vexo-saved-theme-card{position:relative;padding:12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.025);overflow:hidden;}
+.vexo-saved-theme-card::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--theme-accent,var(--accent));}
+.vexo-saved-theme-top{display:flex;align-items:center;gap:9px;min-width:0;}
+.vexo-saved-theme-dot{width:30px;height:30px;border-radius:9px;flex:0 0 auto;border:1px solid rgba(255,255,255,.18);box-shadow:0 0 16px var(--theme-accent,var(--accent));}
+.vexo-saved-theme-name{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vexo-saved-theme-info{margin-top:7px;font-size:9px;color:var(--muted);line-height:1.55;}
+.vexo-saved-theme-card-actions{display:flex;gap:6px;margin-top:9px;}
+.vexo-saved-theme-card-actions .btn{flex:1;min-width:0;}
+.vexo-saved-theme-empty{padding:14px;border:1px dashed var(--line2);border-radius:12px;color:var(--muted);font-size:11px;text-align:center;}
+@media(max-width:650px){.vexo-saved-theme-head{align-items:flex-start;flex-direction:column;}.vexo-saved-theme-actions{width:100%;}.vexo-saved-theme-actions .btn{flex:1;}}
+</style>
+<script>
+(() => {
+  const SAVED_THEME_KEY = "vexo-saved-themes";
+
+  function readThemes(){
+    try{
+      const data = JSON.parse(localStorage.getItem(SAVED_THEME_KEY));
+      return Array.isArray(data) ? data : [];
+    }catch(e){
+      return [];
+    }
+  }
+
+  function writeThemes(themes){
+    localStorage.setItem(SAVED_THEME_KEY, JSON.stringify(themes));
+  }
+
+  function getCurrentTheme(){
+    const picker = document.getElementById("vexoCustomColorPicker");
+    const accent = (picker?.value || getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#7c5cff").toLowerCase();
+    const bg = localStorage.getItem("vexo-bg") || "grid";
+    let widgets = {clock:true,battery:true};
+    try{
+      widgets = {...widgets,...JSON.parse(localStorage.getItem("vexo-system-widgets") || "{}")};
+    }catch(e){}
+    return {
+      id: "theme_" + Date.now() + "_" + Math.random().toString(36).slice(2,8),
+      name: "Saved Theme",
+      accent,
+      background: bg,
+      clock: !!widgets.clock,
+      battery: !!widgets.battery,
+      created_at: new Date().toISOString()
+    };
+  }
+
+  function applyTheme(theme){
+    if(!theme) return;
+
+    const picker = document.getElementById("vexoCustomColorPicker");
+    if(picker && /^#[0-9a-f]{6}$/i.test(theme.accent || "")){
+      picker.value = theme.accent;
+      picker.dispatchEvent(new Event("input", {bubbles:true}));
+    }else if(/^#[0-9a-f]{6}$/i.test(theme.accent || "")){
+      localStorage.setItem("vexo-custom-accent", theme.accent);
+      document.documentElement.style.setProperty("--accent", theme.accent);
+    }
+
+    if(theme.background && typeof window.vexoSetBackground === "function"){
+      window.vexoSetBackground(theme.background);
+      document.querySelector(`[data-bg="${CSS.escape(theme.background)}"]`)?.click();
+    }else if(theme.background){
+      localStorage.setItem("vexo-bg", theme.background);
+    }
+
+    const widgetSettings = {
+      clock: theme.clock !== false,
+      battery: theme.battery !== false
+    };
+    localStorage.setItem("vexo-system-widgets", JSON.stringify(widgetSettings));
+
+    const clock = document.getElementById("vexoSetClock");
+    const battery = document.getElementById("vexoSetBattery");
+    if(clock && clock.checked !== widgetSettings.clock){
+      clock.checked = widgetSettings.clock;
+      clock.dispatchEvent(new Event("change", {bubbles:true}));
+    }
+    if(battery && battery.checked !== widgetSettings.battery){
+      battery.checked = widgetSettings.battery;
+      battery.dispatchEvent(new Event("change", {bubbles:true}));
+    }
+
+    setTimeout(renderSavedThemes, 60);
+    if(typeof toast === "function") toast(`Theme "${theme.name}" applied.`);
+  }
+
+  function saveCurrentTheme(){
+    const theme = getCurrentTheme();
+    const name = prompt("Name this VEXO theme:", "My Theme");
+    if(name === null) return;
+    theme.name = name.trim() || "My Theme";
+
+    const themes = readThemes();
+    themes.unshift(theme);
+    writeThemes(themes.slice(0, 30));
+    renderSavedThemes();
+    if(typeof toast === "function") toast(`Theme "${theme.name}" saved.`);
+  }
+
+  function deleteTheme(id){
+    const themes = readThemes();
+    const theme = themes.find(x => x.id === id);
+    if(!theme) return;
+    if(!confirm(`Delete the saved theme "${theme.name}"?`)) return;
+    writeThemes(themes.filter(x => x.id !== id));
+    renderSavedThemes();
+  }
+
+  function escapeHtml(value){
+    if(typeof esc === "function") return esc(value);
+    return String(value ?? "").replace(/[&<>'"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[ch]));
+  }
+
+  function renderSavedThemes(){
+    const list = document.getElementById("vexoSavedThemeList");
+    if(!list) return;
+    const themes = readThemes();
+    if(!themes.length){
+      list.innerHTML = `<div class="vexo-saved-theme-empty">No saved themes yet. Save your current VEXO appearance to create one.</div>`;
+      return;
+    }
+
+    list.innerHTML = themes.map(theme => {
+      const date = theme.created_at ? new Date(theme.created_at).toLocaleDateString([], {month:"short",day:"numeric",year:"numeric"}) : "";
+      const accent = /^#[0-9a-f]{6}$/i.test(theme.accent || "") ? theme.accent : "#7c5cff";
+      const bg = escapeHtml(theme.background || "grid");
+      const id = escapeHtml(theme.id || "");
+      return `
+        <div class="vexo-saved-theme-card" style="--theme-accent:${accent}">
+          <div class="vexo-saved-theme-top">
+            <div class="vexo-saved-theme-dot" style="background:${accent}"></div>
+            <div class="vexo-saved-theme-name" title="${escapeHtml(theme.name)}">${escapeHtml(theme.name)}</div>
+          </div>
+          <div class="vexo-saved-theme-info">
+            ${escapeHtml(accent.toUpperCase())} · ${bg} background · ${theme.clock ? "clock" : "no clock"} · ${theme.battery ? "battery" : "no battery"}<br>
+            ${escapeHtml(date)}
+          </div>
+          <div class="vexo-saved-theme-card-actions">
+            <button class="btn mini primary vexo-apply-theme" type="button" data-theme-id="${id}">Apply</button>
+            <button class="btn mini danger vexo-delete-theme" type="button" data-theme-id="${id}">Delete</button>
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  function injectSavedThemes(){
+    const settingsPage = document.getElementById("settingsPage");
+    const panel = settingsPage?.querySelector(".panel");
+    if(!panel) return;
+    if(document.getElementById("vexoSavedThemes")){
+      renderSavedThemes();
+      return;
+    }
+
+    const section = document.createElement("div");
+    section.id = "vexoSavedThemes";
+    section.className = "vexo-saved-themes";
+    section.innerHTML = `
+      <div class="vexo-saved-theme-head">
+        <div>
+          <div class="set-head">Saved themes</div>
+          <div class="muted-sm">Save your VEXO color, background, clock, and battery setup so you can switch between looks whenever you want.</div>
+        </div>
+        <div class="vexo-saved-theme-actions">
+          <button class="btn mini primary" type="button" id="vexoSaveThemeBtn">Save current theme</button>
+        </div>
+      </div>
+      <div id="vexoSavedThemeList" class="vexo-saved-theme-list"></div>
+    `;
+
+    panel.appendChild(section);
+
+    document.getElementById("vexoSaveThemeBtn")?.addEventListener("click", saveCurrentTheme);
+
+    section.addEventListener("click", e => {
+      const apply = e.target.closest?.(".vexo-apply-theme");
+      const del = e.target.closest?.(".vexo-delete-theme");
+      const id = apply?.dataset.themeId || del?.dataset.themeId;
+      if(!id) return;
+      if(apply){
+        const theme = readThemes().find(x => x.id === id);
+        applyTheme(theme);
+      }else if(del){
+        deleteTheme(id);
+      }
+    });
+
+    renderSavedThemes();
+  }
+
+  function start(){
+    injectSavedThemes();
+    renderSavedThemes();
+  }
+
+  window.vexoRefreshSavedThemes = renderSavedThemes;
+
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+  setTimeout(start, 400);
+  setTimeout(start, 1200);
+  setTimeout(start, 2500);
+})();
+</script>
+
+<!-- VEXO THEME PRESETS — APPEND-ONLY -->
+<style>
+.vexo-theme-presets{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);}
+.vexo-theme-presets-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.vexo-theme-presets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;}
+.vexo-theme-preset{position:relative;min-height:108px;padding:14px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.025);overflow:hidden;text-align:left;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;}
+.vexo-theme-preset:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--theme-a) 65%,var(--line));box-shadow:0 12px 30px rgba(0,0,0,.22),0 0 22px color-mix(in srgb,var(--theme-a) 22%,transparent);}
+.vexo-theme-preset::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--theme-a);}
+.vexo-theme-preset::after{content:"";position:absolute;right:-24px;top:-24px;width:84px;height:84px;border-radius:50%;background:var(--theme-a);opacity:.11;filter:blur(4px);}
+.vexo-theme-swatches{display:flex;gap:6px;margin-bottom:10px;}
+.vexo-theme-swatch{width:22px;height:22px;border-radius:7px;border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);}
+.vexo-theme-preset-name{font-size:12px;font-weight:850;letter-spacing:.01em;}
+.vexo-theme-preset-desc{margin-top:4px;font-size:9px;line-height:1.5;color:var(--muted);max-width:95%;}
+.vexo-theme-preset-use{position:absolute;right:10px;bottom:10px;padding:4px 7px;border-radius:7px;border:1px solid var(--line2);background:rgba(255,255,255,.035);color:var(--muted);font-size:8px;font-weight:800;}
+@media(max-width:650px){.vexo-theme-presets-head{align-items:flex-start;flex-direction:column;}.vexo-theme-presets-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.vexo-theme-preset{min-height:116px;}}
+</style>
+<script>
+(() => {
+  const PRESETS = [
+    {name:"Midnight", accent:"#7c5cff", accent2:"#19d3ff", background:"grid", desc:"The classic VEXO deep-purple night."},
+    {name:"Mocha Midnight", accent:"#b07a5a", accent2:"#d8a47e", background:"plain", desc:"Warm coffee tones over a dark midnight base."},
+    {name:"Midnight Neon", accent:"#8b5cf6", accent2:"#22d3ee", background:"stars", desc:"Deep space with bright neon highlights."},
+    {name:"Neon", accent:"#00f5d4", accent2:"#00bbf9", background:"grid", desc:"Bright cyan energy with a futuristic edge."},
+    {name:"Neon Pink", accent:"#ff3f9d", accent2:"#ff7abf", background:"stars", desc:"High-energy pink neon for a vivid dashboard."},
+    {name:"Cyber Ice", accent:"#38bdf8", accent2:"#a5f3fc", background:"plain", desc:"Cool blue glass with an icy digital feel."},
+    {name:"Ocean", accent:"#0ea5e9", accent2:"#14b8a6", background:"grid", desc:"Blue-green tones inspired by deep water."},
+    {name:"Forest", accent:"#22c55e", accent2:"#84cc16", background:"plain", desc:"Clean green accents with a calm dark base."},
+    {name:"Ember", accent:"#f97316", accent2:"#ef4444", background:"stars", desc:"Orange-red glow with a heated sci-fi look."},
+    {name:"Rose Gold", accent:"#e879a8", accent2:"#f6b8c8", background:"plain", desc:"Soft rose accents with a polished dark UI."},
+    {name:"Monochrome", accent:"#d4d4d8", accent2:"#a1a1aa", background:"plain", desc:"Minimal grayscale styling with no neon color."},
+    {name:"Violet Storm", accent:"#a855f7", accent2:"#6366f1", background:"stars", desc:"Purple-indigo lighting with a stormy backdrop."}
+  ];
+
+  function validHex(v){ return /^#[0-9a-f]{6}$/i.test(v || ""); }
+
+  function applyPreset(theme){
+    if(!theme) return;
+    const picker = document.getElementById("vexoCustomColorPicker");
+    if(picker){
+      picker.value = theme.accent;
+      picker.dispatchEvent(new Event("input", {bubbles:true}));
+    }else if(validHex(theme.accent)){
+      localStorage.setItem("vexo-custom-accent", theme.accent);
+      document.documentElement.style.setProperty("--accent", theme.accent);
+    }
+
+    if(typeof window.vexoSetBackground === "function"){
+      window.vexoSetBackground(theme.background);
+    }else{
+      localStorage.setItem("vexo-bg", theme.background);
+    }
+
+    const bgButton = document.querySelector(`[data-bg="${CSS.escape(theme.background)}"]`);
+    bgButton?.click();
+
+    const title = document.getElementById("pageTitle");
+    if(title) title.dataset.vexoTheme = theme.name;
+
+    if(typeof toast === "function") toast(`Theme "${theme.name}" applied.`);
+  }
+
+  function presetHtml(theme, index){
+    const name = String(theme.name).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    const desc = String(theme.desc).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    return `
+      <button class="vexo-theme-preset" type="button" data-vexo-theme-index="${index}" style="--theme-a:${theme.accent}">
+        <div class="vexo-theme-swatches">
+          <span class="vexo-theme-swatch" style="background:${theme.accent}"></span>
+          <span class="vexo-theme-swatch" style="background:${theme.accent2}"></span>
+          <span class="vexo-theme-swatch" style="background:${theme.background === "stars" ? "#111827" : theme.background === "plain" ? "#070914" : "#0a0d1c"}"></span>
+        </div>
+        <div class="vexo-theme-preset-name">${name}</div>
+        <div class="vexo-theme-preset-desc">${desc}</div>
+        <span class="vexo-theme-preset-use">Use</span>
+      </button>`;
+  }
+
+  function injectPresetGallery(){
+    const settingsPage = document.getElementById("settingsPage");
+    const panel = settingsPage?.querySelector(".panel");
+    if(!panel || document.getElementById("vexoThemePresets")) return;
+
+    const section = document.createElement("div");
+    section.id = "vexoThemePresets";
+    section.className = "vexo-theme-presets";
+    section.innerHTML = `
+      <div class="vexo-theme-presets-head">
+        <div>
+          <div class="set-head">Theme presets</div>
+          <div class="muted-sm">Choose a built-in VEXO look instantly. You can still fine-tune the accent color afterward.</div>
+        </div>
+      </div>
+      <div class="vexo-theme-presets-grid">
+        ${PRESETS.map(presetHtml).join("")}
+      </div>`;
+
+    panel.appendChild(section);
+    section.addEventListener("click", e => {
+      const card = e.target.closest?.(".vexo-theme-preset");
+      if(!card) return;
+      const theme = PRESETS[Number(card.dataset.vexoThemeIndex)];
+      applyPreset(theme);
+    });
+  }
+
+  function start(){
+    injectPresetGallery();
+  }
+
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
+  setTimeout(start, 500);
+  setTimeout(start, 1500);
+  setTimeout(start, 3000);
+})();
+</script>
+<!-- VEXO BACKGROUND THEME MODES — APPEND-ONLY -->
+<style>
+.vexo-theme-presets{display:none!important;}
+.vexo-bg-theme-section{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.vexo-bg-theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
+.vexo-bg-theme-card{position:relative;min-height:125px;padding:14px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.025);overflow:hidden;text-align:left;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.vexo-bg-theme-card:hover{transform:translateY(-2px);border-color:var(--theme-a);box-shadow:0 12px 30px rgba(0,0,0,.22),0 0 24px color-mix(in srgb,var(--theme-a) 22%,transparent)}
+.vexo-bg-theme-preview{height:48px;border-radius:10px;margin-bottom:10px;border:1px solid rgba(255,255,255,.12);overflow:hidden;position:relative;background:var(--theme-bg)}
+.vexo-bg-theme-preview:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 30%,var(--theme-a),transparent 38%),radial-gradient(circle at 80% 70%,var(--theme-b),transparent 35%);opacity:.6}
+.vexo-bg-theme-preview:after{content:"";position:absolute;left:-10%;right:-10%;bottom:-60%;height:100%;background:repeating-linear-gradient(0deg,transparent 0 11px,rgba(255,255,255,.07) 12px),repeating-linear-gradient(90deg,transparent 0 11px,rgba(255,255,255,.05) 12px);transform:perspective(160px) rotateX(55deg)}
+.vexo-bg-theme-name{font-size:12px;font-weight:850}
+.vexo-bg-theme-desc{font-size:9px;line-height:1.5;color:var(--muted);margin-top:4px;max-width:95%}
+@media(max-width:650px){.vexo-bg-theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<script>
+(() => {
+  const THEMES = [
+    {name:"Midnight",mode:"grid",accent:"#7c5cff",accent2:"#19d3ff",bg:"#080b17",desc:"Classic VEXO deep-purple grid."},
+    {name:"Mocha Midnight",mode:"mocha-midnight",accent:"#b07a5a",accent2:"#d8a47e",bg:"#120e11",desc:"Warm mocha glow over a midnight scene."},
+    {name:"Midnight Neon",mode:"midnight-neon",accent:"#8b5cf6",accent2:"#22d3ee",bg:"#03040a",desc:"Deep space with bright neon lighting."},
+    {name:"Neon",mode:"neon",accent:"#00f5d4",accent2:"#00bbf9",bg:"#031014",desc:"High-energy cyan digital atmosphere."},
+    {name:"Neon Pink",mode:"neon-pink",accent:"#ff3f9d",accent2:"#ff7abf",bg:"#12040d",desc:"Pink neon with a futuristic glow."},
+    {name:"Cyber Ice",mode:"cyber-ice",accent:"#38bdf8",accent2:"#a5f3fc",bg:"#031018",desc:"Cool blue glass and icy light."},
+    {name:"Ocean",mode:"ocean",accent:"#0ea5e9",accent2:"#14b8a6",bg:"#031018",desc:"Deep blue and teal underwater mood."},
+    {name:"Forest",mode:"forest",accent:"#22c55e",accent2:"#84cc16",bg:"#061008",desc:"Green glow with a subtle living feel."},
+    {name:"Ember",mode:"ember",accent:"#f97316",accent2:"#ef4444",bg:"#120705",desc:"Orange-red sci-fi heat and glow."},
+    {name:"Rose Gold",mode:"rose-gold",accent:"#e879a8",accent2:"#f6b8c8",bg:"#11080e",desc:"Soft rose lighting with polished depth."},
+    {name:"Monochrome",mode:"monochrome",accent:"#d4d4d8",accent2:"#a1a1aa",bg:"#070709",desc:"Minimal grayscale digital atmosphere."},
+    {name:"Violet Storm",mode:"violet-storm",accent:"#a855f7",accent2:"#6366f1",bg:"#070514",desc:"Stormy purple-indigo lighting."},
+    {name:"Aurora",mode:"aurora",accent:"#22c55e",accent2:"#22d3ee",bg:"#030a0a",desc:"Animated green-cyan aurora ambience."},
+    {name:"Cyber Grid",mode:"cyber-grid",accent:"#00f5d4",accent2:"#22d3ee",bg:"#03060a",desc:"Stronger futuristic grid and glow."}
+  ];
+
+  const ORIGINAL_MODES = ["grid","plain","stars"];
+  const ALL_MODES = new Set(THEMES.map(t => t.mode).concat(ORIGINAL_MODES));
+
+  function sendBackground(mode){
+    const frame=document.getElementById("vexoBackgroundFrame");
+    if(!frame) return;
+    frame.contentWindow?.postMessage({type:"VEXO_BACKGROUND",mode},"*");
+  }
+
+  window.vexoSetBackground = mode => {
+    if(!ALL_MODES.has(mode)) mode="grid";
+    localStorage.setItem("vexo-bg",mode);
+    sendBackground(mode);
+  };
+
+  function currentTheme(){
+    const mode=localStorage.getItem("vexo-bg")||"grid";
+    return THEMES.find(t=>t.mode===mode)||THEMES[0];
+  }
+
+  function applyTheme(theme){
+    if(!theme) return;
+    const picker=document.getElementById("vexoCustomColorPicker");
+    if(picker){
+      picker.value=theme.accent;
+      picker.dispatchEvent(new Event("input",{bubbles:true}));
+    } else {
+      localStorage.setItem("vexo-custom-accent",theme.accent);
+      document.documentElement.style.setProperty("--accent",theme.accent);
+    }
+    window.vexoSetBackground(theme.mode);
+    document.querySelectorAll(".swatch-btn").forEach(x=>x.classList.remove("active"));
+    if(typeof toast==="function") toast(`Theme "${theme.name}" applied.`);
+  }
+
+  function inject(){
+    const settingsPage=document.getElementById("settingsPage");
+    const panel=settingsPage?.querySelector(".panel");
+    if(!panel || document.getElementById("vexoBackgroundThemes")) return;
+    const box=document.createElement("div");
+    box.id="vexoBackgroundThemes";
+    box.className="vexo-bg-theme-section";
+    box.innerHTML=`
+      <div class="set-head">VEXO presets</div>
+      <div class="muted-sm">Each preset changes your accent color and the animated background together.</div>
+      <div class="vexo-bg-theme-grid">
+        ${THEMES.map((t,i)=>`
+          <button type="button" class="vexo-bg-theme-card" data-vexo-bg-index="${i}" style="--theme-a:${t.accent};--theme-b:${t.accent2};--theme-bg:${t.bg}">
+            <div class="vexo-bg-theme-preview"></div>
+            <div class="vexo-bg-theme-name">${t.name}</div>
+            <div class="vexo-bg-theme-desc">${t.desc}</div>
+          </button>`).join("")}
+      </div>`;
+    panel.appendChild(box);
+    box.addEventListener("click",e=>{
+      const card=e.target.closest?.(".vexo-bg-theme-card");
+      if(!card) return;
+      applyTheme(THEMES[Number(card.dataset.vexoBgIndex)]);
+    });
+  }
+
+  function syncAfterFrame(){
+    const frame=document.getElementById("vexoBackgroundFrame");
+    frame?.addEventListener("load",()=>sendBackground(localStorage.getItem("vexo-bg")||"grid"));
+    window.addEventListener("message",event=>{
+      if(event.data?.type==="VEXO_BACKGROUND_READY") sendBackground(localStorage.getItem("vexo-bg")||"grid");
+    });
+    sendBackground(localStorage.getItem("vexo-bg")||"grid");
+  }
+
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>{inject();syncAfterFrame()});
+  else {inject();syncAfterFrame()}
+  setTimeout(inject,400);
+  setTimeout(inject,1200);
+  setTimeout(inject,2500);
+})();
+</script>
