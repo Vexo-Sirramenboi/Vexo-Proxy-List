@@ -4290,1325 +4290,334 @@ const BLOCKED_WORDS = [
 </script>
 <!-- ============================================================
      VEXO PROFILE PICTURES + CHAT REPLIES
-     APPEND-ONLY — DOES NOT REPLACE EXISTING CODE
+     APPEND-ONLY — EXISTING VEXO CODE ABOVE IS UNCHANGED
      ============================================================ -->
-<script>
 <style>
-/* ============================================================
-   VEXO PROFILE PICTURE SETTINGS
-   ============================================================ */
-
-.vexo-pfp-section {
-  margin-top: 24px;
-  padding-top: 22px;
-  border-top: 1px solid var(--line);
-}
-
-.vexo-pfp-card {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 18px;
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,.025);
-  border-radius: 16px;
-}
-
-.vexo-pfp-preview {
-  width: 72px;
-  height: 72px;
-  min-width: 72px;
-  border-radius: 18px;
-  overflow: hidden;
-  background: var(--grad);
-  display: grid;
-  place-items: center;
-  color: #fff;
-  font-size: 25px;
-  font-weight: 800;
-  border: 1px solid rgba(255,255,255,.12);
-}
-
-.vexo-pfp-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.vexo-pfp-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.vexo-pfp-info strong {
-  display: block;
-  margin-bottom: 4px;
-}
-
-.vexo-pfp-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 10px;
-}
-
-#vexoPfpFile {
-  display: none;
-}
-
-/* ============================================================
-   VEXO CHAT AVATARS
-   ============================================================ */
-
-.chat-avatar.vexo-avatar-image {
-  overflow: hidden;
-  padding: 0;
-}
-
-.chat-avatar.vexo-avatar-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* ============================================================
-   CHAT REPLY UI
-   ============================================================ */
-
-.vexo-chat-reply {
-  margin-bottom: 7px;
-  padding: 7px 9px;
-  border-left: 3px solid var(--accent);
-  background: rgba(124,92,255,.08);
-  border-radius: 7px;
-  font-size: 11px;
-  cursor: pointer;
-}
-
-.vexo-chat-reply strong {
-  display: block;
-  color: var(--accent2);
-  font-size: 10px;
-  margin-bottom: 2px;
-}
-
-.vexo-chat-reply span {
-  opacity: .72;
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.vexo-chat-actions {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 5px;
-}
-
-.vexo-reply-btn {
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  font-size: 10px;
-  cursor: pointer;
-  padding: 3px 5px;
-  border-radius: 5px;
-}
-
-.vexo-reply-btn:hover {
-  color: var(--accent2);
-  background: rgba(255,255,255,.05);
-}
-
-.vexo-reply-bar {
-  display: none;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 11px;
-  margin: 0 0 8px;
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--accent);
-  background: rgba(124,92,255,.07);
-  border-radius: 9px;
-}
-
-.vexo-reply-bar.show {
-  display: flex;
-}
-
-.vexo-reply-bar-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.vexo-reply-bar-title {
-  color: var(--accent2);
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.vexo-reply-bar-text {
-  font-size: 11px;
-  opacity: .7;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.vexo-reply-cancel {
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 15px;
-}
-
-.vexo-reply-cancel:hover {
-  color: #fff;
-}
-
-/* Make the reply area work nicely above the existing input */
-.vexo-chat-input-wrap {
-  display: block;
-}
+.vexo-pfp-section{margin-top:24px;padding-top:22px;border-top:1px solid var(--line)}
+.vexo-pfp-card{display:flex;align-items:center;gap:18px;padding:18px;border:1px solid var(--line);background:rgba(255,255,255,.025);border-radius:16px}
+.vexo-pfp-preview{width:72px;height:72px;min-width:72px;border-radius:18px;overflow:hidden;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:25px;font-weight:800;border:1px solid rgba(255,255,255,.12)}
+.vexo-pfp-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.vexo-pfp-info{flex:1;min-width:0}.vexo-pfp-info strong{display:block;margin-bottom:4px}
+.vexo-pfp-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}#vexoPfpFile{display:none}
+.chat-avatar.vexo-avatar-image{overflow:hidden;padding:0}.chat-avatar.vexo-avatar-image img{width:100%;height:100%;object-fit:cover;display:block}
+.vexo-chat-reply{margin-bottom:7px;padding:7px 9px;border-left:3px solid var(--accent);background:rgba(124,92,255,.08);border-radius:7px;font-size:11px;cursor:pointer}
+.vexo-chat-reply strong{display:block;color:var(--accent2);font-size:10px;margin-bottom:2px}.vexo-chat-reply span{opacity:.72;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vexo-chat-actions{display:flex;align-items:center;gap:5px;margin-top:5px}.vexo-reply-btn{border:0;background:transparent;color:var(--muted);font-size:10px;cursor:pointer;padding:3px 5px;border-radius:5px}.vexo-reply-btn:hover{color:var(--accent2);background:rgba(255,255,255,.05)}
+.vexo-reply-bar{display:none;align-items:center;gap:10px;padding:8px 11px;margin:0 0 8px;border:1px solid var(--line);border-left:3px solid var(--accent);background:rgba(124,92,255,.07);border-radius:9px}
+.vexo-reply-bar.show{display:flex}.vexo-reply-bar-content{flex:1;min-width:0}.vexo-reply-bar-title{color:var(--accent2);font-size:10px;font-weight:700}.vexo-reply-bar-text{font-size:11px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vexo-reply-cancel{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px}.vexo-reply-cancel:hover{color:#fff}
 </style>
-
 <script>
 (() => {
   "use strict";
 
-  /* ============================================================
-     CONFIG
-     ============================================================ */
+  const AVATAR_BUCKET = "avatars";
+  let avatarCache = {};
+  let messageCache = {};
+  let replyTarget = null;
+  let enhancedChatReady = false;
+  let sessionHooked = false;
 
-  const VEXO_AVATAR_BUCKET = "avatars";
+  const esc = v => String(v ?? "").replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+  const initial = n => String(n || "G").trim().charAt(0).toUpperCase() || "G";
+  const notify = m => typeof toast === "function" ? toast(m) : console.log("[VEXO]", m);
+  const clean = v => typeof cleanMessage === "function" ? cleanMessage(v || "") : (v || "");
 
-  let vexoCurrentAvatarUrl = null;
-  let vexoReplyTarget = null;
-  let vexoProfileCache = {};
-  let vexoMessageCache = {};
-  let vexoEnhancedChatStarted = false;
+  async function loadProfiles(messages){
+    const ids = [...new Set((messages || []).map(m => m.user_id).filter(Boolean))];
+    const missing = ids.filter(id => !avatarCache[id]);
+    if (!missing.length) return;
 
-  /* ============================================================
-     SMALL HELPERS
-     ============================================================ */
-
-  function vexoEsc(value) {
-    return String(value ?? "").replace(/[&<>"']/g, m => ({
-      "&":"&amp;",
-      "<":"&lt;",
-      ">":"&gt;",
-      '"':"&quot;",
-      "'":"&#039;"
-    }[m]));
+    const {data,error} = await db.from("profiles").select("id,username,avatar_url").in("id", missing);
+    if(error){ console.error("VEXO profile lookup:", error); return; }
+    (data || []).forEach(p => avatarCache[p.id] = p);
   }
 
-  function vexoInitial(name) {
-    return String(name || "G").trim().charAt(0).toUpperCase() || "G";
-  }
-
-  function vexoToast(message) {
-    if (typeof toast === "function") {
-      toast(message);
-    } else {
-      console.log("[VEXO]", message);
-    }
-  }
-
-  /* ============================================================
-     PROFILE DATA
-     ============================================================ */
-
-  async function vexoLoadMyProfile() {
-    if (!user?.id) {
-      vexoCurrentAvatarUrl = null;
-      return null;
-    }
-
-    const { data, error } = await db
-      .from("profiles")
-      .select("id,username,avatar_url")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error("VEXO profile load:", error);
-      return null;
-    }
-
-    vexoCurrentAvatarUrl = data?.avatar_url || null;
-
-    if (data?.id) {
-      vexoProfileCache[data.id] = data;
-    }
-
+  async function loadMyProfile(){
+    if(!user?.id) return null;
+    const {data,error} = await db.from("profiles").select("id,username,avatar_url").eq("id", user.id).maybeSingle();
+    if(error){ console.error("VEXO own profile:", error); return null; }
+    if(data) avatarCache[data.id] = data;
     return data;
   }
 
-  async function vexoLoadProfilesForMessages(messages) {
-    const ids = [...new Set(
-      (messages || [])
-        .map(m => m.user_id)
-        .filter(Boolean)
-    )];
+  function profileFor(m){ return m?.user_id ? avatarCache[m.user_id] : null; }
+  function nameFor(m){ const p=profileFor(m); return p?.username || m?.username || "Guest"; }
 
-    if (!ids.length) return;
+  function injectSettings(){
+    const page=document.getElementById("settingsPage");
+    const panel=page?.querySelector(".panel");
+    if(!panel || document.getElementById("vexoPfpSection")) return;
 
-    const missing = ids.filter(id => !vexoProfileCache[id]);
-
-    if (!missing.length) return;
-
-    const { data, error } = await db
-      .from("profiles")
-      .select("id,username,avatar_url")
-      .in("id", missing);
-
-    if (error) {
-      console.error("VEXO chat profile load:", error);
-      return;
-    }
-
-    (data || []).forEach(profile => {
-      vexoProfileCache[profile.id] = profile;
-    });
-  }
-
-  /* ============================================================
-     SETTINGS — PROFILE PICTURE UI
-     ============================================================ */
-
-  function vexoInjectPfpSettings() {
-    const settingsPage = document.getElementById("settingsPage");
-
-    if (!settingsPage) return;
-
-    if (document.getElementById("vexoPfpSection")) return;
-
-    const mainPanel = settingsPage.querySelector(".panel");
-
-    if (!mainPanel) return;
-
-    const section = document.createElement("div");
-
-    section.id = "vexoPfpSection";
-    section.className = "vexo-pfp-section";
-
-    section.innerHTML = `
+    const section=document.createElement("div");
+    section.id="vexoPfpSection";
+    section.className="vexo-pfp-section";
+    section.innerHTML=`
       <div class="set-head">Profile Picture</div>
-
       <div class="vexo-pfp-card">
-
-        <div class="vexo-pfp-preview" id="vexoPfpPreview">
-          <span id="vexoPfpInitial">G</span>
-        </div>
-
+        <div class="vexo-pfp-preview" id="vexoPfpPreview"><span>G</span></div>
         <div class="vexo-pfp-info">
           <strong>Your VEXO profile picture</strong>
-
-          <div class="muted-sm">
-            This picture will appear next to your messages in Community Chat.
-          </div>
-
+          <div class="muted-sm">Change the picture that appears beside your messages in Community Chat.</div>
           <div class="vexo-pfp-actions">
-            <button
-              class="btn primary mini"
-              type="button"
-              id="vexoChoosePfpBtn">
-              Change PFP
-            </button>
-
-            <button
-              class="btn mini danger"
-              type="button"
-              id="vexoRemovePfpBtn">
-              Remove PFP
-            </button>
+            <button class="btn primary mini" type="button" id="vexoChoosePfpBtn">Change PFP</button>
+            <button class="btn danger mini" type="button" id="vexoRemovePfpBtn">Remove PFP</button>
           </div>
-
-          <input
-            type="file"
-            id="vexoPfpFile"
-            accept="image/png,image/jpeg,image/webp,image/gif"
-          >
+          <input type="file" id="vexoPfpFile" accept="image/png,image/jpeg,image/webp,image/gif">
         </div>
+      </div>`;
 
-      </div>
-    `;
+    const heads=[...panel.querySelectorAll(".set-head")];
+    const backup=heads.find(h=>h.textContent.trim().toLowerCase()==="backup");
+    if(backup) backup.parentElement.insertBefore(section, backup); else panel.appendChild(section);
 
-    const backupSection = mainPanel.querySelector(".set-head:last-of-type");
-
-    if (backupSection) {
-      backupSection.parentElement.insertBefore(section, backupSection);
-    } else {
-      mainPanel.appendChild(section);
-    }
-
-    document
-      .getElementById("vexoChoosePfpBtn")
-      ?.addEventListener("click", () => {
-        if (!user) {
-          vexoToast("Sign in to change your profile picture.");
-          return;
-        }
-
-        document.getElementById("vexoPfpFile")?.click();
-      });
-
-    document
-      .getElementById("vexoRemovePfpBtn")
-      ?.addEventListener("click", vexoRemovePfp);
-
-    document
-      .getElementById("vexoPfpFile")
-      ?.addEventListener("change", vexoUploadPfp);
-
-    vexoRefreshPfpSettings();
-  }
-
-  function vexoRefreshPfpSettings() {
-    const preview = document.getElementById("vexoPfpPreview");
-    const initial = document.getElementById("vexoPfpInitial");
-
-    if (!preview) return;
-
-    const profile =
-      user?.id
-        ? vexoProfileCache[user.id]
-        : null;
-
-    const avatarUrl =
-      profile?.avatar_url ||
-      vexoCurrentAvatarUrl ||
-      null;
-
-    const username =
-      profile?.username ||
-      user?.email?.split("@")[0] ||
-      "Guest";
-
-    if (avatarUrl) {
-      preview.innerHTML = `
-        <img
-          src="${vexoEsc(avatarUrl)}"
-          alt="Profile picture"
-        >
-      `;
-    } else {
-      preview.innerHTML = `
-        <span id="vexoPfpInitial">
-          ${vexoEsc(vexoInitial(username))}
-        </span>
-      `;
-    }
-  }
-
-  /* ============================================================
-     UPLOAD PFP
-     ============================================================ */
-
-  async function vexoUploadPfp(event) {
-    const file = event.target.files?.[0];
-
-    event.target.value = "";
-
-    if (!file) return;
-
-    if (!user?.id) {
-      vexoToast("You must be signed in to change your PFP.");
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      vexoToast("Please select an image.");
-      return;
-    }
-
-    /* 5 MB maximum */
-    if (file.size > 5 * 1024 * 1024) {
-      vexoToast("Profile pictures must be 5 MB or smaller.");
-      return;
-    }
-
-    const extensionMap = {
-      "image/png": "png",
-      "image/jpeg": "jpg",
-      "image/webp": "webp",
-      "image/gif": "gif"
-    };
-
-    const extension = extensionMap[file.type];
-
-    if (!extension) {
-      vexoToast("Please use PNG, JPG, WEBP, or GIF.");
-      return;
-    }
-
-    const path = `${user.id}/profile.${extension}`;
-
-    vexoToast("Uploading profile picture...");
-
-    try {
-      /*
-       * Remove the previous common extensions first.
-       * This keeps the user's folder clean when they change
-       * between JPG/PNG/WEBP/GIF.
-       */
-
-      const oldFiles = [
-        `${user.id}/profile.png`,
-        `${user.id}/profile.jpg`,
-        `${user.id}/profile.webp`,
-        `${user.id}/profile.gif`
-      ];
-
-      await db.storage
-        .from(VEXO_AVATAR_BUCKET)
-        .remove(oldFiles);
-
-      const { error: uploadError } = await db.storage
-        .from(VEXO_AVATAR_BUCKET)
-        .upload(path, file, {
-          upsert: true,
-          contentType: file.type,
-          cacheControl: "3600"
-        });
-
-      if (uploadError) {
-        console.error(uploadError);
-        vexoToast("PFP upload failed: " + uploadError.message);
-        return;
-      }
-
-      const { data: publicData } = db.storage
-        .from(VEXO_AVATAR_BUCKET)
-        .getPublicUrl(path);
-
-      let publicUrl = publicData?.publicUrl;
-
-      if (!publicUrl) {
-        vexoToast("Could not create the PFP URL.");
-        return;
-      }
-
-      /*
-       * Cache-bust the image so the browser doesn't keep showing
-       * the old picture after replacement.
-       */
-      publicUrl += `?v=${Date.now()}`;
-
-      const { error: profileError } = await db
-        .from("profiles")
-        .update({
-          avatar_url: publicUrl
-        })
-        .eq("id", user.id);
-
-      if (profileError) {
-        console.error(profileError);
-        vexoToast("PFP uploaded, but the profile could not be updated.");
-        return;
-      }
-
-      vexoCurrentAvatarUrl = publicUrl;
-
-      if (!vexoProfileCache[user.id]) {
-        vexoProfileCache[user.id] = {};
-      }
-
-      vexoProfileCache[user.id].avatar_url = publicUrl;
-
-      vexoRefreshPfpSettings();
-      vexoRefreshAllChatAvatars();
-
-      vexoToast("Profile picture updated.");
-
-    } catch (err) {
-      console.error("VEXO PFP upload:", err);
-      vexoToast("Profile picture upload failed.");
-    }
-  }
-
-  /* ============================================================
-     REMOVE PFP
-     ============================================================ */
-
-  async function vexoRemovePfp() {
-    if (!user?.id) {
-      vexoToast("You must be signed in.");
-      return;
-    }
-
-    if (!confirm("Remove your profile picture?")) return;
-
-    const oldFiles = [
-      `${user.id}/profile.png`,
-      `${user.id}/profile.jpg`,
-      `${user.id}/profile.webp`,
-      `${user.id}/profile.gif`
-    ];
-
-    try {
-      await db.storage
-        .from(VEXO_AVATAR_BUCKET)
-        .remove(oldFiles);
-
-      const { error } = await db
-        .from("profiles")
-        .update({
-          avatar_url: null
-        })
-        .eq("id", user.id);
-
-      if (error) {
-        console.error(error);
-        vexoToast("Could not remove your profile picture.");
-        return;
-      }
-
-      vexoCurrentAvatarUrl = null;
-
-      if (vexoProfileCache[user.id]) {
-        vexoProfileCache[user.id].avatar_url = null;
-      }
-
-      vexoRefreshPfpSettings();
-      vexoRefreshAllChatAvatars();
-
-      vexoToast("Profile picture removed.");
-
-    } catch (err) {
-      console.error("VEXO remove PFP:", err);
-      vexoToast("Could not remove your profile picture.");
-    }
-  }
-
-  /* ============================================================
-     CHAT MESSAGE DATA
-     ============================================================ */
-
-  async function vexoLoadChatMessages() {
-    const chatContainer = document.getElementById("chatMessages");
-
-    if (!chatContainer) return;
-
-    const { data, error } = await db
-      .from("messages")
-      .select("*")
-      .order("created_at", { ascending: true })
-      .limit(60);
-
-    if (error) {
-      console.error("VEXO enhanced chat:", error);
-      return;
-    }
-
-    vexoMessageCache = {};
-
-    (data || []).forEach(message => {
-      vexoMessageCache[message.id] = message;
+    document.getElementById("vexoChoosePfpBtn")?.addEventListener("click",()=>{
+      if(!user){ notify("Sign in to change your profile picture."); return; }
+      document.getElementById("vexoPfpFile")?.click();
     });
-
-    await vexoLoadProfilesForMessages(data || []);
-
-    vexoRenderEnhancedChat(data || []);
+    document.getElementById("vexoRemovePfpBtn")?.addEventListener("click",removePfp);
+    document.getElementById("vexoPfpFile")?.addEventListener("change",uploadPfp);
+    refreshPfpPreview();
   }
 
-  /* ============================================================
-     RENDER CHAT
-     ============================================================ */
-
-  function vexoRenderEnhancedChat(messages) {
-    const chatContainer = document.getElementById("chatMessages");
-
-    if (!chatContainer) return;
-
-    if (!messages.length) {
-      chatContainer.innerHTML = `
-        <div class="empty">
-          <div class="empty-icon">CHAT</div>
-          <p>No messages yet. Say hello!</p>
-        </div>
-      `;
-      return;
-    }
-
-    chatContainer.innerHTML = messages
-      .map(vexoCreateMessage)
-      .join("");
-
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+  function refreshPfpPreview(){
+    const el=document.getElementById("vexoPfpPreview");
+    if(!el) return;
+    const p=user?.id ? avatarCache[user.id] : null;
+    const url=p?.avatar_url;
+    const name=p?.username || user?.email?.split("@")[0] || "Guest";
+    el.innerHTML=url ? `<img src="${esc(url)}" alt="Profile picture">` : `<span>${esc(initial(name))}</span>`;
   }
 
-  function vexoCreateMessage(message) {
-    const isSelf =
-      user &&
-      message.user_id === user.id;
+  async function uploadPfp(e){
+    const file=e.target.files?.[0]; e.target.value="";
+    if(!file) return;
+    if(!user?.id){ notify("You must be signed in to change your PFP."); return; }
+    if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type)){ notify("Please use PNG, JPG, WEBP, or GIF."); return; }
+    if(file.size>5*1024*1024){ notify("Profile pictures must be 5 MB or smaller."); return; }
 
-    const profile =
-      message.user_id
-        ? vexoProfileCache[message.user_id]
-        : null;
+    const ext={"image/png":"png","image/jpeg":"jpg","image/webp":"webp","image/gif":"gif"}[file.type];
+    const path=`${user.id}/profile.${ext}`;
+    notify("Uploading profile picture...");
 
-    const username =
-      profile?.username ||
-      message.username ||
-      "Guest";
+    try{
+      await db.storage.from(AVATAR_BUCKET).remove([
+        `${user.id}/profile.png`,`${user.id}/profile.jpg`,`${user.id}/profile.webp`,`${user.id}/profile.gif`
+      ]);
 
-    const avatarUrl =
-      profile?.avatar_url ||
-      null;
+      const {error:uploadError}=await db.storage.from(AVATAR_BUCKET).upload(path,file,{upsert:true,contentType:file.type,cacheControl:"3600"});
+      if(uploadError){ console.error(uploadError); notify("PFP upload failed: "+uploadError.message); return; }
 
-    const initial =
-      vexoInitial(username);
+      const {data}=db.storage.from(AVATAR_BUCKET).getPublicUrl(path);
+      if(!data?.publicUrl){ notify("Could not create the PFP URL."); return; }
 
-    const timeStr =
-      message.created_at
-        ? new Date(message.created_at).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit"
-          })
-        : "";
+      const url=data.publicUrl+`?v=${Date.now()}`;
+      const {error:profileError}=await db.from("profiles").update({avatar_url:url}).eq("id",user.id);
+      if(profileError){ console.error(profileError); notify("PFP uploaded, but your profile could not be updated: "+profileError.message); return; }
 
-    const canDelete =
-      isAdmin ||
-      (user && message.user_id === user.id);
+      avatarCache[user.id]=Object.assign({},avatarCache[user.id],{id:user.id,avatar_url:url});
+      refreshPfpPreview();
+      refreshChatAvatars();
+      notify("Profile picture updated.");
+    }catch(err){ console.error(err); notify("Profile picture upload failed."); }
+  }
 
-    const deleteBtn = canDelete
-      ? `
-        <button
-          class="chat-delete-btn"
-          onclick="window.deleteChatMessage('${vexoEsc(message.id)}')"
-          title="Delete message">
-          ✕
-        </button>
-      `
-      : "";
+  async function removePfp(){
+    if(!user?.id){ notify("You must be signed in."); return; }
+    if(!confirm("Remove your profile picture?")) return;
+    try{
+      await db.storage.from(AVATAR_BUCKET).remove([
+        `${user.id}/profile.png`,`${user.id}/profile.jpg`,`${user.id}/profile.webp`,`${user.id}/profile.gif`
+      ]);
+      const {error}=await db.from("profiles").update({avatar_url:null}).eq("id",user.id);
+      if(error){ console.error(error); notify("Could not remove your profile picture: "+error.message); return; }
+      avatarCache[user.id]=Object.assign({},avatarCache[user.id],{id:user.id,avatar_url:null});
+      refreshPfpPreview(); refreshChatAvatars(); notify("Profile picture removed.");
+    }catch(err){ console.error(err); notify("Could not remove your profile picture."); }
+  }
 
-    const avatar = avatarUrl
-      ? `
-        <div class="chat-avatar vexo-avatar-image">
-          <img
-            src="${vexoEsc(avatarUrl)}"
-            alt=""
-          >
-        </div>
-      `
-      : `
-        <div class="chat-avatar">
-          ${vexoEsc(initial)}
-        </div>
-      `;
+  function avatarHtml(m){
+    const p=profileFor(m), url=p?.avatar_url, name=nameFor(m);
+    return url
+      ? `<div class="chat-avatar vexo-avatar-image"><img src="${esc(url)}" alt=""></div>`
+      : `<div class="chat-avatar">${esc(initial(name))}</div>`;
+  }
 
-    let replyHtml = "";
-
-    if (message.reply_to) {
-      const parent =
-        vexoMessageCache[message.reply_to];
-
-      if (parent) {
-        const parentProfile =
-          parent.user_id
-            ? vexoProfileCache[parent.user_id]
-            : null;
-
-        const parentName =
-          parentProfile?.username ||
-          parent.username ||
-          "Guest";
-
-        const parentText =
-          typeof cleanMessage === "function"
-            ? cleanMessage(parent.content || "")
-            : (parent.content || "");
-
-        replyHtml = `
-          <div
-            class="vexo-chat-reply"
-            onclick="window.vexoJumpToMessage('${vexoEsc(parent.id)}')">
-
-            <strong>
-              Replying to ${vexoEsc(parentName)}
-            </strong>
-
-            <span>
-              ${vexoEsc(parentText)}
-            </span>
-
-          </div>
-        `;
+  function createEnhancedMessage(m){
+    const self=!!(user && m.user_id===user.id);
+    const canDelete=isAdmin || !!(user && m.user_id===user.id);
+    const deleteBtn=canDelete ? `<button class="chat-delete-btn" onclick="window.deleteChatMessage('${esc(m.id)}')" title="Delete message">✕</button>` : "";
+    let replyHtml="";
+    if(m.reply_to){
+      const parent=messageCache[m.reply_to];
+      if(parent){
+        replyHtml=`<div class="vexo-chat-reply" onclick="window.vexoJumpToMessage('${esc(parent.id)}')"><strong>Replying to ${esc(nameFor(parent))}</strong><span>${esc(clean(parent.content))}</span></div>`;
       }
     }
-
-    const cleanContent =
-      typeof cleanMessage === "function"
-        ? cleanMessage(message.content || "")
-        : (message.content || "");
-
-    return `
-      <div
-        class="chat-msg ${isSelf ? "self" : ""}"
-        id="chat-msg-${vexoEsc(message.id)}"
-        data-message-id="${vexoEsc(message.id)}">
-
-        ${avatar}
-
-        <div class="chat-bubble">
-
-          <div class="chat-meta">
-            <span class="chat-user">
-              ${vexoEsc(username)}
-            </span>
-
-            <span class="chat-time">
-              ${vexoEsc(timeStr)}
-            </span>
-
-            ${deleteBtn}
-          </div>
-
-          ${replyHtml}
-
-          <div class="chat-text">
-            ${vexoEsc(cleanContent)}
-          </div>
-
-          <div class="vexo-chat-actions">
-            <button
-              type="button"
-              class="vexo-reply-btn"
-              data-reply-id="${vexoEsc(message.id)}">
-              Reply
-            </button>
-          </div>
-
-        </div>
+    const time=m.created_at ? new Date(m.created_at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : "";
+    return `<div class="chat-msg ${self?"self":""}" id="chat-msg-${esc(m.id)}" data-vexo-message="1">
+      ${avatarHtml(m)}
+      <div class="chat-bubble">
+        <div class="chat-meta"><span class="chat-user">${esc(nameFor(m))}</span><span class="chat-time">${esc(time)}</span>${deleteBtn}</div>
+        ${replyHtml}
+        <div class="chat-text">${esc(clean(m.content))}</div>
+        <div class="vexo-chat-actions"><button type="button" class="vexo-reply-btn" data-reply-id="${esc(m.id)}">Reply</button></div>
       </div>
-    `;
+    </div>`;
   }
 
-  /* ============================================================
-     REFRESH CHAT AVATARS
-     ============================================================ */
+  function renderEnhanced(messages){
+    const box=document.getElementById("chatMessages"); if(!box) return;
+    messageCache={}; (messages||[]).forEach(m=>messageCache[m.id]=m);
+    if(!messages?.length){ box.innerHTML=`<div class="empty"><div class="empty-icon">CHAT</div><p>No messages yet. Say hello!</p></div>`; return; }
+    box.innerHTML=messages.map(createEnhancedMessage).join("");
+    box.scrollTop=box.scrollHeight;
+  }
 
-  function vexoRefreshAllChatAvatars() {
-    const chatContainer =
-      document.getElementById("chatMessages");
-
-    if (!chatContainer) return;
-
-    Object.values(vexoMessageCache).forEach(message => {
-      const el =
-        document.getElementById(`chat-msg-${message.id}`);
-
-      if (!el) return;
-
-      const profile =
-        message.user_id
-          ? vexoProfileCache[message.user_id]
-          : null;
-
-      const avatarUrl =
-        profile?.avatar_url ||
-        null;
-
-      const username =
-        profile?.username ||
-        message.username ||
-        "Guest";
-
-      const avatar =
-        el.querySelector(".chat-avatar");
-
-      if (!avatar) return;
-
-      if (avatarUrl) {
-        avatar.classList.add("vexo-avatar-image");
-
-        avatar.innerHTML = `
-          <img
-            src="${vexoEsc(avatarUrl)}"
-            alt=""
-          >
-        `;
-      } else {
-        avatar.classList.remove("vexo-avatar-image");
-
-        avatar.innerHTML =
-          vexoEsc(vexoInitial(username));
-      }
+  function refreshChatAvatars(){
+    document.querySelectorAll("#chatMessages [data-vexo-message]").forEach(el=>{
+      const id=el.id.replace(/^chat-msg-/i,""); const m=messageCache[id]; if(!m) return;
+      const old=el.querySelector(".chat-avatar"); if(!old) return;
+      old.outerHTML=avatarHtml(m);
     });
   }
 
-  /* ============================================================
-     REPLY STATE
-     ============================================================ */
-
-  function vexoEnsureReplyBar() {
-    const form =
-      document.getElementById("chatForm");
-
-    if (!form) return null;
-
-    if (document.getElementById("vexoReplyBar")) {
-      return document.getElementById("vexoReplyBar");
-    }
-
-    const wrap = document.createElement("div");
-    wrap.className = "vexo-chat-input-wrap";
-
-    const replyBar = document.createElement("div");
-
-    replyBar.id = "vexoReplyBar";
-    replyBar.className = "vexo-reply-bar";
-
-    replyBar.innerHTML = `
-      <div class="vexo-reply-bar-content">
-        <div class="vexo-reply-bar-title">
-          Replying to <span id="vexoReplyName"></span>
-        </div>
-
-        <div
-          class="vexo-reply-bar-text"
-          id="vexoReplyText">
-        </div>
-      </div>
-
-      <button
-        type="button"
-        class="vexo-reply-cancel"
-        id="vexoReplyCancel"
-        title="Cancel reply">
-        ×
-      </button>
-    `;
-
-    form.parentElement.insertBefore(replyBar, form);
-
-    document
-      .getElementById("vexoReplyCancel")
-      ?.addEventListener("click", vexoCancelReply);
-
-    return replyBar;
+  function ensureReplyBar(){
+    const form=document.getElementById("chatForm"); if(!form || document.getElementById("vexoReplyBar")) return;
+    const bar=document.createElement("div"); bar.id="vexoReplyBar"; bar.className="vexo-reply-bar";
+    bar.innerHTML=`<div class="vexo-reply-bar-content"><div class="vexo-reply-bar-title">Replying to <span id="vexoReplyName"></span></div><div class="vexo-reply-bar-text" id="vexoReplyText"></div></div><button type="button" class="vexo-reply-cancel" id="vexoReplyCancel">×</button>`;
+    form.parentElement.insertBefore(bar,form);
+    document.getElementById("vexoReplyCancel").onclick=cancelReply;
   }
 
-  function vexoStartReply(messageId) {
-    const message =
-      vexoMessageCache[messageId];
-
-    if (!message) return;
-
-    const profile =
-      message.user_id
-        ? vexoProfileCache[message.user_id]
-        : null;
-
-    const username =
-      profile?.username ||
-      message.username ||
-      "Guest";
-
-    const content =
-      typeof cleanMessage === "function"
-        ? cleanMessage(message.content || "")
-        : (message.content || "");
-
-    vexoReplyTarget = {
-      id: message.id,
-      username,
-      content
-    };
-
-    const bar = vexoEnsureReplyBar();
-
-    if (!bar) return;
-
-    document.getElementById("vexoReplyName").textContent =
-      username;
-
-    document.getElementById("vexoReplyText").textContent =
-      content;
-
-    bar.classList.add("show");
-
+  function startReply(id){
+    const m=messageCache[id]; if(!m) return;
+    replyTarget={id:m.id}; ensureReplyBar();
+    document.getElementById("vexoReplyName").textContent=nameFor(m);
+    document.getElementById("vexoReplyText").textContent=clean(m.content);
+    document.getElementById("vexoReplyBar").classList.add("show");
     document.getElementById("chatInput")?.focus();
   }
 
-  function vexoCancelReply() {
-    vexoReplyTarget = null;
-
-    document
-      .getElementById("vexoReplyBar")
-      ?.classList.remove("show");
+  function cancelReply(){
+    replyTarget=null;
+    document.getElementById("vexoReplyBar")?.classList.remove("show");
   }
 
-  window.vexoJumpToMessage = function(id) {
-    const target =
-      document.getElementById(`chat-msg-${id}`);
-
-    if (!target) return;
-
-    target.scrollIntoView({
-      behavior: "smooth",
-      block: "center"
-    });
-
-    target.style.transition = "box-shadow .2s";
-
-    target.style.boxShadow =
-      "0 0 0 2px var(--accent)";
-
-    setTimeout(() => {
-      target.style.boxShadow = "";
-    }, 1200);
+  window.vexoJumpToMessage=function(id){
+    const el=document.getElementById(`chat-msg-${id}`); if(!el) return;
+    el.scrollIntoView({behavior:"smooth",block:"center"});
+    el.style.boxShadow="0 0 0 2px var(--accent)";
+    setTimeout(()=>el.style.boxShadow="",1200);
   };
 
-  /* ============================================================
-     REPLY BUTTON EVENT DELEGATION
-     ============================================================ */
-
-  document.addEventListener("click", event => {
-    const button =
-      event.target.closest(".vexo-reply-btn");
-
-    if (!button) return;
-
-    const messageId =
-      button.dataset.replyId;
-
-    if (!messageId) return;
-
-    vexoStartReply(messageId);
+  document.addEventListener("click",e=>{
+    const b=e.target.closest(".vexo-reply-btn");
+    if(b) startReply(b.dataset.replyId);
   });
 
-  /* ============================================================
-     CUSTOM CHAT SEND
-     ============================================================ */
+  async function sendEnhanced(e){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const input=document.getElementById("chatInput"), button=document.getElementById("chatSendBtn"), text=input?.value.trim();
+    if(!text) return;
+    if(text.length>500){ notify("Messages can be up to 500 characters."); return; }
+    const blocked=typeof containsBlockedContent==="function" ? containsBlockedContent(text) : false;
+    const content=clean(text); if(!content.trim()) return;
+    if(button) button.disabled=true;
 
-  async function vexoSendReplyMessage(event) {
-    event.preventDefault();
+    const p=user?.id ? avatarCache[user.id] : null;
+    const username=p?.username || user?.email?.split("@")[0] || "Guest";
+    const row={user_id:user?.id||null,username,content,reply_to:replyTarget?.id||null};
 
-    const input =
-      document.getElementById("chatInput");
+    const {data,error}=await db.from("messages").insert(row).select("*").single();
+    if(button) button.disabled=false;
+    if(error){ console.error(error); notify("Message failed to send: "+error.message); return; }
 
-    const sendBtn =
-      document.getElementById("chatSendBtn");
-
-    const text =
-      input?.value.trim();
-
-    if (!text) return;
-
-    if (text.length > 500) {
-      vexoToast("Messages can be up to 500 characters.");
-      return;
-    }
-
-    const hasBlocked =
-      typeof containsBlockedContent === "function"
-        ? containsBlockedContent(text)
-        : false;
-
-    const sanitized =
-      typeof cleanMessage === "function"
-        ? cleanMessage(text)
-        : text;
-
-    if (!sanitized.trim()) return;
-
-    if (sendBtn) {
-      sendBtn.disabled = true;
-    }
-
-    const profile =
-      user?.id
-        ? vexoProfileCache[user.id]
-        : null;
-
-    const senderName =
-      profile?.username ||
-      user?.email?.split("@")[0] ||
-      "Guest";
-
-    const insertData = {
-      user_id: user?.id || null,
-      username: senderName,
-      content: sanitized,
-      reply_to: vexoReplyTarget?.id || null
-    };
-
-    const { data, error } =
-      await db
-        .from("messages")
-        .insert(insertData)
-        .select("*")
-        .single();
-
-    if (sendBtn) {
-      sendBtn.disabled = false;
-    }
-
-    if (error) {
-      console.error("VEXO message send:", error);
-
-      vexoToast(
-        "Message failed to send: " +
-        error.message
-      );
-
-      return;
-    }
-
-    if (data) {
-      vexoMessageCache[data.id] = data;
-
-      await vexoLoadProfilesForMessages([data]);
-
-      const existing =
-        document.getElementById(
-          `chat-msg-${data.id}`
-        );
-
-      if (!existing) {
-        const container =
-          document.getElementById("chatMessages");
-
-        if (container) {
-          if (container.querySelector(".empty")) {
-            container.innerHTML = "";
-          }
-
-          container.insertAdjacentHTML(
-            "beforeend",
-            vexoCreateMessage(data)
-          );
-
-          container.scrollTop =
-            container.scrollHeight;
-        }
+    if(data){
+      messageCache[data.id]=data;
+      await loadProfiles([data]);
+      const box=document.getElementById("chatMessages");
+      if(box && !document.getElementById(`chat-msg-${data.id}`)){
+        if(box.querySelector(".empty")) box.innerHTML="";
+        box.insertAdjacentHTML("beforeend",createEnhancedMessage(data));
+        box.scrollTop=box.scrollHeight;
       }
     }
-
-    input.value = "";
-
-    vexoCancelReply();
-
-    if (hasBlocked) {
-      vexoToast("Some words were automatically censored.");
-    }
+    input.value=""; cancelReply();
+    if(blocked) notify("Some words were automatically censored.");
   }
 
-  /* ============================================================
-     HOOK CHAT FORM
-     ============================================================ */
-
-  function vexoHookChatForm() {
-    const form =
-      document.getElementById("chatForm");
-
-    if (!form) return;
-
-    if (form.dataset.vexoReplyHooked === "1") {
-      return;
-    }
-
-    form.dataset.vexoReplyHooked = "1";
-
-    /*
-     * Capture phase prevents the original chat handler from
-     * also sending the message.
-     */
-    form.addEventListener(
-      "submit",
-      vexoSendReplyMessage,
-      true
-    );
-
-    vexoEnsureReplyBar();
+  function hookChatForm(){
+    const form=document.getElementById("chatForm"); if(!form) return;
+    if(form.dataset.vexoEnhancedSubmit==="1") return;
+    form.dataset.vexoEnhancedSubmit="1";
+    form.addEventListener("submit",sendEnhanced,true);
+    ensureReplyBar();
   }
 
-  /* ============================================================
-     CHAT STARTUP
-     * ============================================================ */
-
-  async function vexoStartEnhancedChat() {
-    const chatContainer =
-      document.getElementById("chatMessages");
-
-    if (!chatContainer) return;
-
-    vexoHookChatForm();
-
-    await vexoLoadChatMessages();
-
-    vexoEnhancedChatStarted = true;
+  async function loadAndRender(){
+    const box=document.getElementById("chatMessages"); if(!box) return;
+    const {data,error}=await db.from("messages").select("*").order("created_at",{ascending:true}).limit(60);
+    if(error){ console.error(error); return; }
+    messageCache={}; (data||[]).forEach(m=>messageCache[m.id]=m);
+    await loadProfiles(data||[]);
+    renderEnhanced(data||[]);
   }
 
-  /* ============================================================
-     HOOK EXISTING SESSION
-     ============================================================ */
-
-  function vexoHookSession() {
-    const original =
-      window.loadSession;
-
-    if (
-      typeof original !== "function" ||
-      original.__vexoPfpReplyHook
-    ) {
-      return;
-    }
-
-    async function wrappedLoadSession() {
-      const result =
-        await original.apply(this, arguments);
-
-      try {
-        await vexoLoadMyProfile();
-        vexoRefreshPfpSettings();
-        vexoRefreshAllChatAvatars();
-
-        if (document.getElementById("chatMessages")) {
-          await vexoStartEnhancedChat();
-        }
-      } catch (err) {
-        console.error(
-          "VEXO PFP/chat session refresh:",
-          err
-        );
-      }
-
+  function hookSession(){
+    if(sessionHooked) return;
+    const original=window.loadSession;
+    if(typeof original!=="function") return;
+    sessionHooked=true;
+    window.loadSession=async function(){
+      const result=await original.apply(this,arguments);
+      try{ await loadMyProfile(); injectSettings(); refreshPfpPreview(); refreshChatAvatars(); }catch(err){console.error(err);}
       return result;
-    }
-
-    wrappedLoadSession.__vexoPfpReplyHook = true;
-
-    window.loadSession =
-      wrappedLoadSession;
+    };
   }
 
-  /* ============================================================
-     CHAT PAGE OBSERVER
-     ============================================================ */
-
-  function vexoObserveChat() {
-    const observer =
-      new MutationObserver(() => {
-        vexoHookChatForm();
-
-        if (
-          document.getElementById("chatMessages") &&
-          !vexoEnhancedChatStarted
-        ) {
-          vexoStartEnhancedChat();
-        }
-      });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-  }
-
-  /* ============================================================
-     REALTIME MESSAGE LISTENER
-     ============================================================ */
-
-  function vexoSubscribeReplies() {
-    db.channel("vexo-pfp-replies")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages"
-        },
-        async payload => {
-
-          const message =
-            payload.new;
-
-          if (!message?.id) return;
-
-          vexoMessageCache[message.id] =
-            message;
-
-          await vexoLoadProfilesForMessages([
-            message
-          ]);
-
-          const container =
-            document.getElementById(
-              "chatMessages"
-            );
-
-          if (!container) return;
-
-          if (
-            document.getElementById(
-              `chat-msg-${message.id}`
-            )
-          ) {
-            return;
-          }
-
-          if (container.querySelector(".empty")) {
-            container.innerHTML = "";
-          }
-
-          container.insertAdjacentHTML(
-            "beforeend",
-            vexoCreateMessage(message)
-          );
-
-          container.scrollTop =
-            container.scrollHeight;
-        }
-      )
-      .subscribe();
-  }
-
-  /* ============================================================
-     INITIALIZATION
-     ============================================================ */
-
-  function vexoInit() {
-    vexoInjectPfpSettings();
-    vexoHookSession();
-    vexoObserveChat();
-    vexoSubscribeReplies();
-
-    if (user) {
-      vexoLoadMyProfile()
-        .then(() => {
-          vexoRefreshPfpSettings();
-          vexoRefreshAllChatAvatars();
-        });
-    }
-
-    if (document.getElementById("chatMessages")) {
-      vexoStartEnhancedChat();
+  function start(){
+    injectSettings();
+    hookSession();
+    hookChatForm();
+    if(document.getElementById("chatMessages") && !enhancedChatReady){
+      enhancedChatReady=true;
+      loadAndRender();
     }
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener(
-      "DOMContentLoaded",
-      vexoInit
-    );
-  } else {
-    vexoInit();
-  }
+  db.channel("vexo-pfp-replies")
+    .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},async payload=>{
+      const m=payload.new; if(!m?.id) return;
+      messageCache[m.id]=m;
+      await loadProfiles([m]);
+      const box=document.getElementById("chatMessages"); if(!box) return;
+      const old=document.getElementById(`chat-msg-${m.id}`);
+      if(old){ old.outerHTML=createEnhancedMessage(m); return; }
+      if(box.querySelector(".empty")) box.innerHTML="";
+      box.insertAdjacentHTML("beforeend",createEnhancedMessage(m));
+      box.scrollTop=box.scrollHeight;
+    })
+    .on("postgres_changes",{event:"DELETE",schema:"public",table:"messages"},payload=>{
+      delete messageCache[payload.old?.id];
+      document.getElementById(`chat-msg-${payload.old?.id}`)?.remove();
+    })
+    .subscribe();
 
-  /*
-   * Run again shortly after startup because your existing
-   * VEXO extensions dynamically create the Chat page.
-   */
-  setTimeout(vexoInit, 500);
-  setTimeout(vexoInit, 1500);
+  const observer=new MutationObserver(()=>{
+    injectSettings();
+    hookSession();
+    hookChatForm();
+    if(document.getElementById("chatMessages") && !enhancedChatReady){
+      enhancedChatReady=true;
+      loadAndRender();
+    }
+  });
 
+  observer.observe(document.body,{childList:true,subtree:true});
+
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start); else start();
+  setTimeout(start,500);
+  setTimeout(start,1500);
 })();
 </script>
