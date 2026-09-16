@@ -79,11 +79,11 @@ body.custom-cursor-enabled .cursor,body.custom-cursor-enabled .cursor-ring{opaci
 .crumbs .sep{color:rgba(138,151,181,.4);}
 .crumbs .cur{color:var(--accent2);}
 .top h1{margin:0;font-size:27px;font-weight:800;letter-spacing:-.02em;}
-.top-right{display:flex;align-items:center;gap:12px;}
-.icon-btn{position:relative;width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--muted);display:grid;place-items:center;font-size:16px;transition:.2s;}
+.top-right{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-shrink:0;min-width:max-content;}
+.icon-btn{position:relative;flex:0 0 42px;width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--muted);display:grid;place-items:center;font-size:16px;transition:.2s;}
 .icon-btn:hover{color:#fff;border-color:rgba(124,92,255,.5);transform:translateY(-1px);}
 .badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--grad);color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center;box-shadow:0 0 10px rgba(124,92,255,.6);}
-.status{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--green);padding:8px 13px;border:1px solid rgba(52,211,153,.28);border-radius:99px;background:rgba(52,211,153,.07);}
+.status{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;flex:0 0 auto;gap:7px;font-size:12px;font-weight:700;color:var(--green);padding:8px 13px;border:1px solid rgba(52,211,153,.28);border-radius:99px;background:rgba(52,211,153,.07);}
 .status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green);animation:pulse 2s ease-in-out infinite;}
 @keyframes pulse{50%{opacity:.45;}}
 
@@ -325,6 +325,18 @@ body.no-cursor .cursor,body.no-cursor .cursor-ring{opacity:0!important;}
 .check-down{color:var(--red);background:rgba(251,113,133,.10);border:1px solid rgba(251,113,133,.22);}
 .check-status{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;}
 @media(max-width:720px){.link-checker-row{grid-template-columns:1fr auto;}.check-status{grid-column:1/-1;}}
+
+@media (max-width: 760px){
+  .top{align-items:flex-start;}
+  .top-right{gap:8px;}
+  .status{font-size:10px;padding:7px 9px;}
+  .icon-btn{width:38px;height:38px;flex-basis:38px;}
+}
+@media (max-width: 560px){
+  .top{gap:10px;}
+  .top-right .status{font-size:9px;padding:6px 8px;}
+  .badge{top:-4px;right:-4px;}
+}
 </style>
 <style>
 
@@ -3816,6 +3828,12 @@ const BLOCKED_WORDS = [
     return filtered;
   }
 
+  // Expose the moderation functions for the newer chat/PFP/reply patches below.
+  // The original chat code lives inside a private IIFE, so later scripts cannot
+  // access cleanMessage()/containsBlockedContent() unless we export them here.
+  window.vexoCleanMessage = cleanMessage;
+  window.vexoContainsBlockedContent = containsBlockedContent;
+
   function escText(str = "") {
     return String(str).replace(/[&<>"']/g, m => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
@@ -4412,7 +4430,9 @@ const BLOCKED_WORDS = [
   const esc = v => String(v ?? "").replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
   const initial = n => String(n || "G").trim().charAt(0).toUpperCase() || "G";
   const notify = m => typeof toast === "function" ? toast(m) : console.log("[VEXO]", m);
-  const clean = v => typeof cleanMessage === "function" ? cleanMessage(v || "") : (v || "");
+  const clean = v => typeof window.vexoCleanMessage === "function"
+    ? window.vexoCleanMessage(v || "")
+    : String(v || "");
 
   async function loadProfiles(messages){
     const ids = [...new Set((messages || []).map(m => m.user_id).filter(Boolean))];
@@ -4613,8 +4633,13 @@ const BLOCKED_WORDS = [
     const input=document.getElementById("chatInput"), button=document.getElementById("chatSendBtn"), text=input?.value.trim();
     if(!text) return;
     if(text.length>500){ notify("Messages can be up to 500 characters."); return; }
-    const blocked=typeof containsBlockedContent==="function" ? containsBlockedContent(text) : false;
-    const content=clean(text); if(!content.trim()) return;
+    let blocked=typeof window.vexoContainsBlockedContent==="function"
+      ? window.vexoContainsBlockedContent(text)
+      : false;
+    const content=clean(text);
+    const wasSanitized = content !== text;
+    blocked = blocked || wasSanitized;
+    if(!content.trim()) return;
     if(button) button.disabled=true;
 
     const p=user?.id ? avatarCache[user.id] : null;
@@ -4735,7 +4760,9 @@ const BLOCKED_WORDS = [
   const REPLY_KEY = "vexo-chat-reply-target";
   const esc = v => String(v ?? "").replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;", "'":"&#039;"}[m]));
   const initial = n => String(n || "G").trim().charAt(0).toUpperCase() || "G";
-  const clean = v => typeof cleanMessage === "function" ? cleanMessage(v || "") : String(v || "");
+  const clean = v => typeof window.vexoCleanMessage === "function"
+    ? window.vexoCleanMessage(v || "")
+    : String(v || "");
   const notify = m => typeof toast === "function" ? toast(m) : console.log("[VEXO]",m);
 
   let messages = [];
