@@ -21,9 +21,9 @@
 }
 *{box-sizing:border-box;}
 html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);background:var(--bg);overflow-x:hidden;}
-body{cursor:none;}
+body{cursor:auto;}
 button,input,textarea,select{font:inherit;}
-button{cursor:none;}
+button{cursor:auto;}
 button:disabled{opacity:.5;cursor:not-allowed;}
 ::-webkit-scrollbar{width:9px;height:9px;}
 ::-webkit-scrollbar-track{background:transparent;}
@@ -41,9 +41,12 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 @keyframes float{50%{transform:translate(40px,-35px) scale(1.15);}}
 
 /* cursor */
-.cursor,.cursor-ring{position:fixed;left:0;top:0;border-radius:50%;pointer-events:none;z-index:9999;}
+.cursor,.cursor-ring{position:fixed;left:0;top:0;border-radius:50%;pointer-events:none;z-index:999999;display:block;opacity:0;}
 .cursor{width:9px;height:9px;background:#fff;box-shadow:0 0 12px rgba(25,211,255,.9),0 0 30px rgba(124,92,255,.5);}
 .cursor-ring{width:36px;height:36px;border:1.5px solid rgba(25,211,255,.55);}
+body.custom-cursor-enabled{cursor:none;}
+body.custom-cursor-enabled button{cursor:none;}
+body.custom-cursor-enabled .cursor,body.custom-cursor-enabled .cursor-ring{opacity:1;}
 
 /* layout */
 .app{display:flex;min-height:100vh;}
@@ -265,7 +268,7 @@ hr{border:0;border-top:1px solid var(--line);margin:22px 0;}
 .top-right{width:100%;justify-content:space-between;}
 .count-stats{grid-template-columns:1fr 1fr;}
 }
-@media(pointer:coarse){body,button{cursor:auto;}.cursor,.cursor-ring{display:none;}}
+
 
 /* ═══ SETTINGS ADDITIONS (new, appended — nothing above was modified) ═══ */
 .set-head{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(138,151,181,.55);margin:20px 0 10px;}
@@ -293,7 +296,7 @@ body.compact .submission{padding:13px;}
 body.compact .home-grid{gap:14px;}
 body.no-motion *{animation:none!important;transition:none!important;}
 body.no-cursor,body.no-cursor button{cursor:auto!important;}
-body.no-cursor .cursor,body.no-cursor .cursor-ring{display:none!important;}
+body.no-cursor .cursor,body.no-cursor .cursor-ring{opacity:0!important;}
 
 /* VEXO VIRUSTOTAL SAFETY CHECKER — APPEND-ONLY */
 .vt-summary{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 13px;}
@@ -345,6 +348,13 @@ body{
   display:none !important;
 }
 
+</style>
+
+<style>
+.vexo-click-shape{position:fixed;left:0;top:0;width:14px;height:14px;pointer-events:none;z-index:999999;border:1px solid var(--accent);transform:translate(-50%,-50%);animation:vexoShapeFade 700ms ease-out forwards;}
+.vexo-click-shape.square{border-radius:3px}.vexo-click-shape.diamond{transform:translate(-50%,-50%) rotate(45deg)}.vexo-click-shape.circle{border-radius:50%}.vexo-click-shape.triangle{width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:16px solid var(--accent2);border-top:0;background:transparent}.vexo-click-shape.hexagon{clip-path:polygon(25% 6%,75% 6%,100% 50%,75% 94%,25% 94%,0 50%);background:var(--pink);border:0}
+@keyframes vexoShapeFade{0%{opacity:0;scale:.2;rotate:0deg}20%{opacity:1}100%{opacity:0;scale:2.8;rotate:180deg;translate:0 -35px}}
+@media(prefers-reduced-motion:reduce){.vexo-click-shape{animation-duration:300ms}}
 </style>
 </head>
 <body>
@@ -1475,20 +1485,72 @@ document.querySelector(`[data-bg="${saved}"]`)?.click();
 window.vexoSetBackground?.(saved);
 
 /* CURSOR */
-let mx=0, my=0, cx=0, cy=0, rx=0, ry=0;
-const cursorEl = $("cursor"), ringEl = $("cursorRing");
-document.addEventListener("mousemove", e => { mx = e.clientX; my = e.clientY; });
+(() => {
+  const cursorEl = $("cursor");
+  const ringEl = $("cursorRing");
+  if(!cursorEl || !ringEl) return;
 
-function cursorLoop(){
-  cx += (mx-cx)*.22;
-  cy += (my-cy)*.22;
-  rx += (mx-rx)*.09;
-  ry += (my-ry)*.09;
-  cursorEl.style.transform = `translate(${cx}px,${cy}px) translate(-50%,-50%)`;
-  ringEl.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
-  requestAnimationFrame(cursorLoop);
-}
-cursorLoop();
+  let mx = window.innerWidth / 2;
+  let my = window.innerHeight / 2;
+  let cx = mx, cy = my;
+  let rx = mx, ry = my;
+  let started = false;
+
+  const move = e => {
+    mx = e.clientX;
+    my = e.clientY;
+    if(!started){
+      cx = mx; cy = my;
+      rx = mx; ry = my;
+      started = true;
+    }
+  };
+
+  document.addEventListener("pointermove", move, {passive:true});
+  document.addEventListener("mousemove", move, {passive:true});
+
+  function cursorLoop(){
+    cx += (mx-cx)*0.22;
+    cy += (my-cy)*0.22;
+    rx += (mx-rx)*0.10;
+    ry += (my-ry)*0.10;
+
+    cursorEl.style.left = "0px";
+    cursorEl.style.top = "0px";
+    ringEl.style.left = "0px";
+    ringEl.style.top = "0px";
+
+    cursorEl.style.transform = `translate3d(${cx}px,${cy}px,0) translate(-50%,-50%)`;
+    ringEl.style.transform = `translate3d(${rx}px,${ry}px,0) translate(-50%,-50%)`;
+
+    requestAnimationFrame(cursorLoop);
+  }
+
+  cursorLoop();
+
+  // Keep the custom cursor enabled by default while still honoring the Settings toggle.
+  document.body.classList.add("custom-cursor-enabled");
+})();
+
+
+/* VEXO GEOMETRIC CLICK EFFECT */
+(() => {
+  const types = ["square","diamond","circle","triangle","hexagon"];
+  document.addEventListener("click", event => {
+    for(let i=0;i<5;i++){
+      const shape=document.createElement("span");
+      shape.className="vexo-click-shape "+types[Math.floor(Math.random()*types.length)];
+      const angle=Math.random()*Math.PI*2, distance=8+Math.random()*24;
+      shape.style.left=(event.clientX+Math.cos(angle)*distance)+"px";
+      shape.style.top=(event.clientY+Math.sin(angle)*distance)+"px";
+      const size=8+Math.random()*14;
+      if(!shape.classList.contains("triangle")){shape.style.width=size+"px";shape.style.height=size+"px";}
+      shape.style.animationDelay=(Math.random()*80)+"ms";
+      document.body.appendChild(shape);
+      setTimeout(()=>shape.remove(),900);
+    }
+  });
+})();
 
 /* AUTH STATE */
 db.auth.onAuthStateChange(() => setTimeout(loadSession, 0));
@@ -1612,10 +1674,11 @@ loadSession();
   }
 
   function applyCursor(){
+    document.body.classList.toggle("custom-cursor-enabled", !!settings.cursor);
     document.body.classList.toggle("no-cursor", !settings.cursor);
 
     const el = $("setCursor");
-    if(el) el.checked = settings.cursor;
+    if(el) el.checked = !!settings.cursor;
   }
 
   function applyStatus(){
@@ -3622,6 +3685,35 @@ const BLOCKED_WORDS = [
   "wtf",
   "lmfao"
 ];
+
+  // Large generated expansion: common variants, plurals, endings, and obfuscations.
+  // This creates well over 1,000 filter entries while keeping the source maintainable.
+  const EXTENDED_FILTER_BASE = [
+    "fuck","shit","bitch","ass","asshole","dick","cock","pussy","cunt","whore","slut",
+    "bastard","piss","damn","douche","prick","scumbag","twat","wanker","bollock","cum",
+    "nigger","nigga","faggot","fag","retard","rape","rapist","porn","porno","sex",
+    "horny","boob","boobs","tit","tits","dildo","blowjob","handjob","jerkoff","motherfuck"
+  ];
+  const EXTENDED_FILTER_SUFFIXES = [
+    "","s","es","ed","ing","er","ers","y","ies","ier","iest","ness","head","heads",
+    "hole","holes","bag","bags","face","faces","brain","brains","wit","wits","wipe","wipes",
+    "wad","wads"," stain","stains"," lord","lords"," boy","boys"," girl","girls"," ass"," asses"
+  ];
+  const EXTENDED_FILTER_LEET = {a:"a4@",e:"e3",i:"i1!",o:"o0",s:"s5$",t:"t7",g:"g69",b:"b8",c:"c(<"};
+  const EXTENDED_FILTER_SET = new Set(BLOCKED_WORDS);
+  for (const base of EXTENDED_FILTER_BASE) {
+    for (const suffix of EXTENDED_FILTER_SUFFIXES) {
+      EXTENDED_FILTER_SET.add((base + suffix).replace(/\s+/g, ""));
+    }
+    let leet = "";
+    for (const ch of base) leet += EXTENDED_FILTER_LEET[ch] || ch;
+    EXTENDED_FILTER_SET.add(leet);
+    EXTENDED_FILTER_SET.add(base.split("").join(" "));
+    EXTENDED_FILTER_SET.add(base.split("").join("."));
+    EXTENDED_FILTER_SET.add(base.split("").join("_"));
+  }
+  // Add generated entries to the existing list without replacing any existing entries.
+  BLOCKED_WORDS.push(...Array.from(EXTENDED_FILTER_SET));
 
   const BLOCKED_PHRASES = [
     "fuck you", "fuck off", "fucking idiot", "fucking stupid", "shut the fuck up", "go fuck yourself",
