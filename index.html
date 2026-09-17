@@ -5804,3 +5804,85 @@ const BLOCKED_WORDS = [
   setTimeout(inject,2500);
 })();
 </script>
+<!-- ============================================================
+     VEXO JAVASCRIPT OBFUSCATOR — APPEND-ONLY
+     ============================================================ -->
+<script>
+(() => {
+  "use strict";
+
+  function getEl(id){ return document.getElementById(id); }
+
+  function bytesToBase64(bytes){
+    let binary = "";
+    const chunk = 0x8000;
+    for(let i = 0; i < bytes.length; i += chunk){
+      binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+    }
+    return btoa(binary);
+  }
+
+  function randomIdentifier(){
+    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let out = "_0x";
+    for(let i = 0; i < 7; i++) out += chars[Math.floor(Math.random() * chars.length)];
+    return out;
+  }
+
+  function buildObfuscated(source){
+    const encoder = new TextEncoder();
+    const sourceBytes = encoder.encode(source);
+    const key = 17 + Math.floor(Math.random() * 239);
+    const encrypted = new Uint8Array(sourceBytes.length);
+
+    for(let i = 0; i < sourceBytes.length; i++){
+      encrypted[i] = sourceBytes[i] ^ key;
+    }
+
+    const payload = bytesToBase64(encrypted);
+    const a = randomIdentifier();
+    const b = randomIdentifier();
+    const c = randomIdentifier();
+    const d = randomIdentifier();
+    const e = randomIdentifier();
+    const f = randomIdentifier();
+
+    return `(function(){const ${a}=${key},${b}="${payload}",${c}=atob(${b}),${d}=new Uint8Array(${c}.length);for(let ${e}=0;${e}<${c}.length;${e}++)${d}[${e}]=${c}.charCodeAt(${e})^${a};const ${f}=new TextDecoder().decode(${d});(0,eval)(${f});})();`;
+  }
+
+  window.vexoObfuscateJs = function(){
+    const input = getEl("vexoObfuscatorInput");
+    const output = getEl("vexoObfuscatorOutput");
+    const stat = getEl("vexoObfuscatorStats");
+    const source = String(input?.value || "");
+
+    if(!source.trim()){
+      if(output) output.value = "";
+      if(stat) stat.textContent = "Paste JavaScript into the input box first.";
+      return;
+    }
+
+    try{
+      const result = buildObfuscated(source);
+      if(output) output.value = result;
+      const percent = Math.round((result.length / source.length) * 100);
+      if(stat){
+        stat.textContent = `${source.length.toLocaleString()} input characters → ${result.length.toLocaleString()} output characters · ${percent}% of input size`;
+      }
+    }catch(err){
+      console.error("VEXO JavaScript Obfuscator:", err);
+      if(output) output.value = "";
+      if(stat) stat.textContent = "Could not obfuscate the supplied JavaScript.";
+    }
+  };
+
+  window.vexoObfuscatorClear = function(){
+    const input = getEl("vexoObfuscatorInput");
+    const output = getEl("vexoObfuscatorOutput");
+    const stat = getEl("vexoObfuscatorStats");
+    if(input) input.value = "";
+    if(output) output.value = "";
+    if(stat) stat.textContent = "";
+  };
+})();
+</script>
