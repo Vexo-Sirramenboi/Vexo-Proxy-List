@@ -9,19 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- Embed Info -->
-<meta property="og:title" content="The Vexo Network" />
-<meta property="og:description" content="Community-powered links, tools and resources. Build VEXO together." />
-<meta property="og:url" content="https://vexo-sirramenboi.github.io/Vexo-Proxy-List/" />
-
-<!-- Preview Image -->
-<meta property="og:image" content="https://vexo-sirramenboi.github.io/Vexo-Proxy-List/vexo-preview.png" />
-<meta name="twitter:card" content="summary_large_image" />
-
-<!-- Embed Accent Color -->
-<meta name="theme-color" content="#4e8cff" />
-  
 <style>
 :root{
 --bg:#06090f;--bg2:#0a0f1c;--card:#0e1626;--surface:rgba(17,24,43,.72);
@@ -381,6 +368,10 @@ body{
 @keyframes vexoShapeFade{0%{opacity:0;scale:.2;rotate:0deg}20%{opacity:1}100%{opacity:0;scale:2.8;rotate:180deg;translate:0 -35px}}
 @media(prefers-reduced-motion:reduce){.vexo-click-shape{animation-duration:300ms}}
 </style>
+<style>
+.vexo-js-obfuscator-card .ta-sm{min-height:130px;}
+#vexoObfuscatorStats{color:var(--muted);}
+</style>
 </head>
 <body>
 
@@ -420,6 +411,7 @@ body{
 
 <div class="nav-label">Tools</div>
 <button data-page="tools"><span class="ic">▦</span><span class="lbl">Toolbox</span></button>
+<button data-page="ai"><span class="ic">✦</span><span class="lbl">VEXO AI</span></button>
 <button data-page="proxy"><span class="ic">⇄</span><span class="lbl">Web Proxy</span></button>
 <button data-page="fileshare"><span class="ic">↗</span><span class="lbl">File Sharing</span></button>
 
@@ -692,7 +684,34 @@ body{
 <textarea class="input ta-sm tool-out" id="caseOut" readonly placeholder="Converted text..."></textarea>
 </div>
 
+<div class="tool-card vexo-js-obfuscator-card">
+<div class="tool-head"><h4>JavaScript Obfuscator</h4><span class="chip">security</span></div>
+<div class="muted-sm" style="line-height:1.55">Apply maximum multi-layer JavaScript obfuscation with randomized encryption, permutation, custom encoding, chunk shuffling, and integrity checks. Everything runs locally in your browser.</div>
+<textarea class="input ta-sm" id="vexoObfuscatorInput" spellcheck="false" placeholder="Paste JavaScript here..."></textarea>
+<div class="actions">
+<button class="btn mini primary" type="button" onclick="vexoObfuscateJs()">Obfuscate</button>
+<button class="btn mini" type="button" onclick="vexoObfuscatorClear()">Clear</button>
+<button class="btn mini" type="button" onclick="copyToClipboard(document.getElementById('vexoObfuscatorOutput').value,'Obfuscated JavaScript')">Copy</button>
 </div>
+<div class="muted-sm" id="vexoObfuscatorStats" style="min-height:16px"></div>
+<textarea class="input ta-sm tool-out" id="vexoObfuscatorOutput" spellcheck="false" readonly placeholder="Obfuscated JavaScript output..."></textarea>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- VEXO AI -->
+<section id="aiPage" class="page hidden">
+<div class="panel" style="padding:0;overflow:hidden;min-height:calc(100dvh - 150px);">
+<iframe
+  id="vexoAiFrame"
+  src="https://vexo-sirramenboi.github.io/Vexo-AI/"
+  title="VEXO AI"
+  style="display:block;width:100%;height:calc(100dvh - 150px);min-height:650px;border:0;background:#06090f;"
+  loading="lazy"
+  allow="clipboard-read; clipboard-write"
+></iframe>
 </div>
 </section>
 
@@ -880,6 +899,7 @@ function showPage(name){
     favorites:["Favorites","Your saved community links."],
     settings:["Settings","Customize your VEXO experience."],
     tools:["Toolbox","Handy client-side utilities for everyday tasks."],
+    ai:["VEXO AI","Your VEXO-powered AI assistant."],
     proxy:["Web Proxy","Browse through the VEXO network."],
     admin:["Admin Center","Moderate submissions and manage the VEXO community."],
     fileshare:["File Sharing","Share files with the VEXO community."]
@@ -2575,8 +2595,6 @@ async function runVirusTotalChecker(){
 })();
 </script>
 
-</body>
-</html>
 
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- VEXO TERMS / ANNOUNCEMENTS / TAKEDOWN MANAGEMENT — ADD-ON -->
@@ -3841,12 +3859,6 @@ const BLOCKED_WORDS = [
     return filtered;
   }
 
-  // Expose the moderation functions for the newer chat/PFP/reply patches below.
-  // The original chat code lives inside a private IIFE, so later scripts cannot
-  // access cleanMessage()/containsBlockedContent() unless we export them here.
-  window.vexoCleanMessage = cleanMessage;
-  window.vexoContainsBlockedContent = containsBlockedContent;
-
   function escText(str = "") {
     return String(str).replace(/[&<>"']/g, m => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
@@ -4443,9 +4455,7 @@ const BLOCKED_WORDS = [
   const esc = v => String(v ?? "").replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
   const initial = n => String(n || "G").trim().charAt(0).toUpperCase() || "G";
   const notify = m => typeof toast === "function" ? toast(m) : console.log("[VEXO]", m);
-  const clean = v => typeof window.vexoCleanMessage === "function"
-    ? window.vexoCleanMessage(v || "")
-    : String(v || "");
+  const clean = v => typeof cleanMessage === "function" ? cleanMessage(v || "") : (v || "");
 
   async function loadProfiles(messages){
     const ids = [...new Set((messages || []).map(m => m.user_id).filter(Boolean))];
@@ -4646,13 +4656,8 @@ const BLOCKED_WORDS = [
     const input=document.getElementById("chatInput"), button=document.getElementById("chatSendBtn"), text=input?.value.trim();
     if(!text) return;
     if(text.length>500){ notify("Messages can be up to 500 characters."); return; }
-    let blocked=typeof window.vexoContainsBlockedContent==="function"
-      ? window.vexoContainsBlockedContent(text)
-      : false;
-    const content=clean(text);
-    const wasSanitized = content !== text;
-    blocked = blocked || wasSanitized;
-    if(!content.trim()) return;
+    const blocked=typeof containsBlockedContent==="function" ? containsBlockedContent(text) : false;
+    const content=clean(text); if(!content.trim()) return;
     if(button) button.disabled=true;
 
     const p=user?.id ? avatarCache[user.id] : null;
@@ -4773,9 +4778,7 @@ const BLOCKED_WORDS = [
   const REPLY_KEY = "vexo-chat-reply-target";
   const esc = v => String(v ?? "").replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;", "'":"&#039;"}[m]));
   const initial = n => String(n || "G").trim().charAt(0).toUpperCase() || "G";
-  const clean = v => typeof window.vexoCleanMessage === "function"
-    ? window.vexoCleanMessage(v || "")
-    : String(v || "");
+  const clean = v => typeof cleanMessage === "function" ? cleanMessage(v || "") : String(v || "");
   const notify = m => typeof toast === "function" ? toast(m) : console.log("[VEXO]",m);
 
   let messages = [];
@@ -5805,3 +5808,238 @@ const BLOCKED_WORDS = [
 })();
 </script>
 
+<!-- ============================================================
+     VEXO JAVASCRIPT OBFUSCATOR — APPEND-ONLY
+     ============================================================ -->
+<script>
+(() => {
+  "use strict";
+
+  const $o = id => document.getElementById(id);
+
+  function bytesToBase64(bytes){
+    let binary = "";
+    const chunk = 0x8000;
+    for(let i = 0; i < bytes.length; i += chunk){
+      binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+    }
+    return btoa(binary);
+  }
+
+  function random32(){
+    const a = new Uint32Array(1);
+    if(window.crypto?.getRandomValues){
+      window.crypto.getRandomValues(a);
+      return a[0] >>> 0;
+    }
+    return (Math.random() * 0x100000000) >>> 0;
+  }
+
+  function ident(){
+    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let out = "_0x";
+    for(let i = 0; i < 8; i++) out += chars[Math.floor(Math.random() * chars.length)];
+    return out;
+  }
+
+  function prng(seed){
+    let s = seed >>> 0;
+    return function(){
+      s ^= s << 13; s >>>= 0;
+      s ^= s >>> 17; s >>>= 0;
+      s ^= s << 5; s >>>= 0;
+      return s >>> 0;
+    };
+  }
+
+  function checksum(bytes){
+    let h = 2166136261 >>> 0;
+    for(let i = 0; i < bytes.length; i++){
+      h ^= bytes[i];
+      h = Math.imul(h, 16777619) >>> 0;
+      h ^= h >>> 13;
+    }
+    return h >>> 0;
+  }
+
+  function customAlphabet(seed){
+    const base = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    const arr = base.split("");
+    const r = prng(seed || 0x13579bdf);
+    for(let i = arr.length - 1; i > 0; i--){
+      const j = r() % (i + 1);
+      const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr.join("");
+  }
+
+  function remapBase64(b64, alphabet){
+    const standard = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    const map = Object.create(null);
+    for(let i = 0; i < standard.length; i++) map[standard[i]] = alphabet[i];
+    let out = "";
+    for(let i = 0; i < b64.length; i++) out += map[b64[i]] || b64[i];
+    return out;
+  }
+
+  function buildMaximum(source){
+    const utf8 = new TextEncoder().encode(source);
+    const seedA = random32() || 0x6d2b79f5;
+    const seedB = random32() || 0x1b873593;
+    const seedP = random32() || 0x243f6a88;
+    const seedQ = random32() || 0x85a308d3;
+    const alphabet = customAlphabet(seedA ^ seedB);
+
+    // Layer 1: reverse the UTF-8 payload.
+    const reversed = new Uint8Array(utf8.length);
+    for(let i = 0; i < utf8.length; i++) reversed[i] = utf8[utf8.length - 1 - i];
+
+    // Layer 2: two independent pseudo-random streams plus bit mixing.
+    const ea = prng(seedA), eb = prng(seedB);
+    const encrypted = new Uint8Array(reversed.length);
+    for(let i = 0; i < reversed.length; i++){
+      const ka = ea(), kb = eb();
+      let x = reversed[i] ^ (ka & 255) ^ ((kb >>> 8) & 255);
+      x = ((x << 3) | (x >>> 5)) & 255;
+      encrypted[i] = x ^ ((i * 29 + (ka >>> 16) + (kb >>> 24)) & 255);
+    }
+
+    // Layer 3: seeded Fisher-Yates byte permutation. The decoder regenerates it.
+    const order = Array.from({length: encrypted.length}, (_, i) => i);
+    const ps = prng(seedP);
+    for(let i = order.length - 1; i > 0; i--){
+      const j = ps() % (i + 1);
+      const t = order[i]; order[i] = order[j]; order[j] = t;
+    }
+    const permuted = new Uint8Array(encrypted.length);
+    for(let i = 0; i < order.length; i++) permuted[i] = encrypted[order[i]];
+
+    // Layer 4: custom-alphabet Base64.
+    let mapped = remapBase64(bytesToBase64(permuted), alphabet);
+
+    // Layer 5: reversed chunks, shuffled with a regenerated order.
+    const partCount = Math.max(5, Math.min(15, 5 + (seedQ % 11)));
+    const parts = [];
+    for(let i = 0; i < partCount; i++){
+      const a0 = Math.floor(i * mapped.length / partCount);
+      const a1 = Math.floor((i + 1) * mapped.length / partCount);
+      parts.push(mapped.slice(a0, a1).split("").reverse().join(""));
+    }
+    const q = prng(seedQ);
+    for(let i = parts.length - 1; i > 0; i--){
+      const j = q() % (i + 1);
+      const t = parts[i]; parts[i] = parts[j]; parts[j] = t;
+    }
+
+    const ids = Array.from({length: 18}, ident);
+    const [A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R] = ids;
+    const junkA = (random32() % 0x7fffffff) + 1;
+    const junkB = (random32() % 0x7fffffff) + 1;
+    const sum = checksum(utf8);
+    const size = utf8.length;
+    const encodedParts = JSON.stringify(parts);
+
+    return `(function(){const ${A}=${seedA}>>>0,${B}=${seedB}>>>0,${C}=${seedP}>>>0,${D}=${seedQ}>>>0,${E}=${JSON.stringify(alphabet)},${F}=${partCount},${G}=${size},${H}=${sum}>>>0,${I}=${encodedParts},${J}=${junkA},${K}=${junkB};let ${L}=((${J}^${K})>>>0);if((${L}&7)===7){${L}=(${L}+0x13579bdf)>>>0}else{${L}=(${L}^0x5a5a5a5a)>>>0}void ${L};function ${N}(x){let s=x>>>0;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s>>>=0;s^=s<<5;s>>>=0;return s>>>0}}const ${O}=${N}(${A}),${P}=${N}(${B}),${Q}=${N}(${C}),${R}=${N}(${D});void(${Q}()^${R}());const _std="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",_rev=Object.create(null);for(let _i=0;_i<_std.length;_i++)_rev[${E}[_i]]=_std[_i];const _parts=${I};let _idx=Array.from({length:${F}},(_,i)=>i);const _qr=${N}(${D});for(let _i=_idx.length-1;_i>0;_i--){const _j=_qr()%(_i+1),_t=_idx[_i];_idx[_i]=_idx[_j];_idx[_j]=_t;}const _original=new Array(${F});for(let _i=0;_i<_idx.length;_i++)_original[_idx[_i]]=_parts[_i];let _mapped="";for(let _i=0;_i<_original.length;_i++)_mapped+=_original[_i].split("").reverse().join("");let _b64="";for(let _i=0;_i<_mapped.length;_i++)_b64+=_rev[_mapped[_i]]||_mapped[_i];const _bin=atob(_b64),_per=new Uint8Array(_bin.length);for(let _i=0;_i<_bin.length;_i++)_per[_i]=_bin.charCodeAt(_i);const _ord=Array.from({length:_per.length},(_,i)=>i),_ps=${N}(${C});for(let _i=_ord.length-1;_i>0;_i--){const _j=_ps()%(_i+1),_t=_ord[_i];_ord[_i]=_ord[_j];_ord[_j]=_t;}const _enc=new Uint8Array(_per.length);for(let _i=0;_i<_ord.length;_i++)_enc[_ord[_i]]=_per[_i];const _ra=${N}(${A}),_rb=${N}(${B}),_out=new Uint8Array(_enc.length);for(let _i=0;_i<_enc.length;_i++){const _ka=_ra(),_kb=_rb();let _x=_enc[_i]^((_i*29+(_ka>>>16)+(_kb>>>24))&255);_x=((_x>>>3)|(_x<<5))&255;_out[_i]=_x^(_ka&255)^((_kb>>>8)&255);}let _chk=2166136261>>>0;for(let _i=0;_i<_out.length;_i++){_chk^=_out[_i];_chk=Math.imul(_chk,16777619)>>>0;_chk^=_chk>>>13;}if(_chk!==(${H}>>>0)||_out.length!==${G})throw new Error("Payload integrity check failed");_out.reverse();const _src=new TextDecoder().decode(_out);globalThis["\x65\x76\x61\x6c"](_src)})();`;
+  }
+
+  window.vexoObfuscateJs = function(){
+    const input = $o("vexoObfuscatorInput");
+    const output = $o("vexoObfuscatorOutput");
+    const stat = $o("vexoObfuscatorStats");
+    const source = String(input?.value || "");
+
+    if(!source.trim()){
+      if(output) output.value = "";
+      if(stat) stat.textContent = "Paste JavaScript into the input box first.";
+      return;
+    }
+
+    try{
+      const result = buildMaximum(source);
+      if(output) output.value = result;
+      if(stat){
+        stat.textContent = `${source.length.toLocaleString()} input characters → ${result.length.toLocaleString()} output characters · maximum multi-layer obfuscation`;
+      }
+    }catch(err){
+      console.error("VEXO JavaScript Obfuscator:", err);
+      if(output) output.value = "";
+      if(stat) stat.textContent = "Could not obfuscate the supplied JavaScript.";
+    }
+  };
+
+  window.vexoObfuscatorClear = function(){
+    const input = $o("vexoObfuscatorInput");
+    const output = $o("vexoObfuscatorOutput");
+    const stat = $o("vexoObfuscatorStats");
+    if(input) input.value = "";
+    if(output) output.value = "";
+    if(stat) stat.textContent = "";
+  };
+})();
+</script>
+
+
+<style id="vexo-chromebook-sidebar-fix">
+/* VEXO CHROMEBOOK SIDEBAR RESPONSIVE FIX — APPEND-ONLY */
+.side{
+  overflow:hidden;
+  min-height:100dvh;
+}
+.side .nav{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:2px 2px 10px 0;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(124,92,255,.45) transparent;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.side .nav::-webkit-scrollbar{width:7px;}
+.side .nav::-webkit-scrollbar-track{background:transparent;}
+.side .nav::-webkit-scrollbar-thumb{background:rgba(124,92,255,.35);border-radius:99px;}
+.side .nav::-webkit-scrollbar-thumb:hover{background:rgba(124,92,255,.58);}
+.side .userbox{flex:none;}
+
+@media (max-height:820px) and (min-width:921px){
+  .side{padding:14px 12px;}
+  .brand{padding:4px 7px 14px;font-size:20px;}
+  .brand .logo{width:34px;height:34px;}
+  .nav{gap:2px;}
+  .nav-label{padding:9px 11px 4px;}
+  .nav button{padding:8px 11px;font-size:12.5px;gap:10px;min-height:38px;}
+  .nav .ic{width:20px;font-size:14px;}
+  .userbox{padding:9px 10px;gap:9px;}
+  .userbox .avatar{width:36px;height:36px;border-radius:10px;}
+  .userbox .ub-info strong{font-size:12.5px;}
+  .userbox .ub-info small{font-size:10px;}
+  .userbox .btn{padding:6px 9px;font-size:11px;}
+}
+
+@media (max-width:1100px) and (min-width:921px){
+  .side{width:225px;padding-left:12px;padding-right:10px;}
+  .main{margin-left:225px;width:calc(100% - 225px);padding-left:24px;padding-right:24px;}
+  .brand{font-size:18px;letter-spacing:.12em;}
+  .nav button{font-size:12.5px;gap:9px;padding-left:10px;padding-right:10px;}
+}
+
+@media (max-width:920px){
+  .side{width:76px;padding:14px 8px;}
+  .side .nav{padding-right:0;}
+  .main{margin-left:76px;width:calc(100% - 76px);}
+}
+
+@media (max-width:640px){
+  .side{width:68px;padding:10px 6px;}
+  .main{margin-left:68px;width:calc(100% - 68px);padding-left:14px;padding-right:14px;}
+  .side .nav button{min-height:40px;}
+  .side .nav .ic{width:100%;font-size:15px;}
+}
+
+@media (max-width:920px) and (max-height:760px){
+  .side{padding-top:9px;padding-bottom:9px;}
+  .brand{padding-bottom:11px;}
+  .nav button{padding-top:8px;padding-bottom:8px;min-height:37px;}
+}
+</style>
