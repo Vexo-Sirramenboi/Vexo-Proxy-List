@@ -471,8 +471,6 @@ Questions, legal notices, copyright complaints, security reports, and other requ
 
 **VEXO Contact Email:** [VexoSirramenboiContactOfficial@proton.me](mailto:VexoSirramenboiContactOfficial@proton.me)
 
-**Website:** [YOUR VEXO WEBSITE URL]
-
 For legal or copyright requests, include enough information for VEXO to identify and evaluate the issue.
 
 ---
