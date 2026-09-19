@@ -1,0 +1,489 @@
+# VEXO Community — Terms of Service
+
+**Effective Date:** September 19, 2026
+**Last Updated:** September 19, 2026
+
+Welcome to VEXO Community.
+
+These Terms of Service ("Terms") govern your access to and use of VEXO Community, including the website, Community Vault, chat, submission systems, VEXO AI, Toolbox, Web Proxy, File Sharing integrations, administrative features, and related services (collectively, the "Service").
+
+By accessing or using the Service, you agree to these Terms. If you do not agree to these Terms, do not use the Service.
+
+---
+
+## 1. About VEXO
+
+VEXO is a community-driven web directory and collection of tools intended to help users discover, share, organize, and interact with useful online resources.
+
+VEXO may provide:
+
+* Community-submitted links
+* Community chat and replies
+* Favorites and voting
+* User accounts
+* Administrative and moderation tools
+* Link safety and availability checking
+* VEXO AI
+* Browser-based developer and utility tools
+* Web Proxy functionality
+* File-sharing integrations
+* Announcements and community information
+
+Features may be added, changed, suspended, or removed at any time.
+
+---
+
+## 2. Eligibility
+
+You must comply with the age requirements and laws applicable to you when using the Service.
+
+You are responsible for ensuring that your use of VEXO is permitted in your location.
+
+You may not use the Service if doing so would violate applicable law, regulation, court order, or other legal requirement.
+
+---
+
+## 3. Accounts
+
+Some features may require an account.
+
+When creating or using an account, you agree to:
+
+* Provide accurate information where required
+* Keep your login credentials secure
+* Not share your account in a way that creates security or moderation problems
+* Not impersonate another person, organization, or administrator
+* Notify the appropriate VEXO administrator if you believe your account has been compromised
+
+You are responsible for activity performed through your account except where prohibited by applicable law.
+
+VEXO may suspend or terminate accounts that violate these Terms or create security, abuse, or moderation concerns.
+
+---
+
+## 4. Community Conduct
+
+You may not use VEXO to:
+
+* Harass, threaten, stalk, or target other users
+* Spam or flood the Service
+* Distribute malicious software or harmful code
+* Attempt to compromise VEXO, Supabase, GitHub Pages, or connected infrastructure
+* Attempt to bypass authentication, authorization, rate limits, or security controls
+* Abuse automated systems or APIs
+* Submit fraudulent, deceptive, or intentionally misleading information
+* Impersonate another user or administrator
+* Use the Service to facilitate unlawful activity
+* Circumvent a suspension or other moderation action
+* Interfere with another user's normal use of the Service
+
+VEXO may remove content or restrict accounts when reasonably necessary to protect users, infrastructure, or the Service.
+
+---
+
+## 5. User-Submitted Links
+
+Users may submit URLs and related information to the Community Vault.
+
+By submitting content, you represent that:
+
+* You have the right to submit the material or link
+* Your submission does not knowingly violate applicable law
+* Your submission does not intentionally distribute malware or other harmful material
+* The information you provide is not intentionally fraudulent
+
+Submitting a link does not guarantee that VEXO will publish, approve, promote, or permanently retain it.
+
+VEXO may review, reject, modify, hide, or remove submissions at its discretion, subject to applicable law.
+
+---
+
+## 6. Community Content
+
+Users may submit messages, links, descriptions, tags, and other content ("User Content").
+
+You retain ownership of User Content to the extent you have rights in that content.
+
+By submitting User Content to VEXO, you grant VEXO a non-exclusive, worldwide, royalty-free license to host, store, reproduce, display, transmit, format, and otherwise process that content as reasonably necessary to operate, maintain, moderate, and improve the Service.
+
+This license does not transfer ownership of your User Content to VEXO.
+
+VEXO may remove or restrict User Content that violates these Terms, applicable law, or reasonable moderation requirements.
+
+---
+
+## 7. Chat and Messaging
+
+VEXO may provide community chat, replies, and other communication features.
+
+Messages may be subject to:
+
+* Automated filtering
+* Spam prevention
+* Moderation
+* Abuse reports
+* Administrative review
+* Deletion or removal
+
+Do not treat VEXO chat as a private or confidential communication channel.
+
+Do not post passwords, authentication secrets, private keys, financial credentials, or other sensitive information in public chat.
+
+---
+
+## 8. Moderation and Reports
+
+VEXO may use automated systems and human review to identify or handle:
+
+* Spam
+* Abusive content
+* Malicious links
+* Policy violations
+* Security issues
+* Other content requiring moderation
+
+VEXO may investigate reports and take actions including content removal, link removal, restrictions, or account suspension.
+
+Automated systems can make mistakes. Moderation decisions may be reviewed or changed when appropriate.
+
+---
+
+## 9. Link Safety and Availability
+
+VEXO may use external services such as availability checks or VirusTotal to evaluate submitted links.
+
+These checks are informational and may be incomplete, delayed, inaccurate, or unavailable.
+
+A link being marked as reachable does not guarantee that it is safe.
+
+A link being flagged does not necessarily establish that the linked website is malicious or unlawful.
+
+VEXO does not guarantee the safety, legality, availability, accuracy, or reliability of third-party websites.
+
+Users are responsible for deciding whether they should access a third-party website.
+
+---
+
+## 10. VEXO AI
+
+VEXO may provide access to an AI-powered assistant ("VEXO AI").
+
+AI-generated responses may be incorrect, incomplete, outdated, misleading, or unsuitable for a particular situation.
+
+You agree not to rely on VEXO AI as a substitute for qualified professional advice.
+
+You should independently verify important information before relying on it.
+
+VEXO AI may process your prompts and conversation content to provide the requested response and operate the AI feature.
+
+VEXO may impose usage limits, rate limits, or other restrictions on AI functionality.
+
+VEXO does not guarantee uninterrupted availability, accuracy, or performance of VEXO AI or its underlying providers.
+
+---
+
+## 11. Third-Party AI and Services
+
+VEXO may rely on third-party services to provide certain functionality, including hosting, databases, AI inference, security scanning, analytics, storage, authentication, and external websites.
+
+These services may have their own terms and privacy policies.
+
+VEXO is not responsible for third-party outages, policy changes, content, security incidents, pricing changes, or service availability outside VEXO's reasonable control.
+
+---
+
+## 12. Toolbox
+
+VEXO may provide browser-based utilities such as:
+
+* Base64 encoding and decoding
+* URL encoding and decoding
+* JSON formatting
+* Hash generation
+* UUID generation
+* Password generation
+* Text counting
+* Timestamp conversion
+* Color conversion
+* Case conversion
+* JavaScript obfuscation
+* Other developer tools
+
+Some tools operate entirely within your browser.
+
+Tool output may contain errors. You are responsible for reviewing output before using it in software, production systems, documents, or other environments.
+
+Do not use VEXO tools to facilitate unlawful activity or to attack systems you do not own or have permission to test.
+
+---
+
+## 13. JavaScript Obfuscator
+
+The VEXO JavaScript Obfuscator is provided as a code-transformation utility.
+
+Obfuscation does not guarantee that code is impossible to analyze, reverse engineer, or recover.
+
+You are responsible for ensuring that any code you obfuscate is code you have the legal right to modify and distribute.
+
+Do not use the obfuscator to conceal malware, credential theft, unauthorized access, or other prohibited activity.
+
+---
+
+## 14. Web Proxy
+
+VEXO may provide Web Proxy functionality for accessing external websites through an embedded or proxy-based interface.
+
+VEXO does not own or control third-party websites accessed through the proxy.
+
+You are responsible for complying with the rules, terms, licenses, copyrights, and laws applicable to websites you access.
+
+VEXO may restrict, disable, or remove proxy access to particular destinations where appropriate.
+
+---
+
+## 15. File Sharing
+
+VEXO may integrate with file-sharing functionality.
+
+You are responsible for files you upload, share, or distribute.
+
+You may not use VEXO or connected file-sharing services to distribute:
+
+* Malware
+* Stolen credentials
+* Illegal content
+* Content you do not have permission to distribute
+* Material intended to compromise or damage systems
+
+Uploaded material may be removed when necessary for security, moderation, legal compliance, or service operation.
+
+---
+
+## 16. Intellectual Property
+
+The VEXO website, original interface, branding, logos, software, graphics, and other original materials provided by VEXO may be protected by intellectual-property laws.
+
+Unless otherwise stated, you may not:
+
+* Claim VEXO's original work as your own
+* Remove copyright or attribution notices where prohibited
+* Reproduce proprietary VEXO materials for commercial purposes without permission
+* Use VEXO branding in a way that falsely implies endorsement or affiliation
+
+Third-party names, trademarks, logos, and linked content remain the property of their respective owners.
+
+---
+
+## 17. Copyright and Takedown Requests
+
+VEXO respects applicable copyright and intellectual-property laws.
+
+If you believe content available through the Service infringes your rights, you may submit a takedown request through the available VEXO reporting or legal-request process.
+
+Requests should contain enough information for VEXO to understand the claimed infringement and identify the relevant material.
+
+Submitting a request does not guarantee removal.
+
+VEXO may request additional information where reasonably necessary to evaluate a request.
+
+False or fraudulent legal claims may have consequences under applicable law.
+
+---
+
+## 18. DMCA Notices
+
+Where applicable, copyright complaints may be handled under the Digital Millennium Copyright Act ("DMCA") or other applicable copyright laws.
+
+A properly submitted copyright notice should generally identify the copyrighted work, identify the allegedly infringing material, provide contact information, include the required statements, and be submitted by or on behalf of an authorized rights holder.
+
+VEXO may remove or restrict access to material in response to valid notices and may process counter-notifications where applicable.
+
+Nothing in this section creates obligations beyond those imposed by applicable law.
+
+---
+
+## 19. Privacy
+
+Your use of VEXO may involve the collection or processing of information such as account information, technical information, submitted content, and service activity.
+
+Please refer to the VEXO Privacy Policy for information about how personal information is collected, used, stored, and disclosed.
+
+These Terms do not replace the Privacy Policy.
+
+---
+
+## 20. Security
+
+You may not attempt to:
+
+* Bypass authentication
+* Access accounts or data without authorization
+* Exploit vulnerabilities without permission
+* Circumvent technical restrictions
+* Interfere with Service infrastructure
+* Conduct denial-of-service attacks
+* Deploy malicious code against VEXO or its service providers
+
+Responsible security research may be subject to separate rules or authorization.
+
+Report suspected security vulnerabilities through the designated VEXO security contact when available.
+
+---
+
+## 21. Availability and Changes to the Service
+
+VEXO is provided on an evolving basis.
+
+Features may experience:
+
+* Downtime
+* Bugs
+* Maintenance
+* Rate limits
+* Third-party outages
+* Data loss
+* Compatibility issues
+* Unexpected changes
+
+VEXO may modify, suspend, or discontinue all or part of the Service at any time.
+
+Where appropriate, reasonable efforts may be made to communicate major changes.
+
+---
+
+## 22. Disclaimers
+
+To the maximum extent permitted by applicable law, VEXO is provided on an "as is" and "as available" basis.
+
+VEXO does not guarantee that:
+
+* The Service will always be available
+* The Service will be error-free
+* Information will always be accurate
+* Links will always work
+* External websites will remain available
+* AI responses will always be correct
+* Security checks will detect every threat
+* Third-party services will remain available
+
+You use the Service at your own risk, subject to rights that cannot legally be excluded.
+
+---
+
+## 23. Third-Party Websites
+
+VEXO may link to or embed third-party websites, applications, APIs, files, or services.
+
+VEXO does not necessarily endorse or control third-party content.
+
+Your interactions with third parties are governed by their own terms and policies.
+
+You are responsible for evaluating whether a third-party service is appropriate for your use.
+
+---
+
+## 24. Limitation of Liability
+
+To the maximum extent permitted by applicable law, VEXO and its operators, contributors, and service providers will not be liable for indirect, incidental, special, consequential, exemplary, or similar damages arising from your use of or inability to use the Service.
+
+This may include loss of data, loss of access, business interruption, security incidents, third-party content, or reliance on AI-generated information.
+
+Nothing in these Terms excludes liability that cannot legally be excluded.
+
+---
+
+## 25. Indemnification
+
+To the maximum extent permitted by applicable law, you agree to defend, indemnify, and hold harmless VEXO and its operators, contributors, and service providers from claims, damages, liabilities, costs, and expenses arising from:
+
+* Your violation of these Terms
+* Your User Content
+* Your misuse of the Service
+* Your violation of another person's rights
+* Your violation of applicable law
+
+This section applies only to the extent permitted by applicable law.
+
+---
+
+## 26. Enforcement
+
+VEXO may take reasonable measures to enforce these Terms.
+
+Depending on the situation, this may include:
+
+* Removing content
+* Removing links
+* Restricting features
+* Rate limiting
+* Suspending accounts
+* Terminating accounts
+* Blocking access
+* Reporting suspected unlawful conduct to appropriate authorities where legally required or reasonably necessary
+
+Enforcement actions may depend on the severity and circumstances of an incident.
+
+---
+
+## 27. Termination
+
+You may stop using VEXO at any time.
+
+VEXO may suspend or terminate access when reasonably necessary, including for violations of these Terms, security concerns, abuse, legal requirements, or operational reasons.
+
+Sections that by their nature should survive termination may continue to apply, including provisions concerning intellectual property, disclaimers, liability, and disputes.
+
+---
+
+## 28. Changes to These Terms
+
+VEXO may update these Terms from time to time.
+
+When material changes are made, VEXO may update the "Last Updated" date or provide additional notice where appropriate.
+
+Continued use of the Service after updated Terms become effective constitutes acceptance of the updated Terms to the extent permitted by applicable law.
+
+---
+
+## 29. Governing Law
+
+These Terms shall be interpreted under the laws of the **United States of America**, except where applicable law requires otherwise.
+
+Nothing in this section is intended to remove or limit rights that cannot legally be waived or excluded.
+
+---
+
+## 30. Severability
+
+If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions will remain in effect to the extent permitted by law.
+
+---
+
+## 31. Entire Agreement
+
+These Terms, together with any applicable Privacy Policy and other policies expressly incorporated into them, constitute the agreement governing your use of VEXO unless a separate written agreement applies.
+
+---
+
+## 32. Contact
+
+Questions, legal notices, copyright complaints, security reports, and other requests may be sent to:
+
+**VEXO Contact Email:** [VexoSirramenboiContactOfficial@proton.me](mailto:VexoSirramenboiContactOfficial@proton.me)
+
+**Website:** [YOUR VEXO WEBSITE URL]
+
+For legal or copyright requests, include enough information for VEXO to identify and evaluate the issue.
+
+---
+
+## 33. Acknowledgment
+
+By using VEXO Community, you acknowledge that you have read and understood these Terms of Service and agree to be bound by them to the extent permitted by applicable law.
+
+---
+
+**VEXO Community**
+Community Link Directory & Discovery Platform
+
+**Effective Date:** September 19, 2026
