@@ -81,7 +81,7 @@ VEXO may remove content or restrict accounts when reasonably necessary to protec
 
 ---
 
-5. User-Submitted Links
+## 5. User-Submitted Links
 
 Users may submit URLs and related information to the Community Vault.
 
