@@ -368,10 +368,6 @@ body{
 @keyframes vexoShapeFade{0%{opacity:0;scale:.2;rotate:0deg}20%{opacity:1}100%{opacity:0;scale:2.8;rotate:180deg;translate:0 -35px}}
 @media(prefers-reduced-motion:reduce){.vexo-click-shape{animation-duration:300ms}}
 </style>
-<style>
-.vexo-js-obfuscator-card .ta-sm{min-height:130px;}
-#vexoObfuscatorStats{color:var(--muted);}
-</style>
 </head>
 <body>
 
@@ -411,7 +407,6 @@ body{
 
 <div class="nav-label">Tools</div>
 <button data-page="tools"><span class="ic">▦</span><span class="lbl">Toolbox</span></button>
-<button data-page="ai"><span class="ic">✦</span><span class="lbl">VEXO AI</span></button>
 <button data-page="proxy"><span class="ic">⇄</span><span class="lbl">Web Proxy</span></button>
 <button data-page="fileshare"><span class="ic">↗</span><span class="lbl">File Sharing</span></button>
 
@@ -684,34 +679,7 @@ body{
 <textarea class="input ta-sm tool-out" id="caseOut" readonly placeholder="Converted text..."></textarea>
 </div>
 
-<div class="tool-card vexo-js-obfuscator-card">
-<div class="tool-head"><h4>JavaScript Obfuscator</h4><span class="chip">security</span></div>
-<div class="muted-sm" style="line-height:1.55">Apply maximum multi-layer JavaScript obfuscation with randomized encryption, permutation, custom encoding, chunk shuffling, and integrity checks. Everything runs locally in your browser.</div>
-<textarea class="input ta-sm" id="vexoObfuscatorInput" spellcheck="false" placeholder="Paste JavaScript here..."></textarea>
-<div class="actions">
-<button class="btn mini primary" type="button" onclick="vexoObfuscateJs()">Obfuscate</button>
-<button class="btn mini" type="button" onclick="vexoObfuscatorClear()">Clear</button>
-<button class="btn mini" type="button" onclick="copyToClipboard(document.getElementById('vexoObfuscatorOutput').value,'Obfuscated JavaScript')">Copy</button>
 </div>
-<div class="muted-sm" id="vexoObfuscatorStats" style="min-height:16px"></div>
-<textarea class="input ta-sm tool-out" id="vexoObfuscatorOutput" spellcheck="false" readonly placeholder="Obfuscated JavaScript output..."></textarea>
-</div>
-
-</div>
-</div>
-</section>
-
-<!-- VEXO AI -->
-<section id="aiPage" class="page hidden">
-<div class="panel" style="padding:0;overflow:hidden;min-height:calc(100dvh - 150px);">
-<iframe
-  id="vexoAiFrame"
-  src="https://vexo-sirramenboi.github.io/Vexo-AI/"
-  title="VEXO AI"
-  style="display:block;width:100%;height:calc(100dvh - 150px);min-height:650px;border:0;background:#06090f;"
-  loading="lazy"
-  allow="clipboard-read; clipboard-write"
-></iframe>
 </div>
 </section>
 
@@ -781,6 +749,118 @@ body{
   </div>
   <div id="vtSummary" class="vt-summary"></div>
   <div id="vtResults" class="vt-grid"></div>
+</div>
+
+
+<!-- VEXO SECURITY & IP AUDIT — APPEND-ONLY -->
+<div class="panel vexo-security-panel" id="vexoSecurityPanel">
+  <div class="panel-head">
+    <div>
+      <h3>Security &amp; IP Audit</h3>
+      <div class="muted-sm">Admin-only security logs, IP investigation, and access bans.</div>
+    </div>
+    <span class="status security-admin-badge">ADMIN ONLY</span>
+  </div>
+
+  <div class="vexo-security-notice">
+    <div class="vexo-security-notice-icon">!</div>
+    <div>
+      <strong>Security logging is enabled</strong>
+      <div class="muted-sm">IP addresses and related request metadata are restricted to VEXO administrators. Use these records for security and moderation purposes and keep your privacy/retention policy up to date.</div>
+    </div>
+  </div>
+
+  <div class="vexo-security-stats">
+    <div class="vexo-security-stat"><strong id="securityLoadedCount">0</strong><span>Loaded events</span></div>
+    <div class="vexo-security-stat"><strong id="securityUniqueCount">0</strong><span>Unique IPs</span></div>
+    <div class="vexo-security-stat"><strong id="securityBlockedCount">0</strong><span>Blocked events</span></div>
+    <div class="vexo-security-stat"><strong id="securityBanCount">0</strong><span>Active bans</span></div>
+  </div>
+
+  <div class="toolbar vexo-security-toolbar">
+    <input class="input search" id="securitySearch" placeholder="Search IP, action, path, country, user ID...">
+    <select class="select" id="securityActionFilter" style="width:180px">
+      <option value="">All actions</option>
+      <option value="page_view">Page views</option>
+      <option value="link_open">Link opens</option>
+      <option value="link_submit">Link submissions</option>
+      <option value="chat_message">Chat messages</option>
+      <option value="admin_ban">Admin bans</option>
+      <option value="admin_unban">Admin unbans</option>
+      <option value="blocked">Blocked requests</option>
+    </select>
+    <select class="select" id="securityLimit" style="width:130px">
+      <option value="100">100 events</option>
+      <option value="200" selected>200 events</option>
+      <option value="300">300 events</option>
+    </select>
+    <button class="btn primary" id="securityRefreshBtn" onclick="loadSecurityPanel()">Refresh</button>
+  </div>
+
+  <div class="vexo-security-layout">
+    <div class="vexo-security-box">
+      <div class="vexo-security-box-head">
+        <div>
+          <h4>Recent Security Events</h4>
+          <div class="muted-sm">Newest events appear first.</div>
+        </div>
+      </div>
+      <div class="vexo-security-table-wrap">
+        <table class="vexo-security-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>IP</th>
+              <th>Action</th>
+              <th>Path</th>
+              <th>User</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="securityLogRows">
+            <tr><td colspan="8"><div class="security-empty">Open Admin Center to load security events.</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="vexo-security-box">
+      <div class="vexo-security-box-head">
+        <div>
+          <h4>IP Ban Management</h4>
+          <div class="muted-sm">Ban an address temporarily or permanently.</div>
+        </div>
+      </div>
+
+      <form class="vexo-security-ban-form" id="securityBanForm">
+        <div>
+          <label>IP address</label>
+          <input class="input" id="securityBanIp" placeholder="203.0.113.50" required maxlength="64">
+        </div>
+        <div>
+          <label>Reason</label>
+          <input class="input" id="securityBanReason" placeholder="Repeated abuse" maxlength="240" required>
+        </div>
+        <div>
+          <label>Duration</label>
+          <select class="select" id="securityBanDuration">
+            <option value="3600">1 hour</option>
+            <option value="86400" selected>24 hours</option>
+            <option value="604800">7 days</option>
+            <option value="2592000">30 days</option>
+            <option value="permanent">Permanent</option>
+          </select>
+        </div>
+        <button class="btn danger" type="submit">Ban IP</button>
+      </form>
+
+      <div class="vexo-security-ban-list" id="securityBanList">
+        <div class="security-empty">No active bans loaded.</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="panel">
@@ -899,7 +979,6 @@ function showPage(name){
     favorites:["Favorites","Your saved community links."],
     settings:["Settings","Customize your VEXO experience."],
     tools:["Toolbox","Handy client-side utilities for everyday tasks."],
-    ai:["VEXO AI","Your VEXO-powered AI assistant."],
     proxy:["Web Proxy","Browse through the VEXO network."],
     admin:["Admin Center","Moderate submissions and manage the VEXO community."],
     fileshare:["File Sharing","Share files with the VEXO community."]
@@ -2595,6 +2674,741 @@ async function runVirusTotalChecker(){
 })();
 </script>
 
+
+<!-- ============================================================
+     VEXO CHAT FEATURES — MENTIONS / PROFILES / PRESENCE / EDIT / REPORT
+     Append-only enhancement for the existing VEXO Community Chat.
+     ============================================================ -->
+<style>
+.vexo-chat-feature-menu{position:fixed;z-index:1000001;min-width:190px;padding:6px;background:rgba(12,17,30,.99);border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.5);display:none}
+.vexo-chat-feature-menu.show{display:block}
+.vexo-chat-feature-menu button{display:block;width:100%;border:0;background:transparent;color:var(--text);padding:9px 10px;text-align:left;border-radius:8px;font-size:12px;cursor:pointer}
+.vexo-chat-feature-menu button:hover{background:rgba(124,92,255,.13)}
+.vexo-chat-feature-menu .danger:hover{background:rgba(251,113,133,.12);color:var(--red)}
+.vexo-chat-feature-mention-box{position:absolute;left:0;right:0;bottom:calc(100% + 8px);max-height:180px;overflow:auto;padding:6px;background:rgba(12,17,30,.99);border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.5);display:none;z-index:100}
+.vexo-chat-feature-mention-box.show{display:block}
+.vexo-chat-feature-mention-item{display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;cursor:pointer}
+.vexo-chat-feature-mention-item:hover,.vexo-chat-feature-mention-item.active{background:rgba(124,92,255,.13)}
+.vexo-chat-feature-mini-avatar{width:26px;height:26px;border-radius:8px;background:var(--grad);display:grid;place-items:center;font-size:10px;font-weight:800;flex:none;overflow:hidden}
+.vexo-chat-feature-mini-avatar img{width:100%;height:100%;object-fit:cover}
+.vexo-chat-feature-online-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#475569;margin-left:5px;vertical-align:middle}
+.vexo-chat-feature-online-dot.online{background:#34d399;box-shadow:0 0 8px rgba(52,211,153,.7)}
+.chat-msg .chat-user,.chat-msg .chat-avatar{cursor:pointer}
+.chat-msg .chat-user:hover{text-decoration:underline}
+.vexo-chat-feature-edited{font-size:9px;color:var(--muted);font-style:italic;margin-left:4px}
+.vexo-chat-feature-mention{color:var(--accent2);font-weight:700;cursor:pointer}
+.vexo-chat-feature-profile{position:fixed;inset:0;z-index:1000002;background:rgba(2,6,15,.72);display:grid;place-items:center;padding:18px}
+.vexo-chat-feature-profile-card{width:min(420px,100%);padding:20px;background:rgba(12,17,30,.98);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.55)}
+.vexo-chat-feature-profile-head{display:flex;align-items:center;gap:14px}
+.vexo-chat-feature-profile-avatar{width:62px;height:62px;border-radius:18px;background:var(--grad);overflow:hidden;display:grid;place-items:center;color:#fff;font-size:22px;font-weight:800;flex:none}
+.vexo-chat-feature-profile-avatar img{width:100%;height:100%;object-fit:cover}
+.vexo-chat-feature-profile-name{font-size:18px;font-weight:800}
+.vexo-chat-feature-profile-state{font-size:11px;color:var(--muted);margin-top:3px}
+.vexo-chat-feature-profile-state.online{color:#34d399}
+.vexo-chat-feature-profile-bio{margin-top:16px;font-size:13px;line-height:1.55;color:var(--text)}
+.vexo-chat-feature-profile-actions{display:flex;justify-content:flex-end;margin-top:18px}
+.vexo-chat-feature-report-note{width:100%;min-height:100px;resize:vertical}
+.chat-text .vexo-chat-feature-mention{color:var(--accent2)}
+</style>
+<script>
+(() => {
+  "use strict";
+
+  const state={
+    menu:null,
+    message:null,
+    messageUsers:new Map(),
+    mentionResults:[],
+    mentionIndex:0,
+    presenceTimer:null,
+    hooked:false
+  };
+
+  const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+  const clean=v=>typeof window.vexoCleanMessage==="function"?window.vexoCleanMessage(v||""):String(v||"");
+  const notify=m=>typeof toast==="function"?toast(m):console.log("[VEXO]",m);
+  const initial=n=>String(n||"G").trim().charAt(0).toUpperCase()||"G";
+
+  function mentionHtml(text){
+    const safe=esc(clean(text));
+    return safe.replace(/(^|\s)@([a-zA-Z0-9_]{2,32})/g,'$1<span class="vexo-chat-feature-mention" data-mention-name="$2">@$2</span>');
+  }
+
+  function ensureInputMentionBox(){
+    const input=document.getElementById("chatInput");
+    const form=document.getElementById("chatForm");
+    if(!input||!form) return null;
+    form.style.position="relative";
+    let box=document.getElementById("vexoChatMentionBox");
+    if(!box){
+      box=document.createElement("div");
+      box.id="vexoChatMentionBox";
+      box.className="vexo-chat-feature-mention-box";
+      const wrap=input.parentElement;
+      if(wrap && wrap.classList.contains("chat-input-wrap")) wrap.appendChild(box); else form.insertBefore(box,input);
+    }
+    return box;
+  }
+
+  function hideMentions(){
+    const box=document.getElementById("vexoChatMentionBox");
+    if(box){box.classList.remove("show");box.innerHTML="";}
+    state.mentionResults=[];state.mentionIndex=0;
+  }
+
+  async function updateMentions(){
+    const input=document.getElementById("chatInput"),box=ensureInputMentionBox();
+    if(!input||!box) return;
+    const cursor=input.selectionStart??input.value.length;
+    const before=input.value.slice(0,cursor);
+    const m=before.match(/(^|\s)@([a-zA-Z0-9_]*)$/);
+    if(!m){hideMentions();return;}
+    const q=m[2].trim();
+    let qy=db.from("profiles").select("id,username,avatar_url").order("username").limit(8);
+    if(q) qy=qy.ilike("username",`%${q}%`);
+    const {data,error}=await qy;
+    if(error||!data?.length){hideMentions();return;}
+    state.mentionResults=data;state.mentionIndex=0;
+    box.innerHTML=data.map((p,i)=>`
+      <div class="vexo-chat-feature-mention-item ${i===0?"active":""}" data-mention-index="${i}">
+        <span class="vexo-chat-feature-mini-avatar">${p.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:esc(initial(p.username))}</span>
+        <span>@${esc(p.username||"User")}</span>
+      </div>`).join("");
+    box.classList.add("show");
+  }
+
+  function chooseMention(index){
+    const input=document.getElementById("chatInput"),p=state.mentionResults[index];
+    if(!input||!p)return;
+    const cursor=input.selectionStart??input.value.length;
+    const before=input.value.slice(0,cursor),after=input.value.slice(cursor);
+    const replaced=before.replace(/@([a-zA-Z0-9_]*)$/,"@"+(p.username||"")+" ");
+    const next=replaced+after;
+    input.value=next;
+    const pos=replaced.length;input.focus();input.setSelectionRange(pos,pos);hideMentions();
+  }
+
+  async function indexMessages(){
+    const {data}=await db.from("messages").select("id,user_id,username").order("created_at",{ascending:true}).limit(500);
+    state.messageUsers.clear();
+    (data||[]).forEach(m=>state.messageUsers.set(String(m.id),m));
+    document.querySelectorAll("#chatMessages .chat-msg").forEach(addMessageDataset);
+    updatePresenceDots();
+  }
+
+  function addMessageDataset(row){
+    if(!row?.id)return;
+    const id=row.id.replace(/^chat-msg-/i,"");
+    const m=state.messageUsers.get(String(id));
+    if(m){row.dataset.vexoUserId=m.user_id||"";row.dataset.vexoUsername=m.username||row.dataset.vexoUsername||"Guest";}
+  }
+
+  async function getProfile(userId,fallbackName){
+    if(!userId)return {id:null,username:fallbackName||"Guest"};
+    const {data}=await db.from("profiles").select("id,username,avatar_url,bio").eq("id",userId).maybeSingle();
+    return data||{id:userId,username:fallbackName||"Member"};
+  }
+
+  function presenceOnline(userId){
+    const el=document.querySelector(`#vexo-presence-store [data-user-id="${CSS.escape(String(userId||""))}"]`);
+    return !!el;
+  }
+
+  function ensurePresenceStore(){
+    let store=document.getElementById("vexo-presence-store");
+    if(!store){store=document.createElement("div");store.id="vexo-presence-store";store.hidden=true;document.body.appendChild(store);}return store;
+  }
+
+  async function refreshPresence(){
+    ensurePresenceStore();
+    const cutoff=new Date(Date.now()-90000).toISOString();
+    const {data}=await db.from("user_presence").select("user_id,last_seen").gt("last_seen",cutoff).limit(2000);
+    const store=document.getElementById("vexo-presence-store");
+    store.innerHTML=(data||[]).map(x=>`<span data-user-id="${esc(x.user_id)}"></span>`).join("");
+    updatePresenceDots();
+  }
+
+  function updatePresenceDots(){
+    document.querySelectorAll("#chatMessages .chat-msg").forEach(row=>{
+      addMessageDataset(row);
+      const uid=row.dataset.vexoUserId;
+      if(!uid)return;
+      const holder=row.querySelector(".chat-meta");
+      if(holder){
+        let dot=holder.querySelector(".vexo-chat-feature-online-dot");
+        if(!dot){dot=document.createElement("span");dot.className="vexo-chat-feature-online-dot";holder.appendChild(dot);}
+        dot.classList.toggle("online",presenceOnline(uid));
+        dot.title=presenceOnline(uid)?"Online":"Offline";
+      }
+    });
+  }
+
+  async function touchPresence(){
+    if(!user?.id)return;
+    const {error}=await db.from("user_presence").upsert({user_id:user.id,last_seen:new Date().toISOString()},{onConflict:"user_id"});
+    if(error) console.warn("VEXO presence:",error.message);
+  }
+
+  function startPresence(){
+    if(state.presenceTimer)clearInterval(state.presenceTimer);
+    if(!user?.id)return;
+    touchPresence();refreshPresence();
+    state.presenceTimer=setInterval(()=>{touchPresence();refreshPresence();},30000);
+  }
+
+  function ensureMenu(){
+    if(state.menu)return state.menu;
+    state.menu=document.createElement("div");
+    state.menu.className="vexo-chat-feature-menu";
+    document.body.appendChild(state.menu);
+    return state.menu;
+  }
+
+  function closeMenu(){state.menu?.classList.remove("show");state.message=null;}
+
+  function openMenu(x,y,row){
+    const menu=ensureMenu(),id=row.id.replace(/^chat-msg-/i,"");
+    const canEdit=!!(user?.id&&row.dataset.vexoUserId===user.id);
+    const canDelete=!!(isAdmin||canEdit);
+    const name=row.dataset.vexoUsername||row.querySelector(".chat-user")?.textContent||"User";
+    const text=row.querySelector(".chat-text")?.textContent||"";
+    state.message={id,name,text,row,canEdit,canDelete};
+    menu.innerHTML=`${canEdit?'<button data-vexo-chat-action="edit">Edit message</button>':''}<button data-vexo-chat-action="report">Report message</button>${canDelete?'<button class="danger" data-vexo-chat-action="delete">Delete message</button>':''}`;
+    menu.style.left=Math.min(x,window.innerWidth-205)+"px";
+    menu.style.top=Math.min(y,window.innerHeight-150)+"px";
+    menu.classList.add("show");
+  }
+
+  async function editMessage(){
+    const m=state.message;if(!m||!m.canEdit)return;
+    const next=prompt("Edit your message:",m.text);if(next===null)return;
+    const cleaned=clean(next.trim());
+    if(!cleaned){notify("Message cannot be empty.");return;}
+    if(cleaned.length>500){notify("Messages can be up to 500 characters.");return;}
+    const {data,error}=await db.from("messages").update({content:cleaned,edited_at:new Date().toISOString()}).eq("id",m.id).eq("user_id",user.id).select("*").single();
+    if(error){notify("Could not edit message: "+error.message);return;}
+    const row=m.row;
+    const textEl=row?.querySelector(".chat-text");if(textEl)textEl.innerHTML=mentionHtml(data?.content||cleaned);
+    const meta=row?.querySelector(".chat-meta");if(meta&&!meta.querySelector(".vexo-chat-feature-edited")){const e=document.createElement("span");e.className="vexo-chat-feature-edited";e.textContent="edited";meta.appendChild(e);}
+    state.message=null;closeMenu();notify("Message edited.");
+  }
+
+  async function reportMessage(){
+    const m=state.message;if(!m)return;
+    if(!user?.id){notify("You must be signed in to report a message.");return;}
+    const reason=prompt(`Report message from ${m.name}.\n\nReason for report:`);
+    if(!reason?.trim())return;
+    const {error}=await db.from("message_reports").insert({message_id:m.id,reported_by:user.id,reason:reason.trim()});
+    if(error){notify("Could not submit report: "+error.message);return;}
+    closeMenu();notify("Report submitted to the moderators.");
+  }
+
+  async function showProfile(row){
+    const uid=row.dataset.vexoUserId;
+    const name=row.dataset.vexoUsername||row.querySelector(".chat-user")?.textContent||"Guest";
+    if(!uid){notify("This user does not have a profile record yet.");return;}
+    const p=await getProfile(uid,name),online=presenceOnline(uid);
+    const wrap=document.createElement("div");wrap.className="vexo-chat-feature-profile";
+    wrap.innerHTML=`<div class="vexo-chat-feature-profile-card">
+      <div class="vexo-chat-feature-profile-head">
+        <div class="vexo-chat-feature-profile-avatar">${p.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:esc(initial(p.username))}</div>
+        <div><div class="vexo-chat-feature-profile-name">${esc(p.username||name)}</div><div class="vexo-chat-feature-profile-state ${online?"online":""}">${online?"Online":"Offline"}</div></div>
+      </div>
+      <div class="vexo-chat-feature-profile-bio">${esc(p.bio||"No bio yet.")}</div>
+      <div class="vexo-chat-feature-profile-actions"><button type="button" class="btn" data-close-profile>Close</button></div>
+    </div>`;
+    document.body.appendChild(wrap);
+    wrap.addEventListener("click",e=>{if(e.target===wrap||e.target.closest("[data-close-profile]"))wrap.remove();});
+  }
+
+  function decorateMentions(){
+    document.querySelectorAll("#chatMessages .chat-text").forEach(el=>{
+      if(el.dataset.vexoMentionDecorated==="1")return;
+      const original=el.textContent||"";
+      el.innerHTML=mentionHtml(original);el.dataset.vexoMentionDecorated="1";
+    });
+  }
+
+  function hook(){
+    const box=document.getElementById("chatMessages"),input=document.getElementById("chatInput");
+    if(!box||!input)return false;
+    ensureInputMentionBox();
+    if(!state.hooked){
+      state.hooked=true;
+      document.addEventListener("contextmenu",e=>{
+        const row=e.target.closest("#chatMessages .chat-msg");if(!row)return;
+        e.preventDefault();addMessageDataset(row);openMenu(e.clientX,e.clientY,row);
+      });
+      document.addEventListener("click",e=>{
+        const action=e.target.closest("[data-vexo-chat-action]")?.dataset.vexoChatAction;
+        if(action&&state.message){
+          if(action==="edit")editMessage();
+          else if(action==="report")reportMessage();
+          else if(action==="delete")window.deleteChatMessage?.(state.message.id);
+          return;
+        }
+        if(state.menu&&!e.target.closest(".vexo-chat-feature-menu"))closeMenu();
+        const profileTarget=e.target.closest("#chatMessages .chat-msg .chat-user, #chatMessages .chat-msg .chat-avatar, #chatMessages .chat-msg .vexo-avatar-image");
+        if(profileTarget){const row=profileTarget.closest(".chat-msg");if(row)showProfile(row);return;}
+        const mention=e.target.closest(".vexo-chat-feature-mention");
+        if(mention){input.value=(input.value?input.value+" ":"")+mention.textContent+" ";input.focus();}
+        const mentionPick=e.target.closest(".vexo-chat-feature-mention-item");
+        if(mentionPick)chooseMention(Number(mentionPick.dataset.mentionIndex));
+      });
+      document.addEventListener("input",e=>{if(e.target.id==="chatInput")updateMentions();});
+      document.addEventListener("keydown",e=>{
+        if(e.target.id!=="chatInput")return;
+        if(e.key==="Escape"){hideMentions();return;}
+        if(!state.mentionResults.length||!document.getElementById("vexoChatMentionBox")?.classList.contains("show"))return;
+        if(e.key==="ArrowDown"){e.preventDefault();state.mentionIndex=(state.mentionIndex+1)%state.mentionResults.length;updateMentions();}
+        if(e.key==="ArrowUp"){e.preventDefault();state.mentionIndex=(state.mentionIndex-1+state.mentionResults.length)%state.mentionResults.length;updateMentions();}
+        if(e.key==="Enter"){e.preventDefault();chooseMention(state.mentionIndex);}
+      });
+      window.addEventListener("resize",closeMenu);window.addEventListener("scroll",closeMenu,true);
+    }
+    addMessageDataset(box.querySelector?.(".chat-msg"));
+    indexMessages();decorateMentions();startPresence();
+    return true;
+  }
+
+  const observer=new MutationObserver(()=>{if(document.getElementById("chatMessages"))hook();});
+  observer.observe(document.body,{childList:true,subtree:true});
+  document.addEventListener("DOMContentLoaded",()=>setTimeout(hook,300));
+  setTimeout(hook,500);setTimeout(hook,1200);setTimeout(hook,2200);
+
+  // Keep edits visible immediately to other connected clients.
+  db.channel("vexo-chat-features-live")
+    .on("postgres_changes",{event:"UPDATE",schema:"public",table:"messages"},payload=>{
+      const row=document.getElementById(`chat-msg-${payload.new?.id}`);if(!row)return;
+      const text=row.querySelector(".chat-text");if(text){text.innerHTML=mentionHtml(payload.new.content||"");text.dataset.vexoMentionDecorated="1";}
+      const meta=row.querySelector(".chat-meta");if(meta&&!meta.querySelector(".vexo-chat-feature-edited")){const e=document.createElement("span");e.className="vexo-chat-feature-edited";e.textContent="edited";meta.appendChild(e);}
+    })
+    .subscribe();
+})();
+</script>
+
+
+<!-- VEXO SECURITY & IP AUDIT STYLES — APPEND-ONLY -->
+<style>
+.vexo-security-panel{position:relative;overflow:hidden}
+.security-admin-badge{font-size:10px;letter-spacing:.12em}
+.vexo-security-notice{display:flex;align-items:flex-start;gap:12px;padding:13px 15px;margin:0 0 16px;border:1px solid rgba(124,92,255,.22);border-radius:13px;background:linear-gradient(90deg,rgba(124,92,255,.09),rgba(25,211,255,.035));}
+.vexo-security-notice-icon{width:27px;height:27px;display:grid;place-items:center;flex:none;border-radius:9px;background:rgba(124,92,255,.18);color:#fff;font-weight:900}
+.vexo-security-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.vexo-security-stat{padding:14px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.025)}
+.vexo-security-stat strong{display:block;font-family:'Space Grotesk',sans-serif;font-size:23px;line-height:1.1}
+.vexo-security-stat span{font-size:10.5px;color:var(--muted)}
+.vexo-security-toolbar{margin-bottom:14px}
+.vexo-security-layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,.8fr);gap:14px}
+.vexo-security-box{min-width:0;border:1px solid var(--line);border-radius:15px;background:rgba(0,0,0,.13);overflow:hidden}
+.vexo-security-box-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 16px;border-bottom:1px solid var(--line)}
+.vexo-security-box-head h4{margin:0;font-size:13px}
+.vexo-security-table-wrap{overflow:auto;max-height:570px}
+.vexo-security-table{width:100%;border-collapse:collapse;min-width:930px}
+.vexo-security-table th,.vexo-security-table td{padding:10px 11px;border-bottom:1px solid rgba(148,163,184,.07);text-align:left;vertical-align:middle;font-size:11px}
+.vexo-security-table th{position:sticky;top:0;z-index:2;background:#0d1422;color:#8794b1;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase}
+.vexo-security-table td{color:#dbe4f8}
+.vexo-security-ip{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--accent2);white-space:nowrap}
+.vexo-security-action{font-weight:800;font-size:10px;letter-spacing:.04em}
+.vexo-security-path{max-width:210px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#9aa7c8}
+.vexo-security-user{max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#aab5cc}
+.vexo-security-status{display:inline-flex;padding:4px 7px;border-radius:99px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.vexo-security-status.allowed{color:var(--green);background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.18)}
+.vexo-security-status.blocked{color:var(--red);background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.18)}
+.security-copy{padding:5px 7px;font-size:10px}
+.security-empty{padding:24px;color:var(--muted);font-size:12px;text-align:center}
+.vexo-security-ban-form{display:grid;gap:10px;padding:15px 16px;border-bottom:1px solid var(--line)}
+.vexo-security-ban-form label{display:block;font-size:10px;color:var(--muted);font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em}
+.vexo-security-ban-list{display:grid;gap:8px;padding:12px;max-height:430px;overflow:auto}
+.vexo-security-ban{display:grid;gap:8px;padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}
+.vexo-security-ban-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.vexo-security-ban-ip{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--accent2);font-weight:800}
+.vexo-security-ban-reason{font-size:11px;color:#d8e0f1;line-height:1.5}
+.vexo-security-ban-meta{font-size:10px;color:var(--muted);line-height:1.5}
+.vexo-security-ban-actions{display:flex;justify-content:flex-end;gap:6px}
+@media(max-width:1050px){.vexo-security-layout{grid-template-columns:1fr}.vexo-security-table-wrap{max-height:470px}}
+@media(max-width:720px){.vexo-security-stats{grid-template-columns:repeat(2,1fr)}.vexo-security-toolbar .input,.vexo-security-toolbar .select{width:100%!important;min-width:0}.vexo-security-toolbar .search{flex-basis:100%}}
+</style>
+
+<!-- VEXO SECURITY BLOCK SCREEN STYLE — APPEND-ONLY -->
+<style>
+#vexoSecurityBlockedScreen{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:24px;background:rgba(3,6,12,.97);backdrop-filter:blur(18px)}
+.vexo-security-block-card{width:min(620px,100%);padding:32px;border:1px solid rgba(251,113,133,.25);border-radius:20px;background:linear-gradient(180deg,rgba(20,25,38,.98),rgba(10,13,21,.98));box-shadow:0 30px 100px rgba(0,0,0,.55)}
+.vexo-security-block-kicker{font-size:10px;font-weight:900;letter-spacing:.18em;color:var(--red);margin-bottom:10px}
+.vexo-security-block-card h1{margin:0 0 10px;font-size:29px}
+.vexo-security-block-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.65}
+.vexo-security-block-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.vexo-security-block-meta span{padding:7px 10px;border-radius:9px;border:1px solid rgba(251,113,133,.18);background:rgba(251,113,133,.06);color:#f6a5b1;font-size:11px;font-weight:700}
+.vexo-security-block-note{margin-top:14px;padding-top:14px;border-top:1px solid rgba(148,163,184,.10);color:#7f8ba6;font-size:11.5px;line-height:1.6}
+</style>
+
+<!-- VEXO SECURITY & IP AUDIT LOGIC — APPEND-ONLY -->
+<script>
+(() => {
+  const SECURITY_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/vexo-security-log`;
+  const SECURITY_ALLOWED_ACTIONS = new Set([
+    "page_view","link_open","link_submit","chat_message","vote",
+    "favorite_add","favorite_remove","login_attempt","admin_ban",
+    "admin_unban","admin_action"
+  ]);
+
+  function securityEsc(v=""){
+    return String(v).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+  }
+
+  function securityDate(iso){
+    try { return new Date(iso).toLocaleString(); } catch { return String(iso || ""); }
+  }
+
+  async function securityRequest(action, payload={}){
+    const body = {
+      action,
+      path: payload.path ?? (location.pathname + location.search),
+      details: payload.details ?? {}
+    };
+
+    try{
+      const {data, error} = await db.functions.invoke("vexo-security-log", {
+        body
+      });
+
+      if(error){
+        let message = error.message || "Security function unavailable";
+        let status = error.context?.status || 0;
+        let detail = null;
+
+        try{
+          if(error.context && typeof error.context.json === "function"){
+            detail = await error.context.json();
+            message = detail?.error || detail?.message || message;
+          }
+        }catch(e){}
+
+        return {
+          ok:false,
+          status,
+          blocked: status === 403 || detail?.blocked === true,
+          error:message,
+          ...(detail || {})
+        };
+      }
+
+      return {ok:true, status:200, ...(data || {})};
+    }catch(error){
+      const status = error?.context?.status || 0;
+      let detail = null;
+
+      try{
+        if(error.context && typeof error.context.json === "function"){
+          detail = await error.context.json();
+        }
+      }catch(e){}
+
+      return {
+        ok:false,
+        status,
+        blocked: status === 403 || detail?.blocked === true,
+        error:detail?.error || detail?.message || error?.message || "Security function unavailable",
+        ...(detail || {})
+      };
+    }
+  }
+
+  async function vexoSecurityLog(action, details={}){
+    const safeAction = SECURITY_ALLOWED_ACTIONS.has(action) ? action : "admin_action";
+    const result = await securityRequest(safeAction, {details});
+    if(result.blocked){
+      showSecurityBlocked(result);
+    }
+    return result;
+  }
+
+  function showSecurityBlocked(info={}){
+    let overlay = document.getElementById("vexoSecurityBlockedScreen");
+    if(!overlay){
+      overlay = document.createElement("div");
+      overlay.id = "vexoSecurityBlockedScreen";
+      document.body.appendChild(overlay);
+    }
+
+    const ban = info.ban && typeof info.ban === "object" ? info.ban : {};
+    const reason = ban.reason ? securityEsc(ban.reason) : "Access to this VEXO service has been restricted by a security policy.";
+    const expiry = ban.expires_at
+      ? securityEsc(securityDate(ban.expires_at))
+      : "Permanent";
+
+    overlay.innerHTML = `
+      <div class="vexo-security-block-card">
+        <div class="vexo-security-block-kicker">VEXO SECURITY</div>
+        <h1>Access Restricted</h1>
+        <p>${reason}</p>
+        <div class="vexo-security-block-meta">
+          <span>Restriction: active</span>
+          <span>Expires: ${expiry}</span>
+        </div>
+        <div class="vexo-security-block-note">
+          Contact the VEXO administrator if you believe this restriction is an error.
+        </div>
+      </div>`;
+  }
+
+  window.vexoSecurityLog = vexoSecurityLog;
+
+  async function loadSecurityPanel(){
+    if(!isAdmin) return;
+
+    const refresh = $("securityRefreshBtn");
+    if(refresh){ refresh.disabled = true; refresh.textContent = "Loading..."; }
+
+    const limit = Math.min(300, Math.max(50, Number($("securityLimit")?.value || 200)));
+    const result = await securityRequest("logs", {
+      details:{limit}
+    });
+
+    if(!result.ok){
+      $("securityLogRows").innerHTML = `<tr><td colspan="8"><div class="security-empty">${securityEsc(result.error || `Security logs unavailable (${result.status || "unknown error"}).`)}</div></td></tr>`;
+    } else {
+      const rows = Array.isArray(result.logs) ? result.logs : [];
+      renderSecurityLogs(rows);
+      $("securityLoadedCount").textContent = rows.length.toLocaleString();
+      $("securityUniqueCount").textContent = new Set(rows.map(x => x.ip).filter(Boolean)).size.toLocaleString();
+      $("securityBlockedCount").textContent = rows.filter(x => x.blocked).length.toLocaleString();
+    }
+
+    const bans = await securityRequest("bans", {details:{limit:200}});
+    if(bans.ok){
+      renderSecurityBans(Array.isArray(bans.bans) ? bans.bans : []);
+      $("securityBanCount").textContent = Array.isArray(bans.bans) ? bans.bans.length.toLocaleString() : "0";
+    } else {
+      $("securityBanList").innerHTML = `<div class="security-empty">${securityEsc(bans.error || "Could not load active bans.")}</div>`;
+    }
+
+    if(refresh){ refresh.disabled = false; refresh.textContent = "Refresh"; }
+  }
+
+  function securityFilteredRows(rows){
+    const q = ($( "securitySearch" )?.value || "").trim().toLowerCase();
+    const action = $("securityActionFilter")?.value || "";
+    return rows.filter(row => {
+      if(action === "blocked" ? !row.blocked : action && row.action !== action) return false;
+      if(!q) return true;
+      const hay = [row.ip,row.action,row.path,row.country,row.user_id,row.user_agent,row.referer,JSON.stringify(row.details || {})].join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }
+
+  function renderSecurityLogs(rows){
+    const filtered = securityFilteredRows(rows);
+    if(!filtered.length){
+      $("securityLogRows").innerHTML = `<tr><td colspan="8"><div class="security-empty">No matching security events.</div></td></tr>`;
+      return;
+    }
+    $("securityLogRows").innerHTML = filtered.map(row => {
+      const meta = row.details && typeof row.details === "object" ? row.details : {};
+      const displayUser = row.user_id ? row.user_id.slice(0,8) + "…" : "Guest";
+      const loc = row.details && typeof row.details.location === "object" ? row.details.location : {};
+      const location = [loc.city, loc.region, loc.country_name || row.country]
+        .filter(Boolean)
+        .join(", ") || "—";
+      const actionLabel = String(row.action || "event").replaceAll("_"," ");
+      const targetIp = meta.target_ip || row.ip || row.ip_address || "";
+      return `
+        <tr>
+          <td>${securityEsc(securityDate(row.created_at))}</td>
+          <td><span class="vexo-security-ip">${securityEsc(row.ip || "—")}</span></td>
+          <td><span class="vexo-security-action">${securityEsc(actionLabel)}</span></td>
+          <td><div class="vexo-security-path" title="${securityEsc(row.path || "")}">${securityEsc(row.path || "—")}</div></td>
+          <td><div class="vexo-security-user" title="${securityEsc(row.user_id || "")}">${securityEsc(displayUser)}</div></td>
+          <td>${securityEsc(location)}</td>
+          <td><span class="vexo-security-status ${row.blocked ? "blocked" : "allowed"}">${row.blocked ? "blocked" : "allowed"}</span></td>
+          <td>
+            <div class="actions">
+              <button class="btn mini security-copy" onclick="copyToClipboard(${JSON.stringify(targetIp)},'IP')">Copy</button>
+              ${row.ip && !row.blocked && !String(row.action || "").startsWith("admin_") ? `<button class="btn mini danger" onclick="prefillSecurityBan(${JSON.stringify(row.ip)})">Ban</button>` : ""}
+            </div>
+          </td>
+        </tr>`;
+    }).join("");
+  }
+
+  function renderSecurityBans(bans){
+    if(!bans.length){
+      $("securityBanList").innerHTML = `<div class="security-empty">No active bans.</div>`;
+      return;
+    }
+    $("securityBanList").innerHTML = bans.map(ban => {
+      const expires = ban.expires_at ? securityDate(ban.expires_at) : "Permanent";
+      return `
+        <div class="vexo-security-ban">
+          <div class="vexo-security-ban-top">
+            <span class="vexo-security-ban-ip">${securityEsc(ban.ip || ban.ip_address || "—")}</span>
+            <span class="vexo-security-status blocked">BANNED</span>
+          </div>
+          <div class="vexo-security-ban-reason">${securityEsc(ban.reason || "No reason provided")}</div>
+          <div class="vexo-security-ban-meta">Expires: ${securityEsc(expires)}<br>Created: ${securityEsc(securityDate(ban.created_at))}</div>
+          <div class="vexo-security-ban-actions">
+            <button class="btn mini" onclick="copyToClipboard(${JSON.stringify(ban.ip || ban.ip_address)},'IP')">Copy IP</button>
+            <button class="btn mini success" onclick="unbanSecurityIp(${JSON.stringify(ban.ip || ban.ip_address)})">Unban</button>
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  window.prefillSecurityBan = function(ip){
+    $("securityBanIp").value = ip || "";
+    $("securityBanReason").focus();
+    $("securityBanForm").scrollIntoView({behavior:"smooth",block:"center"});
+  };
+
+  window.unbanSecurityIp = async function(ip){
+    if(!isAdmin || !ip){
+      toast("Admin access required.");
+      return;
+    }
+
+    if(!confirm(`Unban ${ip}?`)) return;
+
+    const button = [...document.querySelectorAll("button")].find(
+      b => b.textContent.trim() === "Unban" && b.closest(".vexo-security-ban")?.textContent.includes(ip)
+    );
+
+    if(button){
+      button.disabled = true;
+      button.textContent = "Unbanning...";
+    }
+
+    const result = await securityRequest("unban", {
+      details:{ip}
+    });
+
+    if(!result.ok){
+      console.error("VEXO unban failed:", result);
+      toast(result.error || `Could not unban IP (${result.status || "unknown error"}).`);
+      if(button){
+        button.disabled = false;
+        button.textContent = "Unban";
+      }
+      return;
+    }
+
+    toast(`Unbanned ${ip}.`);
+    await loadSecurityPanel();
+  };
+
+  $("securityBanForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    if(!isAdmin) return;
+    const ip = $("securityBanIp").value.trim();
+    const reason = $("securityBanReason").value.trim();
+    const duration = $("securityBanDuration").value;
+    if(!ip || !reason){ toast("Enter an IP address and reason."); return; }
+
+    const result = await securityRequest("ban", {
+      details:{ip, reason, duration}
+    });
+    if(!result.ok){ toast(result.error || "Could not ban IP."); return; }
+    toast(`IP ${ip} has been banned.`);
+    $("securityBanForm").reset();
+    await loadSecurityPanel();
+  });
+
+  $("securitySearch").addEventListener("input", async () => {
+    // Re-read the current table from the backend when the user refreshes;
+    // for typing, filter the already loaded rows stored by the panel.
+    if(window.__vexoSecurityRows) renderSecurityLogs(window.__vexoSecurityRows);
+  });
+  $("securityActionFilter").addEventListener("change", () => {
+    if(window.__vexoSecurityRows) renderSecurityLogs(window.__vexoSecurityRows);
+  });
+
+  const originalRenderSecurityLogs = renderSecurityLogs;
+  // Keep a local copy so search/filter stays instant without another request.
+  function renderSecurityLogsWithCache(rows){
+    window.__vexoSecurityRows = rows;
+    originalRenderSecurityLogs(rows);
+  }
+  // Replace the function reference used above by reassigning the global helper.
+  // (The page only calls this local helper after this point.)
+  renderSecurityLogs = renderSecurityLogsWithCache;
+
+  const originalShowPage = window.showPage;
+  window.showPage = function(name){
+    const result = originalShowPage.apply(this, arguments);
+    if(name === "admin") setTimeout(loadSecurityPanel, 0);
+    return result;
+  };
+
+  // Check ban status immediately, then record the page view.
+  // The immediate check makes a ban screen appear even when the visitor
+  // refreshes a page that is already loaded or the page_view log is delayed.
+  securityRequest("check").then(result => {
+    if(result?.blocked) showSecurityBlocked(result);
+  }).catch(() => {});
+
+  vexoSecurityLog("page_view").then(result => {
+    if(result?.blocked) showSecurityBlocked(result);
+  }).catch(() => {});
+
+  // Re-check frequently enough that a ban made while a page is open becomes
+  // visible without requiring a manual reload.
+  setInterval(async () => {
+    const result = await securityRequest("check");
+    if(result?.blocked){
+      showSecurityBlocked(result);
+    }
+  }, 30 * 1000);
+
+  // Add audit events around existing functions without replacing their logic.
+  const originalOpenLink = window.openLink;
+  if(typeof originalOpenLink === "function"){
+    window.openLink = async function(id){
+      const result = await vexoSecurityLog("link_open", {link_id:id});
+      if(result.blocked) return;
+      return originalOpenLink(id);
+    };
+  }
+
+  const originalVote = window.vote;
+  if(typeof originalVote === "function"){
+    window.vote = async function(id, value){
+      const result = await vexoSecurityLog("vote", {link_id:id, value});
+      if(result.blocked) return;
+      return originalVote(id, value);
+    };
+  }
+
+  const originalFavorite = window.toggleFavorite;
+  if(typeof originalFavorite === "function"){
+    window.toggleFavorite = async function(id){
+      const action = favorites.has(id) ? "favorite_remove" : "favorite_add";
+      const result = await vexoSecurityLog(action, {link_id:id});
+      if(result.blocked) return;
+      return originalFavorite(id);
+    };
+  }
+
+  const linkForm = $("linkForm");
+  if(linkForm && typeof linkForm.onsubmit === "function"){
+    const originalSubmit = linkForm.onsubmit;
+    linkForm.onsubmit = async function(e){
+      const result = await vexoSecurityLog("link_submit");
+      if(result.blocked){ e.preventDefault(); e.stopImmediatePropagation(); return; }
+      return originalSubmit.call(this,e);
+    };
+  }
+
+  // Log chat send attempts when the existing VEXO chat form is present.
+  const chatForm = $("chatForm");
+  if(chatForm){
+    chatForm.addEventListener("submit", async e => {
+      const result = await vexoSecurityLog("chat_message");
+      if(result.blocked){ e.preventDefault(); e.stopImmediatePropagation(); }
+    }, true);
+  }
+})();
+</script>
+</body>
+</html>
 
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- VEXO TERMS / ANNOUNCEMENTS / TAKEDOWN MANAGEMENT — ADD-ON -->
@@ -5807,239 +6621,3 @@ const BLOCKED_WORDS = [
   setTimeout(inject,2500);
 })();
 </script>
-
-<!-- ============================================================
-     VEXO JAVASCRIPT OBFUSCATOR — APPEND-ONLY
-     ============================================================ -->
-<script>
-(() => {
-  "use strict";
-
-  const $o = id => document.getElementById(id);
-
-  function bytesToBase64(bytes){
-    let binary = "";
-    const chunk = 0x8000;
-    for(let i = 0; i < bytes.length; i += chunk){
-      binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-    }
-    return btoa(binary);
-  }
-
-  function random32(){
-    const a = new Uint32Array(1);
-    if(window.crypto?.getRandomValues){
-      window.crypto.getRandomValues(a);
-      return a[0] >>> 0;
-    }
-    return (Math.random() * 0x100000000) >>> 0;
-  }
-
-  function ident(){
-    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let out = "_0x";
-    for(let i = 0; i < 8; i++) out += chars[Math.floor(Math.random() * chars.length)];
-    return out;
-  }
-
-  function prng(seed){
-    let s = seed >>> 0;
-    return function(){
-      s ^= s << 13; s >>>= 0;
-      s ^= s >>> 17; s >>>= 0;
-      s ^= s << 5; s >>>= 0;
-      return s >>> 0;
-    };
-  }
-
-  function checksum(bytes){
-    let h = 2166136261 >>> 0;
-    for(let i = 0; i < bytes.length; i++){
-      h ^= bytes[i];
-      h = Math.imul(h, 16777619) >>> 0;
-      h ^= h >>> 13;
-    }
-    return h >>> 0;
-  }
-
-  function customAlphabet(seed){
-    const base = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    const arr = base.split("");
-    const r = prng(seed || 0x13579bdf);
-    for(let i = arr.length - 1; i > 0; i--){
-      const j = r() % (i + 1);
-      const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
-    }
-    return arr.join("");
-  }
-
-  function remapBase64(b64, alphabet){
-    const standard = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    const map = Object.create(null);
-    for(let i = 0; i < standard.length; i++) map[standard[i]] = alphabet[i];
-    let out = "";
-    for(let i = 0; i < b64.length; i++) out += map[b64[i]] || b64[i];
-    return out;
-  }
-
-  function buildMaximum(source){
-    const utf8 = new TextEncoder().encode(source);
-    const seedA = random32() || 0x6d2b79f5;
-    const seedB = random32() || 0x1b873593;
-    const seedP = random32() || 0x243f6a88;
-    const seedQ = random32() || 0x85a308d3;
-    const alphabet = customAlphabet(seedA ^ seedB);
-
-    // Layer 1: reverse the UTF-8 payload.
-    const reversed = new Uint8Array(utf8.length);
-    for(let i = 0; i < utf8.length; i++) reversed[i] = utf8[utf8.length - 1 - i];
-
-    // Layer 2: two independent pseudo-random streams plus bit mixing.
-    const ea = prng(seedA), eb = prng(seedB);
-    const encrypted = new Uint8Array(reversed.length);
-    for(let i = 0; i < reversed.length; i++){
-      const ka = ea(), kb = eb();
-      let x = reversed[i] ^ (ka & 255) ^ ((kb >>> 8) & 255);
-      x = ((x << 3) | (x >>> 5)) & 255;
-      encrypted[i] = x ^ ((i * 29 + (ka >>> 16) + (kb >>> 24)) & 255);
-    }
-
-    // Layer 3: seeded Fisher-Yates byte permutation. The decoder regenerates it.
-    const order = Array.from({length: encrypted.length}, (_, i) => i);
-    const ps = prng(seedP);
-    for(let i = order.length - 1; i > 0; i--){
-      const j = ps() % (i + 1);
-      const t = order[i]; order[i] = order[j]; order[j] = t;
-    }
-    const permuted = new Uint8Array(encrypted.length);
-    for(let i = 0; i < order.length; i++) permuted[i] = encrypted[order[i]];
-
-    // Layer 4: custom-alphabet Base64.
-    let mapped = remapBase64(bytesToBase64(permuted), alphabet);
-
-    // Layer 5: reversed chunks, shuffled with a regenerated order.
-    const partCount = Math.max(5, Math.min(15, 5 + (seedQ % 11)));
-    const parts = [];
-    for(let i = 0; i < partCount; i++){
-      const a0 = Math.floor(i * mapped.length / partCount);
-      const a1 = Math.floor((i + 1) * mapped.length / partCount);
-      parts.push(mapped.slice(a0, a1).split("").reverse().join(""));
-    }
-    const q = prng(seedQ);
-    for(let i = parts.length - 1; i > 0; i--){
-      const j = q() % (i + 1);
-      const t = parts[i]; parts[i] = parts[j]; parts[j] = t;
-    }
-
-    const ids = Array.from({length: 18}, ident);
-    const [A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R] = ids;
-    const junkA = (random32() % 0x7fffffff) + 1;
-    const junkB = (random32() % 0x7fffffff) + 1;
-    const sum = checksum(utf8);
-    const size = utf8.length;
-    const encodedParts = JSON.stringify(parts);
-
-    return `(function(){const ${A}=${seedA}>>>0,${B}=${seedB}>>>0,${C}=${seedP}>>>0,${D}=${seedQ}>>>0,${E}=${JSON.stringify(alphabet)},${F}=${partCount},${G}=${size},${H}=${sum}>>>0,${I}=${encodedParts},${J}=${junkA},${K}=${junkB};let ${L}=((${J}^${K})>>>0);if((${L}&7)===7){${L}=(${L}+0x13579bdf)>>>0}else{${L}=(${L}^0x5a5a5a5a)>>>0}void ${L};function ${N}(x){let s=x>>>0;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s>>>=0;s^=s<<5;s>>>=0;return s>>>0}}const ${O}=${N}(${A}),${P}=${N}(${B}),${Q}=${N}(${C}),${R}=${N}(${D});void(${Q}()^${R}());const _std="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",_rev=Object.create(null);for(let _i=0;_i<_std.length;_i++)_rev[${E}[_i]]=_std[_i];const _parts=${I};let _idx=Array.from({length:${F}},(_,i)=>i);const _qr=${N}(${D});for(let _i=_idx.length-1;_i>0;_i--){const _j=_qr()%(_i+1),_t=_idx[_i];_idx[_i]=_idx[_j];_idx[_j]=_t;}const _original=new Array(${F});for(let _i=0;_i<_idx.length;_i++)_original[_idx[_i]]=_parts[_i];let _mapped="";for(let _i=0;_i<_original.length;_i++)_mapped+=_original[_i].split("").reverse().join("");let _b64="";for(let _i=0;_i<_mapped.length;_i++)_b64+=_rev[_mapped[_i]]||_mapped[_i];const _bin=atob(_b64),_per=new Uint8Array(_bin.length);for(let _i=0;_i<_bin.length;_i++)_per[_i]=_bin.charCodeAt(_i);const _ord=Array.from({length:_per.length},(_,i)=>i),_ps=${N}(${C});for(let _i=_ord.length-1;_i>0;_i--){const _j=_ps()%(_i+1),_t=_ord[_i];_ord[_i]=_ord[_j];_ord[_j]=_t;}const _enc=new Uint8Array(_per.length);for(let _i=0;_i<_ord.length;_i++)_enc[_ord[_i]]=_per[_i];const _ra=${N}(${A}),_rb=${N}(${B}),_out=new Uint8Array(_enc.length);for(let _i=0;_i<_enc.length;_i++){const _ka=_ra(),_kb=_rb();let _x=_enc[_i]^((_i*29+(_ka>>>16)+(_kb>>>24))&255);_x=((_x>>>3)|(_x<<5))&255;_out[_i]=_x^(_ka&255)^((_kb>>>8)&255);}let _chk=2166136261>>>0;for(let _i=0;_i<_out.length;_i++){_chk^=_out[_i];_chk=Math.imul(_chk,16777619)>>>0;_chk^=_chk>>>13;}if(_chk!==(${H}>>>0)||_out.length!==${G})throw new Error("Payload integrity check failed");_out.reverse();const _src=new TextDecoder().decode(_out);globalThis["\x65\x76\x61\x6c"](_src)})();`;
-  }
-
-  window.vexoObfuscateJs = function(){
-    const input = $o("vexoObfuscatorInput");
-    const output = $o("vexoObfuscatorOutput");
-    const stat = $o("vexoObfuscatorStats");
-    const source = String(input?.value || "");
-
-    if(!source.trim()){
-      if(output) output.value = "";
-      if(stat) stat.textContent = "Paste JavaScript into the input box first.";
-      return;
-    }
-
-    try{
-      const result = buildMaximum(source);
-      if(output) output.value = result;
-      if(stat){
-        stat.textContent = `${source.length.toLocaleString()} input characters → ${result.length.toLocaleString()} output characters · maximum multi-layer obfuscation`;
-      }
-    }catch(err){
-      console.error("VEXO JavaScript Obfuscator:", err);
-      if(output) output.value = "";
-      if(stat) stat.textContent = "Could not obfuscate the supplied JavaScript.";
-    }
-  };
-
-  window.vexoObfuscatorClear = function(){
-    const input = $o("vexoObfuscatorInput");
-    const output = $o("vexoObfuscatorOutput");
-    const stat = $o("vexoObfuscatorStats");
-    if(input) input.value = "";
-    if(output) output.value = "";
-    if(stat) stat.textContent = "";
-  };
-})();
-</script>
-
-
-<style id="vexo-chromebook-sidebar-fix">
-/* VEXO CHROMEBOOK SIDEBAR RESPONSIVE FIX — APPEND-ONLY */
-.side{
-  overflow:hidden;
-  min-height:100dvh;
-}
-.side .nav{
-  flex:1 1 auto;
-  min-height:0;
-  overflow-y:auto;
-  overflow-x:hidden;
-  padding:2px 2px 10px 0;
-  scrollbar-width:thin;
-  scrollbar-color:rgba(124,92,255,.45) transparent;
-  overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;
-}
-.side .nav::-webkit-scrollbar{width:7px;}
-.side .nav::-webkit-scrollbar-track{background:transparent;}
-.side .nav::-webkit-scrollbar-thumb{background:rgba(124,92,255,.35);border-radius:99px;}
-.side .nav::-webkit-scrollbar-thumb:hover{background:rgba(124,92,255,.58);}
-.side .userbox{flex:none;}
-
-@media (max-height:820px) and (min-width:921px){
-  .side{padding:14px 12px;}
-  .brand{padding:4px 7px 14px;font-size:20px;}
-  .brand .logo{width:34px;height:34px;}
-  .nav{gap:2px;}
-  .nav-label{padding:9px 11px 4px;}
-  .nav button{padding:8px 11px;font-size:12.5px;gap:10px;min-height:38px;}
-  .nav .ic{width:20px;font-size:14px;}
-  .userbox{padding:9px 10px;gap:9px;}
-  .userbox .avatar{width:36px;height:36px;border-radius:10px;}
-  .userbox .ub-info strong{font-size:12.5px;}
-  .userbox .ub-info small{font-size:10px;}
-  .userbox .btn{padding:6px 9px;font-size:11px;}
-}
-
-@media (max-width:1100px) and (min-width:921px){
-  .side{width:225px;padding-left:12px;padding-right:10px;}
-  .main{margin-left:225px;width:calc(100% - 225px);padding-left:24px;padding-right:24px;}
-  .brand{font-size:18px;letter-spacing:.12em;}
-  .nav button{font-size:12.5px;gap:9px;padding-left:10px;padding-right:10px;}
-}
-
-@media (max-width:920px){
-  .side{width:76px;padding:14px 8px;}
-  .side .nav{padding-right:0;}
-  .main{margin-left:76px;width:calc(100% - 76px);}
-}
-
-@media (max-width:640px){
-  .side{width:68px;padding:10px 6px;}
-  .main{margin-left:68px;width:calc(100% - 68px);padding-left:14px;padding-right:14px;}
-  .side .nav button{min-height:40px;}
-  .side .nav .ic{width:100%;font-size:15px;}
-}
-
-@media (max-width:920px) and (max-height:760px){
-  .side{padding-top:9px;padding-bottom:9px;}
-  .brand{padding-bottom:11px;}
-  .nav button{padding-top:8px;padding-bottom:8px;min-height:37px;}
-}
-</style>
