@@ -81,20 +81,53 @@ VEXO may remove content or restrict accounts when reasonably necessary to protec
 
 ---
 
-## 5. User-Submitted Links
+5. User-Submitted Links
 
 Users may submit URLs and related information to the Community Vault.
 
 By submitting content, you represent that:
 
-* You have the right to submit the material or link
-* Your submission does not knowingly violate applicable law
-* Your submission does not intentionally distribute malware or other harmful material
-* The information you provide is not intentionally fraudulent
+* You have the right to submit the material or link.
+* Your submission does not knowingly violate applicable law.
+* Your submission does not intentionally distribute malware or other harmful material.
+* The information you provide is not intentionally fraudulent.
+* Your submission does not knowingly infringe on another person's intellectual property, privacy, or other rights.
+* You are solely responsible for the content, links, and information you submit.
+* You are responsible for ensuring that your submissions comply with applicable laws and regulations.
+* You will not use the Community Vault to distribute scams, spam, phishing attempts, or other harmful content.
+* You will not submit content intended to harm VEXO, its users, or third parties.
+* You will not submit private information, stolen data, or unauthorized access credentials.
 
-Submitting a link does not guarantee that VEXO will publish, approve, promote, or permanently retain it.
+Submitting a link does not guarantee that VEXO will publish, approve, promote, verify, or permanently retain it.
 
-VEXO may review, reject, modify, hide, or remove submissions at its discretion, subject to applicable law.
+VEXO may review, reject, modify, hide, restrict, or remove submissions at its discretion, subject to applicable law. VEXO is not required to review or monitor every submission.
+
+VEXO does not guarantee that user-submitted links are accurate, safe, legal, available, or free from harmful content. Links may lead to third-party websites or content that VEXO does not control.
+
+VEXO is not responsible for the content, actions, security, availability, or practices of third-party websites linked through the Community Vault.
+
+If a user submits illegal, harmful, or unauthorized content, the submitting user remains solely responsible for their submission and any consequences arising from their actions, to the maximum extent permitted by applicable law. This responsibility applies even if the content passes through VEXO's moderation systems or is not immediately detected.
+
+VEXO, its owners, operators, employees, contractors, affiliates, and service providers are not responsible for a user's independent actions or unlawful submissions, except where liability cannot legally be excluded or limited.
+
+Users agree to defend, indemnify, and hold harmless VEXO, its owners, operators, employees, contractors, affiliates, and service providers from claims, damages, losses, liabilities, costs, and expenses arising from their submissions, unlawful activities, or violations of these terms, to the extent permitted by applicable law.
+
+VEXO does not endorse, verify, or approve user-submitted content merely because it is displayed or made available on the platform.
+
+Users are responsible for independently evaluating links before opening them, downloading files, or relying on information provided through submissions.
+
+VEXO may take action against submissions or accounts that violate these terms, including removal, restriction, suspension, or termination of access.
+
+VEXO may preserve, disclose, or share information when reasonably necessary to comply with legal obligations, respond to valid legal requests, protect the platform, or prevent fraud, abuse, or security threats, subject to applicable law.
+
+VEXO may experience service interruptions, technical failures, security incidents, or data loss. VEXO does not guarantee uninterrupted availability or permanent storage of user submissions.
+
+Users understand that submitting content to the Community Vault may make that content accessible to other users. VEXO cannot guarantee how third parties may use, copy, or distribute publicly available submissions.
+
+VEXO reserves the right to update, modify, suspend, or discontinue the Community Vault or its submission features at any time, subject to applicable law.
+
+Nothing in this section is intended to exclude or limit liability that cannot legally be excluded or limited under applicable law.
+
 
 ---
 
