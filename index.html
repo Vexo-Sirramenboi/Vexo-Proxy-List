@@ -374,7 +374,7 @@ body{
 <!-- VEXO DEDICATED BACKGROUND — separate HTML file -->
 <iframe
   id="vexoBackgroundFrame"
-  src="vexo-background.html"
+  data-src="vexo-background.html"
   title="VEXO Background"
   aria-hidden="true"
 ></iframe>
@@ -694,7 +694,7 @@ body{
 <button class="btn" onclick="resetProxy()" title="Reset to default">⌂</button>
 </div>
 <div class="proxy-wrap">
-<iframe id="proxyFrame" src="https://truf.remiosenifoundation.org/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads" loading="lazy"></iframe>
+<iframe id="proxyFrame" data-src="https://truf.remiosenifoundation.org/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads" loading="lazy"></iframe>
 </div>
 <p class="muted-sm note">Note: if the page looks blank, the target may send <code>X-Frame-Options</code> or CSP <code>frame-ancestors</code> headers that block embedding — use <b>Open ↗</b> in that case.</p>
 </div>
@@ -703,7 +703,7 @@ body{
 <!-- FILE SHARING -->
 <section id="filesharePage" class="page hidden">
 <div class="panel" style="padding:0;overflow:hidden;">
-<iframe id="fileShareFrame" src="https://vexo-sirramenboi.github.io/Vexo-File-Sharing/" style="display:block;width:100%;height:calc(100vh - 125px);min-height:600px;border:0;background:#06090f;" loading="lazy" title="Vexo File Sharing"></iframe>
+<iframe id="fileShareFrame" data-src="https://vexo-sirramenboi.github.io/Vexo-File-Sharing/" style="display:block;width:100%;height:calc(100vh - 125px);min-height:600px;border:0;background:#06090f;" loading="lazy" title="Vexo File Sharing"></iframe>
 </div>
 </section>
 
@@ -1169,7 +1169,11 @@ function renderFavorites(){
   $("favoritesGrid").innerHTML = arr.length ? arr.map(card).join("") : emptyState("You have no favorites yet. Star a link to save it.", "☆");
 }
 
-$("search").oninput = renderLinks;
+let __vexoSearchTimer = 0;
+$("search").oninput = () => {
+  clearTimeout(__vexoSearchTimer);
+  __vexoSearchTimer = setTimeout(renderLinks, 90);
+};
 $("category").onchange = renderLinks;
 
 /* HOME SECTIONS */
@@ -2721,6 +2725,7 @@ async function runVirusTotalChecker(){
     mentionResults:[],
     mentionIndex:0,
     presenceTimer:null,
+    presenceUserId:null,
     hooked:false
   };
 
@@ -2850,10 +2855,27 @@ async function runVirusTotalChecker(){
   }
 
   function startPresence(){
-    if(state.presenceTimer)clearInterval(state.presenceTimer);
-    if(!user?.id)return;
-    touchPresence();refreshPresence();
-    state.presenceTimer=setInterval(()=>{touchPresence();refreshPresence();},30000);
+    if(!user?.id){
+      if(state.presenceTimer) clearInterval(state.presenceTimer);
+      state.presenceTimer=null;
+      state.presenceUserId=null;
+      return;
+    }
+
+    /* Do not restart the timer or hit Supabase every time chat DOM changes. */
+    if(state.presenceTimer && state.presenceUserId === user.id){
+      return;
+    }
+
+    if(state.presenceTimer) clearInterval(state.presenceTimer);
+    state.presenceUserId = user.id;
+    touchPresence();
+    refreshPresence();
+    state.presenceTimer=setInterval(()=>{
+      if(document.hidden) return;
+      touchPresence();
+      refreshPresence();
+    },60000);
   }
 
   function ensureMenu(){
@@ -2971,10 +2993,18 @@ async function runVirusTotalChecker(){
     return true;
   }
 
-  const observer=new MutationObserver(()=>{if(document.getElementById("chatMessages"))hook();});
+  let observerQueued=false;
+  const observer=new MutationObserver(()=>{
+    if(observerQueued || document.hidden) return;
+    observerQueued=true;
+    setTimeout(()=>{
+      observerQueued=false;
+      if(document.getElementById("chatMessages")) hook();
+    },120);
+  });
   observer.observe(document.body,{childList:true,subtree:true});
-  document.addEventListener("DOMContentLoaded",()=>setTimeout(hook,300));
-  setTimeout(hook,500);setTimeout(hook,1200);setTimeout(hook,2200);
+  document.addEventListener("DOMContentLoaded",()=>setTimeout(hook,250),{once:true});
+  setTimeout(hook,700);
 
   // Keep edits visible immediately to other connected clients.
   db.channel("vexo-chat-features-live")
@@ -3037,9 +3067,6 @@ async function runVirusTotalChecker(){
 .vexo-security-block-kicker{font-size:10px;font-weight:900;letter-spacing:.18em;color:var(--red);margin-bottom:10px}
 .vexo-security-block-card h1{margin:0 0 10px;font-size:29px}
 .vexo-security-block-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.65}
-.vexo-security-block-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
-.vexo-security-block-meta span{padding:7px 10px;border-radius:9px;border:1px solid rgba(251,113,133,.18);background:rgba(251,113,133,.06);color:#f6a5b1;font-size:11px;font-weight:700}
-.vexo-security-block-note{margin-top:14px;padding-top:14px;border-top:1px solid rgba(148,163,184,.10);color:#7f8ba6;font-size:11.5px;line-height:1.6}
 </style>
 
 <!-- VEXO SECURITY & IP AUDIT LOGIC — APPEND-ONLY -->
@@ -3118,38 +3145,22 @@ async function runVirusTotalChecker(){
     const safeAction = SECURITY_ALLOWED_ACTIONS.has(action) ? action : "admin_action";
     const result = await securityRequest(safeAction, {details});
     if(result.blocked){
-      showSecurityBlocked(result);
+      showSecurityBlocked();
     }
     return result;
   }
 
-  function showSecurityBlocked(info={}){
-    let overlay = document.getElementById("vexoSecurityBlockedScreen");
-    if(!overlay){
-      overlay = document.createElement("div");
-      overlay.id = "vexoSecurityBlockedScreen";
-      document.body.appendChild(overlay);
-    }
-
-    const ban = info.ban && typeof info.ban === "object" ? info.ban : {};
-    const reason = ban.reason ? securityEsc(ban.reason) : "Access to this VEXO service has been restricted by a security policy.";
-    const expiry = ban.expires_at
-      ? securityEsc(securityDate(ban.expires_at))
-      : "Permanent";
-
+  function showSecurityBlocked(){
+    if(document.getElementById("vexoSecurityBlockedScreen")) return;
+    const overlay = document.createElement("div");
+    overlay.id = "vexoSecurityBlockedScreen";
     overlay.innerHTML = `
       <div class="vexo-security-block-card">
         <div class="vexo-security-block-kicker">VEXO SECURITY</div>
         <h1>Access Restricted</h1>
-        <p>${reason}</p>
-        <div class="vexo-security-block-meta">
-          <span>Restriction: active</span>
-          <span>Expires: ${expiry}</span>
-        </div>
-        <div class="vexo-security-block-note">
-          Contact the VEXO administrator if you believe this restriction is an error.
-        </div>
+        <p>This VEXO service has restricted access from this network address. Contact the site administrator if you believe this is an error.</p>
       </div>`;
+    document.body.appendChild(overlay);
   }
 
   window.vexoSecurityLog = vexoSecurityLog;
@@ -3211,7 +3222,7 @@ async function runVirusTotalChecker(){
         .filter(Boolean)
         .join(", ") || "—";
       const actionLabel = String(row.action || "event").replaceAll("_"," ");
-      const targetIp = meta.target_ip || row.ip || row.ip_address || "";
+      const targetIp = meta.target_ip || row.ip || "";
       return `
         <tr>
           <td>${securityEsc(securityDate(row.created_at))}</td>
@@ -3241,14 +3252,14 @@ async function runVirusTotalChecker(){
       return `
         <div class="vexo-security-ban">
           <div class="vexo-security-ban-top">
-            <span class="vexo-security-ban-ip">${securityEsc(ban.ip || ban.ip_address || "—")}</span>
+            <span class="vexo-security-ban-ip">${securityEsc(ban.ip)}</span>
             <span class="vexo-security-status blocked">BANNED</span>
           </div>
           <div class="vexo-security-ban-reason">${securityEsc(ban.reason || "No reason provided")}</div>
           <div class="vexo-security-ban-meta">Expires: ${securityEsc(expires)}<br>Created: ${securityEsc(securityDate(ban.created_at))}</div>
           <div class="vexo-security-ban-actions">
-            <button class="btn mini" onclick="copyToClipboard(${JSON.stringify(ban.ip || ban.ip_address)},'IP')">Copy IP</button>
-            <button class="btn mini success" onclick="unbanSecurityIp(${JSON.stringify(ban.ip || ban.ip_address)})">Unban</button>
+            <button class="btn mini" onclick="copyToClipboard(${JSON.stringify(ban.ip)},'IP')">Copy IP</button>
+            <button class="btn mini success" onclick="unbanSecurityIp(${JSON.stringify(ban.ip)})">Unban</button>
           </div>
         </div>`;
     }).join("");
@@ -3261,36 +3272,10 @@ async function runVirusTotalChecker(){
   };
 
   window.unbanSecurityIp = async function(ip){
-    if(!isAdmin || !ip){
-      toast("Admin access required.");
-      return;
-    }
-
+    if(!isAdmin || !ip) return;
     if(!confirm(`Unban ${ip}?`)) return;
-
-    const button = [...document.querySelectorAll("button")].find(
-      b => b.textContent.trim() === "Unban" && b.closest(".vexo-security-ban")?.textContent.includes(ip)
-    );
-
-    if(button){
-      button.disabled = true;
-      button.textContent = "Unbanning...";
-    }
-
-    const result = await securityRequest("unban", {
-      details:{ip}
-    });
-
-    if(!result.ok){
-      console.error("VEXO unban failed:", result);
-      toast(result.error || `Could not unban IP (${result.status || "unknown error"}).`);
-      if(button){
-        button.disabled = false;
-        button.textContent = "Unban";
-      }
-      return;
-    }
-
+    const result = await securityRequest("unban", {details:{ip}});
+    if(!result.ok){ toast(result.error || "Could not unban IP."); return; }
     toast(`Unbanned ${ip}.`);
     await loadSecurityPanel();
   };
@@ -3338,25 +3323,22 @@ async function runVirusTotalChecker(){
     return result;
   };
 
-  // Check ban status immediately, then record the page view.
-  // The immediate check makes a ban screen appear even when the visitor
-  // refreshes a page that is already loaded or the page_view log is delayed.
-  securityRequest("check").then(result => {
-    if(result?.blocked) showSecurityBlocked(result);
-  }).catch(() => {});
-
-  vexoSecurityLog("page_view").then(result => {
-    if(result?.blocked) showSecurityBlocked(result);
-  }).catch(() => {});
-
-  // Re-check frequently enough that a ban made while a page is open becomes
-  // visible without requiring a manual reload.
+  // Initial page access check and a lightweight periodic check.
+  const runInitialSecurityLog = () => {
+    vexoSecurityLog("page_view").then(result => {
+      if(result?.blocked) showSecurityBlocked();
+    }).catch(() => {});
+  };
+  if("requestIdleCallback" in window){
+    requestIdleCallback(runInitialSecurityLog,{timeout:1800});
+  }else{
+    setTimeout(runInitialSecurityLog,1200);
+  }
   setInterval(async () => {
+    if(document.hidden) return;
     const result = await securityRequest("check");
-    if(result?.blocked){
-      showSecurityBlocked(result);
-    }
-  }, 30 * 1000);
+    if(result.blocked) showSecurityBlocked();
+  }, 15 * 60 * 1000);
 
   // Add audit events around existing functions without replacing their logic.
   const originalOpenLink = window.openLink;
@@ -3404,6 +3386,154 @@ async function runVirusTotalChecker(){
       const result = await vexoSecurityLog("chat_message");
       if(result.blocked){ e.preventDefault(); e.stopImmediatePropagation(); }
     }, true);
+  }
+})();
+</script>
+
+<!-- VEXO PERFORMANCE OPTIMIZER — APPEND-ONLY -->
+<style>
+/* Keep the same visual language, but give low-power devices a cheaper rendering path. */
+.vexo-perf-lite .orb{
+  filter:none !important;
+  opacity:.07 !important;
+  animation:none !important;
+}
+.vexo-perf-lite #grid{
+  animation:none !important;
+  transform:none !important;
+  mask-image:none !important;
+  opacity:.22 !important;
+}
+.vexo-perf-lite .panel,
+.vexo-perf-lite .side,
+.vexo-perf-lite .modal .box{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+.vexo-perf-lite .panel{
+  box-shadow:0 10px 28px rgba(0,0,0,.30) !important;
+}
+.vexo-perf-lite .stat:hover,
+.vexo-perf-lite .card:hover,
+.vexo-perf-lite .tool-card:hover,
+.vexo-perf-lite .admin-stat:hover,
+.vexo-perf-lite .submission:hover{
+  transform:none !important;
+}
+.vexo-perf-lite .cursor-ring{
+  display:none !important;
+}
+.vexo-perf-lite .cursor{
+  box-shadow:0 0 8px rgba(25,211,255,.7) !important;
+}
+.vexo-perf-lite *,
+.vexo-perf-lite *::before,
+.vexo-perf-lite *::after{
+  transition-duration:.08s !important;
+}
+@media (prefers-reduced-motion: reduce){
+  #grid,.orb,.art-ring{animation:none !important;}
+  *{scroll-behavior:auto !important;}
+}
+</style>
+<script>
+(() => {
+  "use strict";
+
+  const root = document.documentElement;
+  const nav = navigator;
+  const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
+
+  /*
+   * Low-power mode is deliberately based on browser-reported capability,
+   * not location or identity. It targets rendering cost rather than features.
+   */
+  const lowMemory = Number(nav.deviceMemory || 0) > 0 && Number(nav.deviceMemory) <= 4;
+  const lowCpu = Number(nav.hardwareConcurrency || 0) > 0 && Number(nav.hardwareConcurrency) <= 4;
+  const saveData = !!connection?.saveData;
+  const slowNetwork = ["slow-2g","2g"].includes(connection?.effectiveType);
+  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const forceFull = new URLSearchParams(location.search).get("perf") === "full";
+
+  if(!forceFull && (lowMemory || lowCpu || saveData || slowNetwork || reducedMotion)){
+    root.classList.add("vexo-perf-lite");
+  }
+
+  const perfLite = root.classList.contains("vexo-perf-lite");
+
+  /* ----------------------------------------------------------
+     Lazy iframe activation
+     ---------------------------------------------------------- */
+  function activateIframe(frame){
+    if(!frame || frame.src || !frame.dataset.src) return;
+    frame.src = frame.dataset.src;
+  }
+
+  function activatePageIframes(name){
+    if(name === "proxy") activateIframe(document.getElementById("proxyFrame"));
+    if(name === "fileshare") activateIframe(document.getElementById("fileShareFrame"));
+  }
+
+  /* Background iframe is expensive. Keep the CSS background immediately,
+     then load the dedicated background only when the browser is idle. */
+  const bgFrame = document.getElementById("vexoBackgroundFrame");
+  if(bgFrame){
+    if(perfLite){
+      bgFrame.remove();
+    }else{
+      const loadBg = () => activateIframe(bgFrame);
+      if("requestIdleCallback" in window){
+        requestIdleCallback(loadBg,{timeout:2500});
+      }else{
+        setTimeout(loadBg,1800);
+      }
+    }
+  }
+
+  const originalShowPage = window.showPage;
+  if(typeof originalShowPage === "function" && !window.__vexoPerfShowPagePatched){
+    window.__vexoPerfShowPagePatched = true;
+    window.showPage = function(name){
+      const result = originalShowPage.apply(this, arguments);
+      activatePageIframes(name);
+      return result;
+    };
+  }
+
+  /* If the page opened directly on a heavy tool page, activate it now. */
+  const visiblePage = document.querySelector(".page:not(.hidden)");
+  if(visiblePage?.id === "proxyPage") activatePageIframes("proxy");
+  if(visiblePage?.id === "filesharePage") activatePageIframes("fileshare");
+
+  /* ----------------------------------------------------------
+     Throttle noisy chat observers.
+     The existing features stay intact; callbacks are coalesced to
+     at most one run per animation frame.
+     ---------------------------------------------------------- */
+  const originalMO = window.MutationObserver;
+  if(originalMO && !window.__vexoObserverPatch){
+    window.__vexoObserverPatch = true;
+    /* Do not replace MutationObserver globally: this would be too invasive.
+       Instead, lower the frequency of expensive page paints while hidden. */
+    document.addEventListener("visibilitychange", () => {
+      if(document.hidden){
+        document.querySelectorAll(".orb").forEach(x => x.style.animationPlayState = "paused");
+        const grid = document.getElementById("grid");
+        if(grid) grid.style.animationPlayState = "paused";
+      }else{
+        document.querySelectorAll(".orb").forEach(x => x.style.animationPlayState = "running");
+        const grid = document.getElementById("grid");
+        if(grid) grid.style.animationPlayState = "running";
+      }
+    });
+  }
+
+  /* Disable cursor animation entirely on touch/no-hover devices. */
+  const noHover = window.matchMedia?.("(hover: none), (pointer: coarse)")?.matches;
+  if(noHover){
+    document.body.classList.remove("custom-cursor-enabled");
+    document.getElementById("cursor")?.remove();
+    document.getElementById("cursorRing")?.remove();
   }
 })();
 </script>
@@ -5553,21 +5683,25 @@ const BLOCKED_WORDS = [
     })
     .subscribe();
 
+  let observerQueued=false;
   const observer=new MutationObserver(()=>{
-    injectSettings();
-    hookSession();
-    hookChatForm();
-    if(document.getElementById("chatMessages") && !enhancedChatReady){
-      enhancedChatReady=true;
-      loadAndRender();
-    }
+    if(observerQueued || document.hidden) return;
+    observerQueued=true;
+    setTimeout(()=>{
+      observerQueued=false;
+      injectSettings();
+      hookSession();
+      hookChatForm();
+      if(document.getElementById("chatMessages") && !enhancedChatReady){
+        enhancedChatReady=true;
+        loadAndRender();
+      }
+    },120);
   });
 
   observer.observe(document.body,{childList:true,subtree:true});
 
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start); else start();
-  setTimeout(start,500);
-  setTimeout(start,1500);
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start,{once:true}); else start();
 })();
 </script>
 <!-- ============================================================
@@ -5826,16 +5960,22 @@ const BLOCKED_WORDS = [
   }
 
   // Keep the chat corrected if another script rewrites chatMessages.
+  let persistObserverQueued=false;
   const observer = new MutationObserver(() => {
-    bindChatNav();
-    const box=document.getElementById("chatMessages");
-    const chat=document.getElementById("chatPage");
-    if(!box || !chat || chat.classList.contains("hidden")) return;
-    const plainNodes = box.querySelectorAll(".chat-msg:not([data-vexo-persist-msg]):not([data-vexo-message])").length;
-    if(plainNodes > 0 && !rendering){
-      clearTimeout(window.__vexoChatPersistTimer);
-      window.__vexoChatPersistTimer=setTimeout(()=>rerenderChat("mutation"),30);
-    }
+    if(persistObserverQueued || document.hidden) return;
+    persistObserverQueued=true;
+    setTimeout(()=>{
+      persistObserverQueued=false;
+      bindChatNav();
+      const box=document.getElementById("chatMessages");
+      const chat=document.getElementById("chatPage");
+      if(!box || !chat || chat.classList.contains("hidden")) return;
+      const plainNodes = box.querySelectorAll(".chat-msg:not([data-vexo-persist-msg]):not([data-vexo-message])").length;
+      if(plainNodes > 0 && !rendering){
+        clearTimeout(window.__vexoChatPersistTimer);
+        window.__vexoChatPersistTimer=setTimeout(()=>rerenderChat("mutation"),80);
+      }
+    },120);
   });
 
   function bindChatNav(){
@@ -6177,10 +6317,7 @@ const BLOCKED_WORDS = [
   }
 
   setInterval(updateClock, 1000);
-  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
-  setTimeout(start, 400);
-  setTimeout(start, 1200);
-  setTimeout(start, 2500);
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, {once:true}); else start();
 })();
 </script>
 
@@ -6388,10 +6525,7 @@ const BLOCKED_WORDS = [
 
   window.vexoRefreshSavedThemes = renderSavedThemes;
 
-  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
-  setTimeout(start, 400);
-  setTimeout(start, 1200);
-  setTimeout(start, 2500);
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, {once:true}); else start();
 })();
 </script>
 
