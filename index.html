@@ -374,7 +374,7 @@ body{
 <!-- VEXO DEDICATED BACKGROUND — separate HTML file -->
 <iframe
   id="vexoBackgroundFrame"
-  data-src="vexo-background.html"
+  src="vexo-background.html"
   title="VEXO Background"
   aria-hidden="true"
 ></iframe>
@@ -694,7 +694,7 @@ body{
 <button class="btn" onclick="resetProxy()" title="Reset to default">⌂</button>
 </div>
 <div class="proxy-wrap">
-<iframe id="proxyFrame" data-src="https://truf.remiosenifoundation.org/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads" loading="lazy"></iframe>
+<iframe id="proxyFrame" src="https://truf.remiosenifoundation.org/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads" loading="lazy"></iframe>
 </div>
 <p class="muted-sm note">Note: if the page looks blank, the target may send <code>X-Frame-Options</code> or CSP <code>frame-ancestors</code> headers that block embedding — use <b>Open ↗</b> in that case.</p>
 </div>
@@ -703,7 +703,7 @@ body{
 <!-- FILE SHARING -->
 <section id="filesharePage" class="page hidden">
 <div class="panel" style="padding:0;overflow:hidden;">
-<iframe id="fileShareFrame" data-src="https://vexo-sirramenboi.github.io/Vexo-File-Sharing/" style="display:block;width:100%;height:calc(100vh - 125px);min-height:600px;border:0;background:#06090f;" loading="lazy" title="Vexo File Sharing"></iframe>
+<iframe id="fileShareFrame" src="https://vexo-sirramenboi.github.io/Vexo-File-Sharing/" style="display:block;width:100%;height:calc(100vh - 125px);min-height:600px;border:0;background:#06090f;" loading="lazy" title="Vexo File Sharing"></iframe>
 </div>
 </section>
 
@@ -1093,7 +1093,7 @@ async function loadSession(){
   await loadFavorites();
   await loadLinks();
   await loadPendingCount();
-  if(isAdmin) await loadAdminData();
+  if(isAdmin && !$("adminPage")?.classList.contains("hidden")) await loadAdminData();
 }
 
 /* FAVORITES */
@@ -1108,7 +1108,7 @@ async function loadFavorites(){
 
 /* LINKS */
 async function loadLinks(){
-  const {data, error} = await db.from("links").select("*").eq("status","approved").order("created_at",{ascending:false});
+  const {data, error} = await db.from("links").select("id,title,url,description,category,tags,views,created_at,status").eq("status","approved").order("created_at",{ascending:false});
   if(error){ toast(error.message); return; }
   links = data || [];
   $("statLinks").textContent = links.length;
@@ -1169,11 +1169,7 @@ function renderFavorites(){
   $("favoritesGrid").innerHTML = arr.length ? arr.map(card).join("") : emptyState("You have no favorites yet. Star a link to save it.", "☆");
 }
 
-let __vexoSearchTimer = 0;
-$("search").oninput = () => {
-  clearTimeout(__vexoSearchTimer);
-  __vexoSearchTimer = setTimeout(renderLinks, 90);
-};
+$("search").oninput = renderLinks;
 $("category").onchange = renderLinks;
 
 /* HOME SECTIONS */
@@ -1463,49 +1459,103 @@ function resetProxy(){
 
 $("proxyUrl").addEventListener("keydown", e => { if(e.key === "Enter") loadProxy(); });
 
-/* ADMIN DATA */
+/* ADMIN DATA — FAST MODERATION QUEUE */
+let adminProfileMap = new Map();
+let adminDataLoading = null;
+
 async function loadAdminData(){
-  if(!isAdmin){ $("adminLock").classList.add("show"); return; }
-  const {data, error} = await db.from("links").select("*").order("created_at",{ascending:false});
-  if(error){ console.error(error); toast(error.message); return; }
-  allAdminLinks = data || [];
-  const pending = allAdminLinks.filter(x => x.status === "pending").length;
-  const approved = allAdminLinks.filter(x => x.status === "approved").length;
-  const rejected = allAdminLinks.filter(x => x.status === "rejected").length;
-  $("adminPending").textContent = pending;
-  $("adminApproved").textContent = approved;
-  $("adminRejected").textContent = rejected;
-  $("bellBadge").textContent = pending;
-  $("bellBadge").classList.toggle("hidden", !pending);
-  const {count:adminCount} = await db.from("user_roles").select("user_id", {count:"exact", head:true}).eq("role","admin");
-  $("adminUsers").textContent = adminCount || 0;
-  await renderAdminQueue();
-  await loadAdminNotifications();
+  if(!isAdmin){
+    $("adminLock").classList.add("show");
+    return;
+  }
+  if(adminDataLoading) return adminDataLoading;
+
+  adminDataLoading = (async () => {
+    /*
+     * Fetch only fields the moderation UI actually uses.
+     * Admin SELECT is backed by the RLS policy in VEXO-moderation-queue-fix.sql.
+     */
+    const {data, error} = await db.from("links")
+      .select("id,title,url,description,category,user_id,status,created_at")
+      .order("created_at",{ascending:false})
+      .limit(1000);
+
+    if(error){
+      console.error("Admin queue load:", error);
+      $("adminQueue").innerHTML = emptyState("Could not load moderation submissions: " + error.message, "!");
+      toast(error.message);
+      return;
+    }
+
+    allAdminLinks = data || [];
+
+    const pending = allAdminLinks.filter(x => x.status === "pending").length;
+    const approved = allAdminLinks.filter(x => x.status === "approved").length;
+    const rejected = allAdminLinks.filter(x => x.status === "rejected").length;
+
+    $("adminPending").textContent = pending;
+    $("adminApproved").textContent = approved;
+    $("adminRejected").textContent = rejected;
+    $("bellBadge").textContent = pending;
+    $("bellBadge").classList.toggle("hidden", !pending);
+
+    const ids = [...new Set(allAdminLinks.map(x => x.user_id).filter(Boolean))];
+
+    const [adminCountResult, profilesResult] = await Promise.all([
+      db.from("user_roles").select("user_id", {count:"exact", head:true}).eq("role","admin"),
+      ids.length
+        ? db.from("profiles").select("id,username").in("id", ids)
+        : Promise.resolve({data:[],error:null})
+    ]);
+
+    $("adminUsers").textContent = adminCountResult?.count || 0;
+
+    if(profilesResult?.error){
+      console.warn("Admin profile lookup:", profilesResult.error);
+    }else{
+      adminProfileMap.clear();
+      for(const p of (profilesResult?.data || [])) adminProfileMap.set(p.id, p);
+    }
+
+    renderAdminQueue();
+    void loadAdminNotifications();
+  })();
+
+  try{
+    return await adminDataLoading;
+  }finally{
+    adminDataLoading = null;
+  }
 }
 
-/* ADMIN QUEUE */
-async function renderAdminQueue(){
-  const search = $("adminSearch").value.toLowerCase();
+/* Local-only search/filter: typing no longer causes database requests. */
+function renderAdminQueue(){
+  if(!isAdmin) return;
+
+  const search = ($( "adminSearch" ).value || "").trim().toLowerCase();
   const status = $("adminStatus").value;
-  let arr = allAdminLinks.filter(x => {
+
+  const arr = allAdminLinks.filter(x => {
     const statusMatch = status === "all" || x.status === status;
-    const searchMatch = !search || [x.title, x.url, x.description, x.category].join(" ").toLowerCase().includes(search);
+    const searchMatch = !search || [x.title,x.url,x.description,x.category].join(" ").toLowerCase().includes(search);
     return statusMatch && searchMatch;
   });
-  if(!arr.length){ $("adminQueue").innerHTML = emptyState("No submissions found.", "▢"); return; }
-  const ids = [...new Set(arr.map(x => x.user_id).filter(Boolean))];
-  let profiles = [];
-  if(ids.length){
-    const {data} = await db.from("profiles").select("id,username").in("id", ids);
-    profiles = data || [];
+
+  if(!arr.length){
+    $("adminQueue").innerHTML = emptyState(
+      search || status !== "pending" ? "No submissions match the current filters." : "No pending submissions.",
+      "▢"
+    );
+    return;
   }
-  const profileMap = new Map(profiles.map(p => [p.id, p]));
+
   $("adminQueue").innerHTML = arr.map(x => {
-    const profile = profileMap.get(x.user_id);
+    const profile = adminProfileMap.get(x.user_id);
     const submitter = x.user_id ? (profile?.username || "Unknown user") : anonymousName(x.id);
-    const initial = submitter.charAt(0).toUpperCase();
+    const initial = submitter.charAt(0).toUpperCase() || "?";
     const statusClass = x.status === "approved" ? "approved" : x.status === "rejected" ? "rejected" : "pending";
     const date = x.created_at ? new Date(x.created_at).toLocaleString() : "Unknown date";
+
     return `
     <div class="submission">
       <div class="avatar">${esc(initial)}</div>
@@ -1521,10 +1571,10 @@ async function renderAdminQueue(){
       </div>
       <div class="submission-actions">
         ${x.status === "pending" ? `
-          <button class="btn success" onclick="approveLink('${x.id}')">✓ Approve</button>
-          <button class="btn danger" onclick="rejectLink('${x.id}')">✕ Reject</button>` : ""}
+          <button type="button" class="btn success" onclick="approveLink('${esc(x.id)}')">✓ Approve</button>
+          <button type="button" class="btn danger" onclick="rejectLink('${esc(x.id)}')">✕ Reject</button>` : ""}
         ${x.status === "approved" ? `
-          <button class="btn danger" onclick="deleteLink('${x.id}')">Remove</button>` : ""}
+          <button type="button" class="btn danger" onclick="deleteLink('${esc(x.id)}')">Remove</button>` : ""}
       </div>
     </div>`;
   }).join("");
@@ -1533,25 +1583,46 @@ async function renderAdminQueue(){
 /* APPROVE / REJECT / DELETE */
 async function approveLink(id){
   if(!isAdmin) return;
-  const {data:link} = await db.from("links").select("id,title,user_id").eq("id", id).single();
+  const {data:link,error:linkError} = await db.from("links").select("id,title,user_id").eq("id", id).single();
+  if(linkError){ toast(linkError.message); return; }
+
   const {error} = await db.from("links").update({status:"approved"}).eq("id", id);
   if(error){ toast(error.message); return; }
+
   if(link?.user_id){
-    await db.from("notifications").insert({user_id:link.user_id, type:"approved", title:"Your link was approved", message:`Your submission "${link.title}" was approved.`, link_id:id});
+    const {error:notifError} = await db.from("notifications").insert({
+      user_id:link.user_id,
+      type:"approved",
+      title:"Your link was approved",
+      message:`Your submission "${link.title}" was approved.`,
+      link_id:id
+    });
+    if(notifError) console.warn("Approval notification:", notifError);
   }
+
   toast("Link approved.");
-  await loadAdminData();
-  await loadLinks();
+  await Promise.all([loadAdminData(), loadLinks()]);
 }
 
 async function rejectLink(id){
   if(!isAdmin) return;
-  const {data:link} = await db.from("links").select("id,title,user_id").eq("id", id).single();
+  const {data:link,error:linkError} = await db.from("links").select("id,title,user_id").eq("id", id).single();
+  if(linkError){ toast(linkError.message); return; }
+
   const {error} = await db.from("links").update({status:"rejected"}).eq("id", id);
   if(error){ toast(error.message); return; }
+
   if(link?.user_id){
-    await db.from("notifications").insert({user_id:link.user_id, type:"rejected", title:"Your link was rejected", message:`Your submission "${link.title}" was rejected by a moderator.`, link_id:id});
+    const {error:notifError} = await db.from("notifications").insert({
+      user_id:link.user_id,
+      type:"rejected",
+      title:"Your link was rejected",
+      message:`Your submission "${link.title}" was rejected by a moderator.`,
+      link_id:id
+    });
+    if(notifError) console.warn("Rejection notification:", notifError);
   }
+
   toast("Link rejected.");
   await loadAdminData();
 }
@@ -1559,11 +1630,12 @@ async function rejectLink(id){
 async function deleteLink(id){
   if(!isAdmin) return;
   if(!confirm("Remove this link permanently?")) return;
+
   const {error} = await db.from("links").delete().eq("id", id);
   if(error){ toast(error.message); return; }
+
   toast("Link removed.");
-  await loadAdminData();
-  await loadLinks();
+  await Promise.all([loadAdminData(), loadLinks()]);
 }
 
 /* ADMIN NOTIFICATIONS */
@@ -1612,72 +1684,33 @@ const saved = localStorage.getItem("vexo-bg") || "grid";
 document.querySelector(`[data-bg="${saved}"]`)?.click();
 window.vexoSetBackground?.(saved);
 
-/* CURSOR */
+/* CURSOR — EVENT-DRIVEN, NO PERMANENT 60FPS LOOP */
 (() => {
   const cursorEl = $("cursor");
   const ringEl = $("cursorRing");
   if(!cursorEl || !ringEl) return;
 
-  let mx = window.innerWidth / 2;
-  let my = window.innerHeight / 2;
-  let cx = mx, cy = my;
-  let rx = mx, ry = my;
-  let started = false;
+  let mx=0,my=0,raf=0;
 
-  const move = e => {
-    mx = e.clientX;
-    my = e.clientY;
-    if(!started){
-      cx = mx; cy = my;
-      rx = mx; ry = my;
-      started = true;
-    }
-  };
-
-  document.addEventListener("pointermove", move, {passive:true});
-  document.addEventListener("mousemove", move, {passive:true});
-
-  function cursorLoop(){
-    cx += (mx-cx)*0.22;
-    cy += (my-cy)*0.22;
-    rx += (mx-rx)*0.10;
-    ry += (my-ry)*0.10;
-
-    cursorEl.style.left = "0px";
-    cursorEl.style.top = "0px";
-    ringEl.style.left = "0px";
-    ringEl.style.top = "0px";
-
-    cursorEl.style.transform = `translate3d(${cx}px,${cy}px,0) translate(-50%,-50%)`;
-    ringEl.style.transform = `translate3d(${rx}px,${ry}px,0) translate(-50%,-50%)`;
-
-    requestAnimationFrame(cursorLoop);
+  function paint(){
+    raf=0;
+    cursorEl.style.transform=`translate3d(${mx}px,${my}px,0) translate(-50%,-50%)`;
+    ringEl.style.transform=`translate3d(${mx}px,${my}px,0) translate(-50%,-50%)`;
   }
 
-  cursorLoop();
+  document.addEventListener("pointermove",e=>{
+    mx=e.clientX;
+    my=e.clientY;
+    if(!raf) raf=requestAnimationFrame(paint);
+  },{passive:true});
 
-  // Keep the custom cursor enabled by default while still honoring the Settings toggle.
-  document.body.classList.add("custom-cursor-enabled");
-})();
+  function syncCursor(){
+    const enabled=$("setCursor") ? $("setCursor").checked : true;
+    document.body.classList.toggle("custom-cursor-enabled",enabled);
+  }
 
-
-/* VEXO GEOMETRIC CLICK EFFECT */
-(() => {
-  const types = ["square","diamond","circle","triangle","hexagon"];
-  document.addEventListener("click", event => {
-    for(let i=0;i<5;i++){
-      const shape=document.createElement("span");
-      shape.className="vexo-click-shape "+types[Math.floor(Math.random()*types.length)];
-      const angle=Math.random()*Math.PI*2, distance=8+Math.random()*24;
-      shape.style.left=(event.clientX+Math.cos(angle)*distance)+"px";
-      shape.style.top=(event.clientY+Math.sin(angle)*distance)+"px";
-      const size=8+Math.random()*14;
-      if(!shape.classList.contains("triangle")){shape.style.width=size+"px";shape.style.height=size+"px";}
-      shape.style.animationDelay=(Math.random()*80)+"ms";
-      document.body.appendChild(shape);
-      setTimeout(()=>shape.remove(),900);
-    }
-  });
+  $("setCursor")?.addEventListener("change",syncCursor);
+  syncCursor();
 })();
 
 /* AUTH STATE */
@@ -2725,7 +2758,6 @@ async function runVirusTotalChecker(){
     mentionResults:[],
     mentionIndex:0,
     presenceTimer:null,
-    presenceUserId:null,
     hooked:false
   };
 
@@ -2855,27 +2887,10 @@ async function runVirusTotalChecker(){
   }
 
   function startPresence(){
-    if(!user?.id){
-      if(state.presenceTimer) clearInterval(state.presenceTimer);
-      state.presenceTimer=null;
-      state.presenceUserId=null;
-      return;
-    }
-
-    /* Do not restart the timer or hit Supabase every time chat DOM changes. */
-    if(state.presenceTimer && state.presenceUserId === user.id){
-      return;
-    }
-
-    if(state.presenceTimer) clearInterval(state.presenceTimer);
-    state.presenceUserId = user.id;
-    touchPresence();
-    refreshPresence();
-    state.presenceTimer=setInterval(()=>{
-      if(document.hidden) return;
-      touchPresence();
-      refreshPresence();
-    },60000);
+    if(state.presenceTimer)clearInterval(state.presenceTimer);
+    if(!user?.id)return;
+    touchPresence();refreshPresence();
+    state.presenceTimer=setInterval(()=>{if(!document.hidden){touchPresence();refreshPresence();}},60000);
   }
 
   function ensureMenu(){
@@ -2995,16 +3010,16 @@ async function runVirusTotalChecker(){
 
   let observerQueued=false;
   const observer=new MutationObserver(()=>{
-    if(observerQueued || document.hidden) return;
+    if(observerQueued) return;
     observerQueued=true;
-    setTimeout(()=>{
+    requestAnimationFrame(()=>{
       observerQueued=false;
       if(document.getElementById("chatMessages")) hook();
-    },120);
+    });
   });
   observer.observe(document.body,{childList:true,subtree:true});
-  document.addEventListener("DOMContentLoaded",()=>setTimeout(hook,250),{once:true});
-  setTimeout(hook,700);
+  document.addEventListener("DOMContentLoaded",()=>setTimeout(hook,300));
+  setTimeout(hook,500);setTimeout(hook,1200);setTimeout(hook,2200);
 
   // Keep edits visible immediately to other connected clients.
   db.channel("vexo-chat-features-live")
@@ -3067,12 +3082,12 @@ async function runVirusTotalChecker(){
 .vexo-security-block-kicker{font-size:10px;font-weight:900;letter-spacing:.18em;color:var(--red);margin-bottom:10px}
 .vexo-security-block-card h1{margin:0 0 10px;font-size:29px}
 .vexo-security-block-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.65}
+.vexo-security-block-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.vexo-security-block-meta span{padding:7px 10px;border-radius:9px;border:1px solid rgba(251,113,133,.18);background:rgba(251,113,133,.06);color:#f6a5b1;font-size:11px;font-weight:700}.vexo-security-block-note{margin-top:14px;padding-top:14px;border-top:1px solid rgba(148,163,184,.10);color:#7f8ba6;font-size:11.5px;line-height:1.6}
 </style>
 
-<!-- VEXO SECURITY & IP AUDIT LOGIC — APPEND-ONLY -->
+<!-- VEXO SECURITY & IP AUDIT LOGIC — PERFORMANCE / BAN FIX -->
 <script>
 (() => {
-  const SECURITY_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/vexo-security-log`;
   const SECURITY_ALLOWED_ACTIONS = new Set([
     "page_view","link_open","link_submit","chat_message","vote",
     "favorite_add","favorite_remove","login_attempt","admin_ban",
@@ -3086,6 +3101,16 @@ async function runVirusTotalChecker(){
   function securityDate(iso){
     try { return new Date(iso).toLocaleString(); } catch { return String(iso || ""); }
   }
+
+  /*
+   * SECURITY STATE
+   * Keep ban state in memory so normal VEXO actions do not have to wait for
+   * a security-network request every time.
+   */
+  window.__vexoSecurityBlocked = false;
+  window.__vexoSecurityBan = null;
+  let securityLastCheck = 0;
+  let securityCheckInFlight = null;
 
   async function securityRequest(action, payload={}){
     const body = {
@@ -3123,44 +3148,89 @@ async function runVirusTotalChecker(){
       return {ok:true, status:200, ...(data || {})};
     }catch(error){
       const status = error?.context?.status || 0;
-      let detail = null;
-
-      try{
-        if(error.context && typeof error.context.json === "function"){
-          detail = await error.context.json();
-        }
-      }catch(e){}
-
       return {
         ok:false,
         status,
-        blocked: status === 403 || detail?.blocked === true,
-        error:detail?.error || detail?.message || error?.message || "Security function unavailable",
-        ...(detail || {})
+        blocked: status === 403,
+        error:error?.message || "Security function unavailable"
       };
     }
   }
 
-  async function vexoSecurityLog(action, details={}){
-    const safeAction = SECURITY_ALLOWED_ACTIONS.has(action) ? action : "admin_action";
-    const result = await securityRequest(safeAction, {details});
-    if(result.blocked){
-      showSecurityBlocked();
-    }
-    return result;
-  }
+  function showSecurityBlocked(info={}){
+    window.__vexoSecurityBlocked = true;
+    window.__vexoSecurityBan = info?.ban || window.__vexoSecurityBan || null;
 
-  function showSecurityBlocked(){
-    if(document.getElementById("vexoSecurityBlockedScreen")) return;
-    const overlay = document.createElement("div");
-    overlay.id = "vexoSecurityBlockedScreen";
+    let overlay = document.getElementById("vexoSecurityBlockedScreen");
+    if(!overlay){
+      overlay = document.createElement("div");
+      overlay.id = "vexoSecurityBlockedScreen";
+      document.body.appendChild(overlay);
+    }
+
+    const ban = window.__vexoSecurityBan || {};
+    const reason = ban.reason
+      ? securityEsc(ban.reason)
+      : "Access to this VEXO service has been restricted by a security policy.";
+
+    const expiry = ban.expires_at
+      ? securityEsc(securityDate(ban.expires_at))
+      : "Permanent";
+
     overlay.innerHTML = `
       <div class="vexo-security-block-card">
         <div class="vexo-security-block-kicker">VEXO SECURITY</div>
         <h1>Access Restricted</h1>
-        <p>This VEXO service has restricted access from this network address. Contact the site administrator if you believe this is an error.</p>
+        <p>${reason}</p>
+        <div class="vexo-security-block-meta">
+          <span>Restriction: active</span>
+          <span>Expires: ${expiry}</span>
+        </div>
+        <div class="vexo-security-block-note">
+          Contact the VEXO administrator if you believe this restriction is an error.
+        </div>
       </div>`;
-    document.body.appendChild(overlay);
+  }
+
+  async function refreshBanState(force=false){
+    const now = Date.now();
+    if(!force && now - securityLastCheck < 60000) return;
+    if(securityCheckInFlight) return securityCheckInFlight;
+
+    securityLastCheck = now;
+
+    securityCheckInFlight = (async () => {
+      const result = await securityRequest("check");
+
+      if(result?.blocked){
+        showSecurityBlocked(result);
+      } else if(result?.ok){
+        window.__vexoSecurityBlocked = false;
+        window.__vexoSecurityBan = null;
+      }
+
+      return result;
+    })();
+
+    try{
+      return await securityCheckInFlight;
+    }finally{
+      securityCheckInFlight = null;
+    }
+  }
+
+  async function vexoSecurityLog(action, details={}){
+    const safeAction = SECURITY_ALLOWED_ACTIONS.has(action)
+      ? action
+      : "admin_action";
+
+    const result = await securityRequest(safeAction, {details});
+
+    if(result.blocked){
+      showSecurityBlocked(result);
+    }
+
+    return result;
   }
 
   window.vexoSecurityLog = vexoSecurityLog;
@@ -3169,16 +3239,25 @@ async function runVirusTotalChecker(){
     if(!isAdmin) return;
 
     const refresh = $("securityRefreshBtn");
-    if(refresh){ refresh.disabled = true; refresh.textContent = "Loading..."; }
+    if(refresh){
+      refresh.disabled = true;
+      refresh.textContent = "Loading...";
+    }
 
-    const limit = Math.min(300, Math.max(50, Number($("securityLimit")?.value || 200)));
-    const result = await securityRequest("logs", {
-      details:{limit}
-    });
+    const limit = Math.min(
+      300,
+      Math.max(50, Number($("securityLimit")?.value || 200))
+    );
+
+    /* Fetch logs and bans at the same time instead of one after the other. */
+    const [result, bans] = await Promise.all([
+      securityRequest("logs", {details:{limit}}),
+      securityRequest("bans", {details:{limit:200}})
+    ]);
 
     if(!result.ok){
       $("securityLogRows").innerHTML = `<tr><td colspan="8"><div class="security-empty">${securityEsc(result.error || `Security logs unavailable (${result.status || "unknown error"}).`)}</div></td></tr>`;
-    } else {
+    }else{
       const rows = Array.isArray(result.logs) ? result.logs : [];
       renderSecurityLogs(rows);
       $("securityLoadedCount").textContent = rows.length.toLocaleString();
@@ -3186,34 +3265,47 @@ async function runVirusTotalChecker(){
       $("securityBlockedCount").textContent = rows.filter(x => x.blocked).length.toLocaleString();
     }
 
-    const bans = await securityRequest("bans", {details:{limit:200}});
     if(bans.ok){
-      renderSecurityBans(Array.isArray(bans.bans) ? bans.bans : []);
-      $("securityBanCount").textContent = Array.isArray(bans.bans) ? bans.bans.length.toLocaleString() : "0";
-    } else {
+      const list = Array.isArray(bans.bans) ? bans.bans : [];
+      renderSecurityBans(list);
+      $("securityBanCount").textContent = list.length.toLocaleString();
+    }else{
       $("securityBanList").innerHTML = `<div class="security-empty">${securityEsc(bans.error || "Could not load active bans.")}</div>`;
     }
 
-    if(refresh){ refresh.disabled = false; refresh.textContent = "Refresh"; }
+    if(refresh){
+      refresh.disabled = false;
+      refresh.textContent = "Refresh";
+    }
   }
 
   function securityFilteredRows(rows){
     const q = ($( "securitySearch" )?.value || "").trim().toLowerCase();
     const action = $("securityActionFilter")?.value || "";
+
     return rows.filter(row => {
       if(action === "blocked" ? !row.blocked : action && row.action !== action) return false;
       if(!q) return true;
-      const hay = [row.ip,row.action,row.path,row.country,row.user_id,row.user_agent,row.referer,JSON.stringify(row.details || {})].join(" ").toLowerCase();
+
+      const hay = [
+        row.ip,row.action,row.path,row.country,row.user_id,
+        row.user_agent,row.referer,JSON.stringify(row.details || {})
+      ].join(" ").toLowerCase();
+
       return hay.includes(q);
     });
   }
 
   function renderSecurityLogs(rows){
+    window.__vexoSecurityRows = rows;
+
     const filtered = securityFilteredRows(rows);
+
     if(!filtered.length){
       $("securityLogRows").innerHTML = `<tr><td colspan="8"><div class="security-empty">No matching security events.</div></td></tr>`;
       return;
     }
+
     $("securityLogRows").innerHTML = filtered.map(row => {
       const meta = row.details && typeof row.details === "object" ? row.details : {};
       const displayUser = row.user_id ? row.user_id.slice(0,8) + "…" : "Guest";
@@ -3223,6 +3315,7 @@ async function runVirusTotalChecker(){
         .join(", ") || "—";
       const actionLabel = String(row.action || "event").replaceAll("_"," ");
       const targetIp = meta.target_ip || row.ip || "";
+
       return `
         <tr>
           <td>${securityEsc(securityDate(row.created_at))}</td>
@@ -3234,8 +3327,10 @@ async function runVirusTotalChecker(){
           <td><span class="vexo-security-status ${row.blocked ? "blocked" : "allowed"}">${row.blocked ? "blocked" : "allowed"}</span></td>
           <td>
             <div class="actions">
-              <button class="btn mini security-copy" onclick="copyToClipboard(${JSON.stringify(targetIp)},'IP')">Copy</button>
-              ${row.ip && !row.blocked && !String(row.action || "").startsWith("admin_") ? `<button class="btn mini danger" onclick="prefillSecurityBan(${JSON.stringify(row.ip)})">Ban</button>` : ""}
+              <button type="button" class="btn mini security-copy" onclick="copyToClipboard(${JSON.stringify(targetIp)},'IP')">Copy</button>
+              ${row.ip && !row.blocked && !String(row.action || "").startsWith("admin_")
+                ? `<button type="button" class="btn mini danger" onclick="prefillSecurityBan(${JSON.stringify(row.ip)})">Ban</button>`
+                : ""}
             </div>
           </td>
         </tr>`;
@@ -3247,19 +3342,22 @@ async function runVirusTotalChecker(){
       $("securityBanList").innerHTML = `<div class="security-empty">No active bans.</div>`;
       return;
     }
+
     $("securityBanList").innerHTML = bans.map(ban => {
+      const ip = ban.ip || ban.ip_address || "";
       const expires = ban.expires_at ? securityDate(ban.expires_at) : "Permanent";
+
       return `
         <div class="vexo-security-ban">
           <div class="vexo-security-ban-top">
-            <span class="vexo-security-ban-ip">${securityEsc(ban.ip)}</span>
+            <span class="vexo-security-ban-ip">${securityEsc(ip || "—")}</span>
             <span class="vexo-security-status blocked">BANNED</span>
           </div>
           <div class="vexo-security-ban-reason">${securityEsc(ban.reason || "No reason provided")}</div>
           <div class="vexo-security-ban-meta">Expires: ${securityEsc(expires)}<br>Created: ${securityEsc(securityDate(ban.created_at))}</div>
           <div class="vexo-security-ban-actions">
-            <button class="btn mini" onclick="copyToClipboard(${JSON.stringify(ban.ip)},'IP')">Copy IP</button>
-            <button class="btn mini success" onclick="unbanSecurityIp(${JSON.stringify(ban.ip)})">Unban</button>
+            <button type="button" class="btn mini" onclick="copyToClipboard(${JSON.stringify(ip)},'IP')">Copy IP</button>
+            <button type="button" class="btn mini success" onclick="unbanSecurityIp(${JSON.stringify(ip)})">Unban</button>
           </div>
         </div>`;
     }).join("");
@@ -3272,49 +3370,83 @@ async function runVirusTotalChecker(){
   };
 
   window.unbanSecurityIp = async function(ip){
-    if(!isAdmin || !ip) return;
+    if(!isAdmin){
+      toast("Admin access required.");
+      return;
+    }
+
+    ip = String(ip || "").trim();
+    if(!ip){
+      toast("No IP address was supplied.");
+      return;
+    }
+
     if(!confirm(`Unban ${ip}?`)) return;
-    const result = await securityRequest("unban", {details:{ip}});
-    if(!result.ok){ toast(result.error || "Could not unban IP."); return; }
+
+    const button = [...document.querySelectorAll(".vexo-security-ban button")].find(
+      b => b.textContent.trim() === "Unban" && b.closest(".vexo-security-ban")?.textContent.includes(ip)
+    );
+
+    if(button){
+      button.disabled = true;
+      button.textContent = "Unbanning...";
+    }
+
+    const result = await securityRequest("unban", {
+      details:{ip}
+    });
+
+    if(!result.ok){
+      console.error("VEXO unban failed:", result);
+      toast(result.error || `Could not unban IP (${result.status || "unknown error"}).`);
+
+      if(button){
+        button.disabled = false;
+        button.textContent = "Unban";
+      }
+
+      return;
+    }
+
     toast(`Unbanned ${ip}.`);
     await loadSecurityPanel();
   };
 
   $("securityBanForm").addEventListener("submit", async e => {
     e.preventDefault();
+
     if(!isAdmin) return;
+
     const ip = $("securityBanIp").value.trim();
     const reason = $("securityBanReason").value.trim();
     const duration = $("securityBanDuration").value;
-    if(!ip || !reason){ toast("Enter an IP address and reason."); return; }
+
+    if(!ip || !reason){
+      toast("Enter an IP address and reason.");
+      return;
+    }
 
     const result = await securityRequest("ban", {
       details:{ip, reason, duration}
     });
-    if(!result.ok){ toast(result.error || "Could not ban IP."); return; }
+
+    if(!result.ok){
+      toast(result.error || "Could not ban IP.");
+      return;
+    }
+
     toast(`IP ${ip} has been banned.`);
     $("securityBanForm").reset();
     await loadSecurityPanel();
   });
 
-  $("securitySearch").addEventListener("input", async () => {
-    // Re-read the current table from the backend when the user refreshes;
-    // for typing, filter the already loaded rows stored by the panel.
-    if(window.__vexoSecurityRows) renderSecurityLogs(window.__vexoSecurityRows);
-  });
-  $("securityActionFilter").addEventListener("change", () => {
+  $("securitySearch").addEventListener("input", () => {
     if(window.__vexoSecurityRows) renderSecurityLogs(window.__vexoSecurityRows);
   });
 
-  const originalRenderSecurityLogs = renderSecurityLogs;
-  // Keep a local copy so search/filter stays instant without another request.
-  function renderSecurityLogsWithCache(rows){
-    window.__vexoSecurityRows = rows;
-    originalRenderSecurityLogs(rows);
-  }
-  // Replace the function reference used above by reassigning the global helper.
-  // (The page only calls this local helper after this point.)
-  renderSecurityLogs = renderSecurityLogsWithCache;
+  $("securityActionFilter").addEventListener("change", () => {
+    if(window.__vexoSecurityRows) renderSecurityLogs(window.__vexoSecurityRows);
+  });
 
   const originalShowPage = window.showPage;
   window.showPage = function(name){
@@ -3323,29 +3455,42 @@ async function runVirusTotalChecker(){
     return result;
   };
 
-  // Initial page access check and a lightweight periodic check.
-  const runInitialSecurityLog = () => {
-    vexoSecurityLog("page_view").then(result => {
-      if(result?.blocked) showSecurityBlocked();
-    }).catch(() => {});
-  };
-  if("requestIdleCallback" in window){
-    requestIdleCallback(runInitialSecurityLog,{timeout:1800});
-  }else{
-    setTimeout(runInitialSecurityLog,1200);
-  }
-  setInterval(async () => {
-    if(document.hidden) return;
-    const result = await securityRequest("check");
-    if(result.blocked) showSecurityBlocked();
-  }, 15 * 60 * 1000);
+  /*
+   * ONE lightweight check on load, then occasional checks only while the
+   * page is active. These checks do not perform geolocation.
+   */
+  refreshBanState(true).catch(() => {});
 
-  // Add audit events around existing functions without replacing their logic.
+  /* Record the page visit without blocking the page UI. */
+  void vexoSecurityLog("page_view");
+
+  const securityCheckTimer = setInterval(() => {
+    if(!document.hidden) refreshBanState(false).catch(() => {});
+  }, 120000);
+
+  window.addEventListener("focus", () => {
+    refreshBanState(true).catch(() => {});
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if(!document.hidden) refreshBanState(true).catch(() => {});
+  });
+
+  /*
+   * IMPORTANT PERFORMANCE CHANGE:
+   * Normal VEXO actions are no longer paused while the security logger runs.
+   * The ban state is checked separately. Logging is fire-and-forget.
+   */
+
   const originalOpenLink = window.openLink;
   if(typeof originalOpenLink === "function"){
     window.openLink = async function(id){
-      const result = await vexoSecurityLog("link_open", {link_id:id});
-      if(result.blocked) return;
+      if(window.__vexoSecurityBlocked){
+        showSecurityBlocked({ban:window.__vexoSecurityBan || {}});
+        return;
+      }
+
+      void vexoSecurityLog("link_open", {link_id:id});
       return originalOpenLink(id);
     };
   }
@@ -3353,8 +3498,12 @@ async function runVirusTotalChecker(){
   const originalVote = window.vote;
   if(typeof originalVote === "function"){
     window.vote = async function(id, value){
-      const result = await vexoSecurityLog("vote", {link_id:id, value});
-      if(result.blocked) return;
+      if(window.__vexoSecurityBlocked){
+        showSecurityBlocked({ban:window.__vexoSecurityBan || {}});
+        return;
+      }
+
+      void vexoSecurityLog("vote", {link_id:id, value});
       return originalVote(id, value);
     };
   }
@@ -3362,9 +3511,16 @@ async function runVirusTotalChecker(){
   const originalFavorite = window.toggleFavorite;
   if(typeof originalFavorite === "function"){
     window.toggleFavorite = async function(id){
-      const action = favorites.has(id) ? "favorite_remove" : "favorite_add";
-      const result = await vexoSecurityLog(action, {link_id:id});
-      if(result.blocked) return;
+      if(window.__vexoSecurityBlocked){
+        showSecurityBlocked({ban:window.__vexoSecurityBan || {}});
+        return;
+      }
+
+      const action = favorites.has(id)
+        ? "favorite_remove"
+        : "favorite_add";
+
+      void vexoSecurityLog(action, {link_id:id});
       return originalFavorite(id);
     };
   }
@@ -3372,169 +3528,37 @@ async function runVirusTotalChecker(){
   const linkForm = $("linkForm");
   if(linkForm && typeof linkForm.onsubmit === "function"){
     const originalSubmit = linkForm.onsubmit;
+
     linkForm.onsubmit = async function(e){
-      const result = await vexoSecurityLog("link_submit");
-      if(result.blocked){ e.preventDefault(); e.stopImmediatePropagation(); return; }
+      if(window.__vexoSecurityBlocked){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        showSecurityBlocked({ban:window.__vexoSecurityBan || {}});
+        return;
+      }
+
+      void vexoSecurityLog("link_submit");
       return originalSubmit.call(this,e);
     };
   }
 
-  // Log chat send attempts when the existing VEXO chat form is present.
   const chatForm = $("chatForm");
   if(chatForm){
-    chatForm.addEventListener("submit", async e => {
-      const result = await vexoSecurityLog("chat_message");
-      if(result.blocked){ e.preventDefault(); e.stopImmediatePropagation(); }
+    chatForm.addEventListener("submit", e => {
+      if(window.__vexoSecurityBlocked){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        showSecurityBlocked({ban:window.__vexoSecurityBan || {}});
+        return;
+      }
+
+      void vexoSecurityLog("chat_message");
     }, true);
   }
-})();
-</script>
 
-<!-- VEXO PERFORMANCE OPTIMIZER — APPEND-ONLY -->
-<style>
-/* Keep the same visual language, but give low-power devices a cheaper rendering path. */
-.vexo-perf-lite .orb{
-  filter:none !important;
-  opacity:.07 !important;
-  animation:none !important;
-}
-.vexo-perf-lite #grid{
-  animation:none !important;
-  transform:none !important;
-  mask-image:none !important;
-  opacity:.22 !important;
-}
-.vexo-perf-lite .panel,
-.vexo-perf-lite .side,
-.vexo-perf-lite .modal .box{
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-}
-.vexo-perf-lite .panel{
-  box-shadow:0 10px 28px rgba(0,0,0,.30) !important;
-}
-.vexo-perf-lite .stat:hover,
-.vexo-perf-lite .card:hover,
-.vexo-perf-lite .tool-card:hover,
-.vexo-perf-lite .admin-stat:hover,
-.vexo-perf-lite .submission:hover{
-  transform:none !important;
-}
-.vexo-perf-lite .cursor-ring{
-  display:none !important;
-}
-.vexo-perf-lite .cursor{
-  box-shadow:0 0 8px rgba(25,211,255,.7) !important;
-}
-.vexo-perf-lite *,
-.vexo-perf-lite *::before,
-.vexo-perf-lite *::after{
-  transition-duration:.08s !important;
-}
-@media (prefers-reduced-motion: reduce){
-  #grid,.orb,.art-ring{animation:none !important;}
-  *{scroll-behavior:auto !important;}
-}
-</style>
-<script>
-(() => {
-  "use strict";
-
-  const root = document.documentElement;
-  const nav = navigator;
-  const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
-
-  /*
-   * Low-power mode is deliberately based on browser-reported capability,
-   * not location or identity. It targets rendering cost rather than features.
-   */
-  const lowMemory = Number(nav.deviceMemory || 0) > 0 && Number(nav.deviceMemory) <= 4;
-  const lowCpu = Number(nav.hardwareConcurrency || 0) > 0 && Number(nav.hardwareConcurrency) <= 4;
-  const saveData = !!connection?.saveData;
-  const slowNetwork = ["slow-2g","2g"].includes(connection?.effectiveType);
-  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-  const forceFull = new URLSearchParams(location.search).get("perf") === "full";
-
-  if(!forceFull && (lowMemory || lowCpu || saveData || slowNetwork || reducedMotion)){
-    root.classList.add("vexo-perf-lite");
-  }
-
-  const perfLite = root.classList.contains("vexo-perf-lite");
-
-  /* ----------------------------------------------------------
-     Lazy iframe activation
-     ---------------------------------------------------------- */
-  function activateIframe(frame){
-    if(!frame || frame.src || !frame.dataset.src) return;
-    frame.src = frame.dataset.src;
-  }
-
-  function activatePageIframes(name){
-    if(name === "proxy") activateIframe(document.getElementById("proxyFrame"));
-    if(name === "fileshare") activateIframe(document.getElementById("fileShareFrame"));
-  }
-
-  /* Background iframe is expensive. Keep the CSS background immediately,
-     then load the dedicated background only when the browser is idle. */
-  const bgFrame = document.getElementById("vexoBackgroundFrame");
-  if(bgFrame){
-    if(perfLite){
-      bgFrame.remove();
-    }else{
-      const loadBg = () => activateIframe(bgFrame);
-      if("requestIdleCallback" in window){
-        requestIdleCallback(loadBg,{timeout:2500});
-      }else{
-        setTimeout(loadBg,1800);
-      }
-    }
-  }
-
-  const originalShowPage = window.showPage;
-  if(typeof originalShowPage === "function" && !window.__vexoPerfShowPagePatched){
-    window.__vexoPerfShowPagePatched = true;
-    window.showPage = function(name){
-      const result = originalShowPage.apply(this, arguments);
-      activatePageIframes(name);
-      return result;
-    };
-  }
-
-  /* If the page opened directly on a heavy tool page, activate it now. */
-  const visiblePage = document.querySelector(".page:not(.hidden)");
-  if(visiblePage?.id === "proxyPage") activatePageIframes("proxy");
-  if(visiblePage?.id === "filesharePage") activatePageIframes("fileshare");
-
-  /* ----------------------------------------------------------
-     Throttle noisy chat observers.
-     The existing features stay intact; callbacks are coalesced to
-     at most one run per animation frame.
-     ---------------------------------------------------------- */
-  const originalMO = window.MutationObserver;
-  if(originalMO && !window.__vexoObserverPatch){
-    window.__vexoObserverPatch = true;
-    /* Do not replace MutationObserver globally: this would be too invasive.
-       Instead, lower the frequency of expensive page paints while hidden. */
-    document.addEventListener("visibilitychange", () => {
-      if(document.hidden){
-        document.querySelectorAll(".orb").forEach(x => x.style.animationPlayState = "paused");
-        const grid = document.getElementById("grid");
-        if(grid) grid.style.animationPlayState = "paused";
-      }else{
-        document.querySelectorAll(".orb").forEach(x => x.style.animationPlayState = "running");
-        const grid = document.getElementById("grid");
-        if(grid) grid.style.animationPlayState = "running";
-      }
-    });
-  }
-
-  /* Disable cursor animation entirely on touch/no-hover devices. */
-  const noHover = window.matchMedia?.("(hover: none), (pointer: coarse)")?.matches;
-  if(noHover){
-    document.body.classList.remove("custom-cursor-enabled");
-    document.getElementById("cursor")?.remove();
-    document.getElementById("cursorRing")?.remove();
-  }
+  window.addEventListener("beforeunload", () => {
+    clearInterval(securityCheckTimer);
+  });
 })();
 </script>
 </body>
@@ -5683,12 +5707,12 @@ const BLOCKED_WORDS = [
     })
     .subscribe();
 
-  let observerQueued=false;
+  let chatObserverQueued=false;
   const observer=new MutationObserver(()=>{
-    if(observerQueued || document.hidden) return;
-    observerQueued=true;
-    setTimeout(()=>{
-      observerQueued=false;
+    if(chatObserverQueued) return;
+    chatObserverQueued=true;
+    requestAnimationFrame(()=>{
+      chatObserverQueued=false;
       injectSettings();
       hookSession();
       hookChatForm();
@@ -5696,12 +5720,14 @@ const BLOCKED_WORDS = [
         enhancedChatReady=true;
         loadAndRender();
       }
-    },120);
+    });
   });
 
   observer.observe(document.body,{childList:true,subtree:true});
 
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start,{once:true}); else start();
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start); else start();
+  setTimeout(start,500);
+  setTimeout(start,1500);
 })();
 </script>
 <!-- ============================================================
@@ -5962,9 +5988,9 @@ const BLOCKED_WORDS = [
   // Keep the chat corrected if another script rewrites chatMessages.
   let persistObserverQueued=false;
   const observer = new MutationObserver(() => {
-    if(persistObserverQueued || document.hidden) return;
+    if(persistObserverQueued) return;
     persistObserverQueued=true;
-    setTimeout(()=>{
+    requestAnimationFrame(()=>{
       persistObserverQueued=false;
       bindChatNav();
       const box=document.getElementById("chatMessages");
@@ -5975,7 +6001,7 @@ const BLOCKED_WORDS = [
         clearTimeout(window.__vexoChatPersistTimer);
         window.__vexoChatPersistTimer=setTimeout(()=>rerenderChat("mutation"),80);
       }
-    },120);
+    });
   });
 
   function bindChatNav(){
@@ -6317,7 +6343,10 @@ const BLOCKED_WORDS = [
   }
 
   setInterval(updateClock, 1000);
-  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, {once:true}); else start();
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+  setTimeout(start, 400);
+  setTimeout(start, 1200);
+  setTimeout(start, 2500);
 })();
 </script>
 
@@ -6525,7 +6554,10 @@ const BLOCKED_WORDS = [
 
   window.vexoRefreshSavedThemes = renderSavedThemes;
 
-  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, {once:true}); else start();
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+  setTimeout(start, 400);
+  setTimeout(start, 1200);
+  setTimeout(start, 2500);
 })();
 </script>
 
@@ -6753,5 +6785,51 @@ const BLOCKED_WORDS = [
   setTimeout(inject,400);
   setTimeout(inject,1200);
   setTimeout(inject,2500);
+})();
+</script>
+
+<!-- VEXO PERFORMANCE LAYER -->
+<style>
+/* Expensive glass blur is disabled; the dashboard keeps its gradients/borders. */
+.vexo-performance-mode .panel,
+.vexo-performance-mode .side,
+.vexo-performance-mode .modal .box,
+.vexo-performance-mode .vexo-chat-feature-menu,
+.vexo-performance-mode .vexo-chat-feature-mention-box{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+.vexo-performance-mode .panel{box-shadow:0 12px 30px rgba(0,0,0,.26)}
+.vexo-performance-mode .card,
+.vexo-performance-mode .stat,
+.vexo-performance-mode .admin-stat,
+.vexo-performance-mode .tool-card,
+.vexo-performance-mode .submission{will-change:auto!important}
+.vexo-performance-mode .panel,
+.vexo-performance-mode .card,
+.vexo-performance-mode .stat,
+.vexo-performance-mode .tool-card,
+.vexo-performance-mode .admin-stat,
+.vexo-performance-mode .submission{transition-duration:.14s!important}
+.vexo-performance-mode #grid,.vexo-performance-mode .orb{animation:none!important}
+@media(prefers-reduced-motion:reduce){
+  .vexo-performance-mode *{animation:none!important;transition-duration:0s!important}
+}
+</style>
+<script>
+(() => {
+  document.documentElement.classList.add("vexo-performance-mode");
+
+  const frame=document.getElementById("vexoBackgroundFrame");
+  const lowPower=
+    navigator.connection?.saveData===true ||
+    (navigator.hardwareConcurrency && navigator.hardwareConcurrency<=8) ||
+    (navigator.deviceMemory && navigator.deviceMemory<=8);
+
+  if(frame && lowPower){
+    const send=()=>frame.contentWindow?.postMessage({type:"VEXO_PERFORMANCE",enabled:true},"*");
+    if(frame.contentWindow) send();
+    frame.addEventListener("load",send,{once:true});
+  }
 })();
 </script>
