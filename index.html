@@ -9,6 +9,60 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* VEXO EARLY SECURITY GATE
+   Only the security-check endpoint is contacted before access is granted. */
+(() => {
+  const endpoint = "https://jxxjvwemjvhrozuaihso.supabase.co/functions/v1/vexo-security-log";
+  window.__vexoSecurityGateState = "checking";
+  window.__vexoSecurityGateResult = null;
+  window.__vexoBootSecurityLogged = false;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+  window.__vexoSecurityGatePromise = fetch(endpoint, {
+    method: "POST",
+    cache: "no-store",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      action:"check",
+      path:location.pathname + location.search,
+      details:{boot:true,security_gate:true}
+    }),
+    signal: controller.signal,
+    credentials: "omit"
+  }).then(async response => {
+    clearTimeout(timeoutId);
+    let body = null;
+    try { body = await response.json(); } catch(e) {}
+    const explicitBlocked = body?.blocked === true;
+    const backendError = body?.verification_error === true || (!response.ok && !explicitBlocked);
+    const result = {
+      ok: response.ok && body?.ok === true && !explicitBlocked,
+      blocked: explicitBlocked,
+      verificationError: backendError,
+      status: response.status,
+      ...(body || {})
+    };
+    window.__vexoSecurityGateResult = result;
+    window.__vexoSecurityGateState = result.blocked ? "blocked" : (result.ok ? "allowed" : "error");
+    return result;
+  }).catch((error) => {
+    const result = {
+      ok:false,
+      blocked:false,
+      verificationError:true,
+      status:0,
+      error: error?.name === "AbortError"
+        ? "Security verification timed out. Refresh the page to try again."
+        : "Security verification could not be completed. Refresh the page to try again."
+    };
+    window.__vexoSecurityGateResult = result;
+    window.__vexoSecurityGateState = "error";
+    return result;
+  });
+})();
+</script>
 <style>
 :root{
 --bg:#06090f;--bg2:#0a0f1c;--card:#0e1626;--surface:rgba(17,24,43,.72);
@@ -25,6 +79,11 @@ body{cursor:auto;}
 button,input,textarea,select{font:inherit;}
 button{cursor:auto;}
 button:disabled{opacity:.5;cursor:not-allowed;}
+#vexoBootLock{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:24px;background:#03060c;color:var(--text);}
+#vexoBootLock .vexo-boot-card{width:min(620px,100%);padding:32px;border:1px solid rgba(124,92,255,.28);border-radius:20px;background:linear-gradient(180deg,rgba(20,25,38,.98),rgba(10,13,21,.98));box-shadow:0 30px 100px rgba(0,0,0,.55);text-align:center;}
+#vexoBootLock .vexo-security-block-kicker{font-size:10px;font-weight:900;letter-spacing:.18em;color:var(--accent2);margin-bottom:10px;}
+#vexoBootLock h1{margin:0 0 10px;font-size:29px;}
+#vexoBootLock p{margin:0;color:var(--muted);font-size:14px;line-height:1.65;}
 ::-webkit-scrollbar{width:9px;height:9px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:rgba(124,92,255,.28);border-radius:99px;border:2px solid var(--bg);}
@@ -370,6 +429,14 @@ body{
 </style>
 </head>
 <body>
+
+<div id="vexoBootLock" aria-live="polite">
+  <div class="vexo-boot-card">
+    <div class="vexo-security-block-kicker">VEXO SECURITY</div>
+    <h1>Verifying access</h1>
+    <p>VEXO is checking access before connecting application services.</p>
+  </div>
+</div>
 
 <!-- VEXO DEDICATED BACKGROUND — separate HTML file -->
 <iframe
@@ -916,7 +983,60 @@ body{
 /* SUPABASE */
 const SUPABASE_URL = "https://jxxjvwemjvhrozuaihso.supabase.co";
 const SUPABASE_KEY = "sb_publishable_hbQfOIYOcFnCDyn0s6GPyg_amHog7u-";
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let db = null;
+let __vexoActualDb = null;
+let __vexoServicesUnlocked = false;
+const __vexoReadyQueue = [];
+
+function __vexoLockedServiceResult(){
+  return {data:null,error:{message:"VEXO services are locked by the security gate.",status:403}};
+}
+
+function __vexoLockedProxy(){
+  const callable = function(){ return __vexoLockedProxy(); };
+  return new Proxy(callable,{
+    get(_target, prop){
+      if(prop === "then") return (resolve) => Promise.resolve(__vexoLockedServiceResult()).then(resolve);
+      if(prop === Symbol.toStringTag) return "VEXOLockedService";
+      return __vexoLockedProxy();
+    },
+    apply(){ return __vexoLockedProxy(); }
+  });
+}
+
+const __vexoLockedDb = __vexoLockedProxy();
+db = __vexoLockedDb;
+
+window.vexoWhenServicesReady = fn => {
+  if(typeof fn !== "function") return;
+  if(__vexoServicesUnlocked) queueMicrotask(() => { try { fn(); } catch(e) { console.error(e); } });
+  else __vexoReadyQueue.push(fn);
+};
+
+window.__vexoServicesAreReady = () => __vexoServicesUnlocked;
+
+window.__vexoUnlockServices = () => {
+  if(__vexoServicesUnlocked) return __vexoActualDb;
+  if(!window.supabase || typeof window.supabase.createClient !== "function") throw new Error("Supabase library unavailable.");
+  __vexoActualDb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  db = __vexoActualDb;
+  __vexoServicesUnlocked = true;
+  while(__vexoReadyQueue.length){
+    const fn = __vexoReadyQueue.shift();
+    try { fn(); } catch(e) { console.error(e); }
+  }
+  return __vexoActualDb;
+};
+
+window.__vexoLockServices = reason => {
+  __vexoServicesUnlocked = false;
+  db = __vexoLockedDb;
+  try {
+    if(__vexoActualDb?.removeAllChannels) __vexoActualDb.removeAllChannels();
+    if(__vexoActualDb?.auth?.stopAutoRefresh) __vexoActualDb.auth.stopAutoRefresh();
+  } catch(e) {}
+  window.__vexoSecurityLockReason = reason || "Access restricted";
+};
 
 /* STATE */
 let user = null, isAdmin = false, links = [], allAdminLinks = [], favorites = new Set(), authMode = "login";
@@ -968,6 +1088,7 @@ function fallbackCopy(val, done){
 
 /* PAGE NAVIGATION */
 function showPage(name){
+  if(typeof window.__vexoServicesAreReady === "function" && !window.__vexoServicesAreReady()) return;
   if(name === "admin" && !isAdmin){ $("adminLock").classList.add("show"); return; }
   document.querySelectorAll(".page").forEach(x => x.classList.add("hidden"));
   $(name + "Page").classList.remove("hidden");
@@ -1714,10 +1835,12 @@ window.vexoSetBackground?.(saved);
 })();
 
 /* AUTH STATE */
-db.auth.onAuthStateChange(() => setTimeout(loadSession, 0));
+vexoWhenServicesReady(() => {
+  db.auth.onAuthStateChange(() => setTimeout(loadSession, 0));
+});
 
 /* START */
-loadSession();
+/* loadSession is started by the security gate only after access is approved. */
 
 /* ═══ VEXO SETTINGS ENGINE — APPENDED ═══ */
 (() => {
@@ -3022,13 +3145,15 @@ async function runVirusTotalChecker(){
   setTimeout(hook,500);setTimeout(hook,1200);setTimeout(hook,2200);
 
   // Keep edits visible immediately to other connected clients.
-  db.channel("vexo-chat-features-live")
-    .on("postgres_changes",{event:"UPDATE",schema:"public",table:"messages"},payload=>{
-      const row=document.getElementById(`chat-msg-${payload.new?.id}`);if(!row)return;
-      const text=row.querySelector(".chat-text");if(text){text.innerHTML=mentionHtml(payload.new.content||"");text.dataset.vexoMentionDecorated="1";}
-      const meta=row.querySelector(".chat-meta");if(meta&&!meta.querySelector(".vexo-chat-feature-edited")){const e=document.createElement("span");e.className="vexo-chat-feature-edited";e.textContent="edited";meta.appendChild(e);}
-    })
-    .subscribe();
+  vexoWhenServicesReady(() => {
+    db.channel("vexo-chat-features-live")
+      .on("postgres_changes",{event:"UPDATE",schema:"public",table:"messages"},payload=>{
+        const row=document.getElementById(`chat-msg-${payload.new?.id}`);if(!row)return;
+        const text=row.querySelector(".chat-text");if(text){text.innerHTML=mentionHtml(payload.new.content||"");text.dataset.vexoMentionDecorated="1";}
+        const meta=row.querySelector(".chat-meta");if(meta&&!meta.querySelector(".vexo-chat-feature-edited")){const e=document.createElement("span");e.className="vexo-chat-feature-edited";e.textContent="edited";meta.appendChild(e);}
+      })
+      .subscribe();
+  });
 })();
 </script>
 
@@ -3075,6 +3200,10 @@ async function runVirusTotalChecker(){
 @media(max-width:720px){.vexo-security-stats{grid-template-columns:repeat(2,1fr)}.vexo-security-toolbar .input,.vexo-security-toolbar .select{width:100%!important;min-width:0}.vexo-security-toolbar .search{flex-basis:100%}}
 </style>
 
+<style>
+body.vexo-security-locked .nav button{pointer-events:none!important;opacity:.48!important;}
+</style>
+
 <!-- VEXO SECURITY BLOCK SCREEN STYLE — APPEND-ONLY -->
 <style>
 #vexoSecurityBlockedScreen{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:24px;background:rgba(3,6,12,.97);backdrop-filter:blur(18px)}
@@ -3109,6 +3238,7 @@ async function runVirusTotalChecker(){
    */
   window.__vexoSecurityBlocked = false;
   window.__vexoSecurityBan = null;
+  let securityAccessGranted = false;
   let securityLastCheck = 0;
   let securityCheckInFlight = null;
 
@@ -3119,10 +3249,23 @@ async function runVirusTotalChecker(){
       details: payload.details ?? {}
     };
 
+    /* The boot check is performed with direct fetch before the real client exists. */
+    if(action === "check" && !window.__vexoServicesAreReady()){
+      try {
+        const result = await window.__vexoSecurityGatePromise;
+        return result || {ok:false, blocked:false, verificationError:true, error:"Security verification failed."};
+      } catch(e){
+        return {ok:false, blocked:false, verificationError:true, status:0, error:"Security verification failed."};
+      }
+    }
+
+    /* Every non-check request stays local while the service gate is locked. */
+    if(!window.__vexoServicesAreReady()){
+      return {ok:false,status:403,blocked:true,error:"VEXO services are locked by the security gate."};
+    }
+
     try{
-      const {data, error} = await db.functions.invoke("vexo-security-log", {
-        body
-      });
+      const {data, error} = await db.functions.invoke("vexo-security-log", { body });
 
       if(error){
         let message = error.message || "Security function unavailable";
@@ -3158,8 +3301,13 @@ async function runVirusTotalChecker(){
   }
 
   function showSecurityBlocked(info={}){
+    if(!window.__vexoSecurityBlocked && info?.blocked !== true){
+      return;
+    }
     window.__vexoSecurityBlocked = true;
+    securityAccessGranted = false;
     window.__vexoSecurityBan = info?.ban || window.__vexoSecurityBan || null;
+    window.__vexoLockServices(info?.error || "Access restricted");
 
     let overlay = document.getElementById("vexoSecurityBlockedScreen");
     if(!overlay){
@@ -3194,27 +3342,67 @@ async function runVirusTotalChecker(){
 
   async function refreshBanState(force=false){
     const now = Date.now();
-    if(!force && now - securityLastCheck < 60000) return;
+    if(!force && now - securityLastCheck < 60000) return securityAccessGranted;
     if(securityCheckInFlight) return securityCheckInFlight;
 
     securityLastCheck = now;
-
     securityCheckInFlight = (async () => {
       const result = await securityRequest("check");
 
-      if(result?.blocked){
-        showSecurityBlocked(result);
-      } else if(result?.ok){
-        window.__vexoSecurityBlocked = false;
-        window.__vexoSecurityBan = null;
+      if(result.blocked){
+        securityAccessGranted = false;
+        window.__vexoSecurityBlocked = true;
+        showSecurityBlocked({
+          ban:result.ban || window.__vexoSecurityBan || null,
+          error:result.error || "This network is currently banned from VEXO services."
+        });
+        const boot = document.getElementById("vexoBootLock");
+        if(boot){
+          boot.innerHTML = `<div class="vexo-boot-card"><div class="vexo-security-block-kicker">VEXO SECURITY</div><h1>Access Restricted</h1><p>${securityEsc(result.error || "This network is currently banned from VEXO services.")}</p></div>`;
+          boot.style.display = "grid";
+        }
+        return false;
       }
 
-      return result;
+      if(!result.ok){
+        securityAccessGranted = false;
+        window.__vexoSecurityBlocked = false;
+        window.__vexoLockServices(result.error || "Security verification is unavailable.");
+        const boot = document.getElementById("vexoBootLock");
+        if(boot){
+          boot.innerHTML = `<div class="vexo-boot-card"><div class="vexo-security-block-kicker">VEXO SECURITY</div><h1>Verification Unavailable</h1><p>${securityEsc(result.error || "VEXO could not verify this network. No VEXO services were connected.")}</p><button class="btn primary" onclick="location.reload()" style="margin-top:14px">Retry</button></div>`;
+          boot.style.display = "grid";
+        }
+        return false;
+      }
+
+      securityAccessGranted = true;
+      window.__vexoSecurityBlocked = false;
+
+      try { window.__vexoUnlockServices(); }
+      catch(e){
+        securityAccessGranted = false;
+        window.__vexoSecurityBlocked = false;
+        window.__vexoLockServices("VEXO services could not be initialized safely.");
+        const boot = document.getElementById("vexoBootLock");
+        if(boot){
+          boot.innerHTML = `<div class="vexo-boot-card"><div class="vexo-security-block-kicker">VEXO SECURITY</div><h1>Verification Unavailable</h1><p>VEXO services could not be initialized safely. No application services were connected.</p><button class="btn primary" onclick="location.reload()" style="margin-top:14px">Retry</button></div>`;
+          boot.style.display = "grid";
+        }
+        return false;
+      }
+
+      const boot = document.getElementById("vexoBootLock");
+      if(boot) boot.remove();
+
+      /* Make sure the initial app state starts only after the security gate. */
+      try { await loadSession(); } catch(e) { console.error("VEXO startup failed:", e); }
+      return true;
     })();
 
-    try{
+    try {
       return await securityCheckInFlight;
-    }finally{
+    } finally {
       securityCheckInFlight = null;
     }
   }
@@ -3450,19 +3638,58 @@ async function runVirusTotalChecker(){
 
   const originalShowPage = window.showPage;
   window.showPage = function(name){
+    if(!securityAccessGranted || !window.__vexoServicesAreReady()){
+      if(window.__vexoSecurityBlocked){
+        showSecurityBlocked({blocked:true,ban:window.__vexoSecurityBan || {}});
+      }
+      return;
+    }
     const result = originalShowPage.apply(this, arguments);
     if(name === "admin") setTimeout(loadSecurityPanel, 0);
     return result;
   };
 
+  /* Capture navigation clicks so removing the overlay alone cannot switch pages. */
+  document.addEventListener("click", e => {
+    if(securityAccessGranted && window.__vexoServicesAreReady()) return;
+    const navButton = e.target.closest?.(".nav button,[onclick*='showPage('");
+    if(!navButton) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if(window.__vexoSecurityBlocked){
+      showSecurityBlocked({blocked:true,ban:window.__vexoSecurityBan || {}});
+    }
+  }, true);
+
   /*
    * ONE lightweight check on load, then occasional checks only while the
    * page is active. These checks do not perform geolocation.
    */
+  /* Boot state is checked first; no VEXO data/auth/realtime client exists yet. */
   refreshBanState(true).catch(() => {});
 
-  /* Record the page visit without blocking the page UI. */
-  void vexoSecurityLog("page_view");
+  /* Record the page visit after access is granted, independently of the app DB client. */
+  vexoWhenServicesReady(() => {
+    if(window.__vexoBootSecurityLogged) return;
+    window.__vexoBootSecurityLogged = true;
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+
+    fetch("https://jxxjvwemjvhrozuaihso.supabase.co/functions/v1/vexo-security-log", {
+      method: "POST",
+      cache: "no-store",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        action:"page_view",
+        path:location.pathname + location.search,
+        details:{boot:true}
+      }),
+      signal: controller.signal,
+      credentials: "omit",
+      keepalive: true
+    }).catch(() => {}).finally(() => clearTimeout(timer));
+  });
 
   const securityCheckTimer = setInterval(() => {
     if(!document.hidden) refreshBanState(false).catch(() => {});
@@ -3485,8 +3712,12 @@ async function runVirusTotalChecker(){
   const originalOpenLink = window.openLink;
   if(typeof originalOpenLink === "function"){
     window.openLink = async function(id){
+      if(!securityAccessGranted || !window.__vexoServicesAreReady()){
+        if(window.__vexoSecurityBlocked){ showSecurityBlocked({blocked:true,ban:window.__vexoSecurityBan || {}}); }
+        return;
+      }
       if(window.__vexoSecurityBlocked){
-        showSecurityBlocked({ban:window.__vexoSecurityBan || {}});
+        if(window.__vexoSecurityBlocked){ showSecurityBlocked({blocked:true,ban:window.__vexoSecurityBan || {}}); }
         return;
       }
 
@@ -3498,8 +3729,12 @@ async function runVirusTotalChecker(){
   const originalVote = window.vote;
   if(typeof originalVote === "function"){
     window.vote = async function(id, value){
+      if(!securityAccessGranted || !window.__vexoServicesAreReady()){
+        if(window.__vexoSecurityBlocked){ showSecurityBlocked({blocked:true,ban:window.__vexoSecurityBan || {}}); }
+        return;
+      }
       if(window.__vexoSecurityBlocked){
-        showSecurityBlocked({ban:window.__vexoSecurityBan || {}});
+        if(window.__vexoSecurityBlocked){ showSecurityBlocked({blocked:true,ban:window.__vexoSecurityBan || {}}); }
         return;
       }
 
@@ -3511,8 +3746,12 @@ async function runVirusTotalChecker(){
   const originalFavorite = window.toggleFavorite;
   if(typeof originalFavorite === "function"){
     window.toggleFavorite = async function(id){
+      if(!securityAccessGranted || !window.__vexoServicesAreReady()){
+        if(window.__vexoSecurityBlocked){ showSecurityBlocked({blocked:true,ban:window.__vexoSecurityBan || {}}); }
+        return;
+      }
       if(window.__vexoSecurityBlocked){
-        showSecurityBlocked({ban:window.__vexoSecurityBan || {}});
+        if(window.__vexoSecurityBlocked){ showSecurityBlocked({blocked:true,ban:window.__vexoSecurityBan || {}}); }
         return;
       }
 
@@ -3530,10 +3769,10 @@ async function runVirusTotalChecker(){
     const originalSubmit = linkForm.onsubmit;
 
     linkForm.onsubmit = async function(e){
-      if(window.__vexoSecurityBlocked){
+      if(!securityAccessGranted || !window.__vexoServicesAreReady()){
         e.preventDefault();
         e.stopImmediatePropagation();
-        showSecurityBlocked({ban:window.__vexoSecurityBan || {}});
+        if(window.__vexoSecurityBlocked){ showSecurityBlocked({blocked:true,ban:window.__vexoSecurityBan || {}}); }
         return;
       }
 
@@ -3545,10 +3784,10 @@ async function runVirusTotalChecker(){
   const chatForm = $("chatForm");
   if(chatForm){
     chatForm.addEventListener("submit", e => {
-      if(window.__vexoSecurityBlocked){
+      if(!securityAccessGranted || !window.__vexoServicesAreReady()){
         e.preventDefault();
         e.stopImmediatePropagation();
-        showSecurityBlocked({ban:window.__vexoSecurityBan || {}});
+        if(window.__vexoSecurityBlocked){ showSecurityBlocked({blocked:true,ban:window.__vexoSecurityBan || {}}); }
         return;
       }
 
@@ -5055,7 +5294,7 @@ const BLOCKED_WORDS = [
   function subscribeChat() {
     if (chatSubscribed) return;
 
-    db.channel("public:messages")
+    vexoWhenServicesReady(() => db.channel("public:messages")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
         const chatContainer = document.getElementById("chatMessages");
         if (!chatContainer) return;
@@ -5077,7 +5316,7 @@ const BLOCKED_WORDS = [
         const el = document.getElementById(`chat-msg-${id}`);
         if (el) el.remove();
       })
-      .subscribe();
+      .subscribe());
 
     chatSubscribed = true;
   }
@@ -5689,7 +5928,7 @@ const BLOCKED_WORDS = [
     }
   }
 
-  db.channel("vexo-pfp-replies")
+  vexoWhenServicesReady(() => db.channel("vexo-pfp-replies")
     .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},async payload=>{
       const m=payload.new; if(!m?.id) return;
       messageCache[m.id]=m;
@@ -5705,7 +5944,7 @@ const BLOCKED_WORDS = [
       delete messageCache[payload.old?.id];
       document.getElementById(`chat-msg-${payload.old?.id}`)?.remove();
     })
-    .subscribe();
+    .subscribe());
 
   let chatObserverQueued=false;
   const observer=new MutationObserver(()=>{
