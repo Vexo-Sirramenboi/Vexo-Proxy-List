@@ -702,15 +702,15 @@ body{
 <!-- PROXY -->
 <section id="proxyPage" class="page hidden">
 <div class="panel">
-<div class="panel-head"><div><h3>Web Proxy</h3><div class="muted-sm">Browse <b style="color:var(--accent2)" id="proxyHost">truf.remiosenifoundation.org</b> right inside VEXO.</div></div></div>
+<div class="panel-head"><div><h3>Web Proxy</h3><div class="muted-sm">Browse <b style="color:var(--accent2)" id="proxyHost">science151.robertschulze.net</b> right inside VEXO.</div></div></div>
 <div class="toolbar">
-<input class="input search" id="proxyUrl" value="https://truf.remiosenifoundation.org/">
+<input class="input search" id="proxyUrl" value="https://science151.robertschulze.net/">
 <button class="btn primary" onclick="loadProxy()">↻ Load</button>
 <button class="btn" onclick="openProxyNewTab()">Open ↗</button>
 <button class="btn" onclick="resetProxy()" title="Reset to default">⌂</button>
 </div>
 <div class="proxy-wrap">
-<iframe id="proxyFrame" src="https://truf.remiosenifoundation.org/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads" loading="lazy"></iframe>
+<iframe id="proxyFrame" src="https://science151.robertschulze.net/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads" loading="lazy"></iframe>
 </div>
 <p class="muted-sm note">Note: if the page looks blank, the target may send <code>X-Frame-Options</code> or CSP <code>frame-ancestors</code> headers that block embedding — use <b>Open ↗</b> in that case.</p>
 </div>
@@ -1450,7 +1450,7 @@ function caseConvert(){
 }
 
 /* ═══ PROXY ═══ */
-const PROXY_DEFAULT = "https://truf.remiosenifoundation.org/";
+const PROXY_DEFAULT = "https://science151.robertschulze.net/";
 
 function loadProxy(){
   let v = $("proxyUrl").value.trim();
@@ -1470,7 +1470,7 @@ function openProxyNewTab(){
 function resetProxy(){
   $("proxyUrl").value = PROXY_DEFAULT;
   $("proxyFrame").src = PROXY_DEFAULT;
-  $("proxyHost").textContent = "truf.remiosenifoundation.org";
+  $("proxyHost").textContent = "science151.robertschulze.net";
   toast("Proxy reset.");
 }
 
@@ -5152,7 +5152,7 @@ const BLOCKED_WORDS = [
     "https://jxxjvwemjvhrozuaihso.supabase.co/functions/v1/vexo-proxy";
 
   const VEXO_PROXY_DEFAULT =
-    "https://example.com/";
+    "https://science151.robertschulze.net/";
 
   let vexoProxyBusy = false;
 
