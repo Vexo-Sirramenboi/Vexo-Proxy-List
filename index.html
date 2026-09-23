@@ -932,6 +932,128 @@ body{
 /* SUPABASE */
 const SUPABASE_URL = "https://jxxjvwemjvhrozuaihso.supabase.co";
 const SUPABASE_KEY = "sb_publishable_hbQfOIYOcFnCDyn0s6GPyg_amHog7u-";
+
+/* VEXO MAINTENANCE / SUPABASE OUTAGE DETECTOR — STRICT */
+(() => {
+  const MAINTENANCE_ID = "vexoMaintenanceScreen";
+  const HEALTH_URL = `${SUPABASE_URL}/rest/v1/links?select=id&limit=1`;
+  const HEALTH_INTERVAL = 30000;
+  const MAX_CONSECUTIVE_FAILURES = 3;
+  let healthFailures = 0;
+  let healthTimer = null;
+  let showing = false;
+  let healthInFlight = false;
+
+  function showMaintenance(reason = "") {
+    if (showing) return;
+    showing = true;
+
+    let screen = document.getElementById(MAINTENANCE_ID);
+    if (!screen) {
+      screen = document.createElement("div");
+      screen.id = MAINTENANCE_ID;
+      screen.innerHTML = `
+        <style>
+          #${MAINTENANCE_ID}{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:24px;background:#07090f;color:#fff;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+          #${MAINTENANCE_ID} .vm-card{width:min(620px,100%);padding:34px;border:1px solid rgba(124,92,255,.28);border-radius:22px;background:linear-gradient(180deg,rgba(17,21,33,.98),rgba(8,11,18,.98));box-shadow:0 30px 100px rgba(0,0,0,.55);text-align:center;}
+          #${MAINTENANCE_ID} .vm-kicker{font-size:10px;font-weight:900;letter-spacing:.2em;color:#9b8aff;margin-bottom:10px;}
+          #${MAINTENANCE_ID} h1{margin:0 0 12px;font-size:30px;}
+          #${MAINTENANCE_ID} p{margin:0 auto;color:#aab4ca;line-height:1.7;font-size:14px;max-width:500px;}
+          #${MAINTENANCE_ID} .vm-actions{display:flex;justify-content:center;gap:10px;margin-top:22px;}
+          #${MAINTENANCE_ID} button{border:1px solid rgba(124,92,255,.32);background:rgba(124,92,255,.12);color:#fff;border-radius:10px;padding:10px 15px;font:inherit;font-weight:800;cursor:pointer;}
+          #${MAINTENANCE_ID} .vm-note{margin-top:14px;font-size:11px;color:#69758e;}
+        </style>
+        <main class="vm-card">
+          <div class="vm-kicker">VEXO MAINTENANCE</div>
+          <h1>VEXO is currently down for maintenance</h1>
+          <p>VEXO could not reach its Supabase backend reliably. Please try again once the backend is available.</p>
+          <div class="vm-actions"><button type="button" id="vexoMaintenanceRetry">Try again</button></div>
+          <div class="vm-note">${reason ? "Service response: " + String(reason).replace(/[&<>"']/g, "") : ""}</div>
+        </main>`;
+      document.body.appendChild(screen);
+      document.getElementById("vexoMaintenanceRetry")?.addEventListener("click", () => location.reload());
+    }
+
+    screen.style.display = "grid";
+  }
+
+  function scheduleNext() {
+    clearTimeout(healthTimer);
+    healthTimer = setTimeout(runHealthCheck, HEALTH_INTERVAL);
+  }
+
+  async function runHealthCheck() {
+    if (showing || healthInFlight || document.hidden) {
+      scheduleNext();
+      return;
+    }
+
+    healthInFlight = true;
+
+    try {
+      const response = await fetch(HEALTH_URL, {
+        method: "GET",
+        headers: {
+          apikey: SUPABASE_KEY
+        },
+        cache: "no-store",
+        credentials: "omit"
+      });
+
+      /* Any HTTP response other than a service-level failure proves
+         that Supabase itself is reachable. */
+      if (response.ok || [400,401,403,404,409,422,429].includes(response.status)) {
+        healthFailures = 0;
+        return;
+      }
+
+      /* Treat 402 as maintenance only when the server explicitly indicates
+         a quota/payment/service restriction. */
+      if (response.status === 402) {
+        let body = "";
+        try { body = (await response.clone().text()).toLowerCase(); } catch {}
+        if (/quota|exceed|payment|billing|limit/.test(body)) {
+          showMaintenance("Supabase reported a quota or service restriction.");
+          return;
+        }
+      }
+
+      /* A project-level outage needs multiple consecutive failed health
+         checks so one transient gateway error cannot take VEXO offline. */
+      if ([502,503,504,520,521,522,523,524,540,541,542,543,544,546].includes(response.status)) {
+        healthFailures += 1;
+        if (healthFailures >= MAX_CONSECUTIVE_FAILURES) {
+          showMaintenance(`Supabase health check failed ${healthFailures} times.`);
+        }
+      } else {
+        healthFailures = 0;
+      }
+    } catch {
+      healthFailures += 1;
+      if (healthFailures >= MAX_CONSECUTIVE_FAILURES) {
+        showMaintenance("Supabase health checks could not connect.");
+      }
+    } finally {
+      healthInFlight = false;
+      scheduleNext();
+    }
+  }
+
+  /* Do NOT globally intercept every VEXO fetch.
+     Individual feature/API failures are not the same thing as the whole
+     Supabase backend being unavailable. */
+  window.__vexoShowMaintenance = showMaintenance;
+
+  /* Initial backend health check after the page has started. */
+  setTimeout(runHealthCheck, 5000);
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) runHealthCheck();
+  });
+
+  window.addEventListener("focus", () => runHealthCheck());
+})();
+
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* STATE */
@@ -5395,6 +5517,12 @@ const BLOCKED_WORDS = [
 .vexo-reply-bar{display:none;align-items:center;gap:10px;padding:8px 11px;margin:0 0 8px;border:1px solid var(--line);border-left:3px solid var(--accent);background:rgba(124,92,255,.07);border-radius:9px}
 .vexo-reply-bar.show{display:flex}.vexo-reply-bar-content{flex:1;min-width:0}.vexo-reply-bar-title{color:var(--accent2);font-size:10px;font-weight:700}.vexo-reply-bar-text{font-size:11px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vexo-reply-cancel{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px}.vexo-reply-cancel:hover{color:#fff}
 </style>
+<style>
+.vexo-profile-edit-card{margin-bottom:18px;padding:18px;border:1px solid var(--line);background:rgba(255,255,255,.025);border-radius:16px}
+.vexo-profile-edit-card label{display:block;font-size:10px;color:var(--muted);font-weight:700;margin:0 0 6px;text-transform:uppercase;letter-spacing:.08em}
+.vexo-profile-edit-card textarea{width:100%;min-height:100px;resize:vertical}
+.vexo-profile-edit-meta{display:flex;justify-content:space-between;gap:10px;margin:7px 0 12px;color:var(--muted);font-size:10px}
+</style>
 <script>
 (() => {
   "use strict";
@@ -5423,7 +5551,7 @@ const BLOCKED_WORDS = [
 
   async function loadMyProfile(){
     if(!user?.id) return null;
-    const {data,error} = await db.from("profiles").select("id,username,avatar_url").eq("id", user.id).maybeSingle();
+    const {data,error} = await db.from("profiles").select("id,username,avatar_url,bio").eq("id", user.id).maybeSingle();
     if(error){ console.error("VEXO own profile:", error); return null; }
     if(data) avatarCache[data.id] = data;
     return data;
@@ -5441,6 +5569,22 @@ const BLOCKED_WORDS = [
     section.id="vexoPfpSection";
     section.className="vexo-pfp-section";
     section.innerHTML=`
+      <div class="set-head">Edit Profile</div>
+      <div class="vexo-profile-edit-card">
+        <label>Username</label>
+        <input class="input" id="vexoProfileUsername" maxlength="32" placeholder="Username">
+
+        <label style="margin-top:10px">Bio</label>
+        <textarea class="textarea" id="vexoProfileBio" rows="4" maxlength="160" placeholder="Tell the community a little about yourself..."></textarea>
+
+        <div class="vexo-profile-edit-meta">
+          <span>Up to 160 characters</span>
+          <span id="vexoBioCount">0/160</span>
+        </div>
+
+        <button class="btn primary" type="button" id="vexoSaveProfileBtn">Save Profile</button>
+      </div>
+
       <div class="set-head">Profile Picture</div>
       <div class="vexo-pfp-card">
         <div class="vexo-pfp-preview" id="vexoPfpPreview"><span>G</span></div>
@@ -5459,15 +5603,122 @@ const BLOCKED_WORDS = [
     const backup=heads.find(h=>h.textContent.trim().toLowerCase()==="backup");
     if(backup) backup.parentElement.insertBefore(section, backup); else panel.appendChild(section);
 
+    document.getElementById("vexoSaveProfileBtn")?.addEventListener("click",saveProfile);
+    document.getElementById("vexoProfileBio")?.addEventListener("input", e=>{
+      const c=document.getElementById("vexoBioCount");
+      if(c) c.textContent=`${String(e.target.value||"").length}/160`;
+    });
+
     document.getElementById("vexoChoosePfpBtn")?.addEventListener("click",()=>{
       if(!user){ notify("Sign in to change your profile picture."); return; }
       document.getElementById("vexoPfpFile")?.click();
     });
     document.getElementById("vexoRemovePfpBtn")?.addEventListener("click",removePfp);
     document.getElementById("vexoPfpFile")?.addEventListener("change",uploadPfp);
+
     refreshPfpPreview();
+    refreshProfileEditor();
   }
 
+  async function refreshProfileEditor(){
+    const nameEl=document.getElementById("vexoProfileUsername");
+    const bioEl=document.getElementById("vexoProfileBio");
+    const countEl=document.getElementById("vexoBioCount");
+
+    if(!nameEl || !bioEl) return;
+
+    if(!user?.id){
+      nameEl.value="";
+      bioEl.value="";
+      if(countEl) countEl.textContent="0/160";
+      return;
+    }
+
+    const p=await loadMyProfile();
+    nameEl.value=p?.username || user.email?.split("@")[0] || "";
+    bioEl.value=p?.bio || "";
+    if(countEl) countEl.textContent=`${bioEl.value.length}/160`;
+  }
+
+  async function saveProfile(){
+    if(!user?.id){
+      notify("Sign in to edit your profile.");
+      return;
+    }
+
+    const nameEl=document.getElementById("vexoProfileUsername");
+    const bioEl=document.getElementById("vexoProfileBio");
+    const button=document.getElementById("vexoSaveProfileBtn");
+
+    const name=String(nameEl?.value||"").trim().replace(/\s+/g," ");
+    const bio=String(bioEl?.value||"").trim();
+
+    if(!name){ notify("Username cannot be empty."); return; }
+    if(name.length>32){ notify("Username must be 32 characters or less."); return; }
+    if(bio.length>160){ notify("Bio must be 160 characters or less."); return; }
+
+    const safeBio=clean(bio);
+    const oldText=button?.textContent || "Save Profile";
+    if(button){
+      button.disabled=true;
+      button.textContent="Saving...";
+    }
+
+    try{
+      const {data:sessionData,error:sessionError}=await db.auth.getSession();
+      if(sessionError) throw sessionError;
+
+      const sessionUser=sessionData?.session?.user;
+      if(!sessionUser?.id){
+        notify("Your session has expired. Please sign in again.");
+        return;
+      }
+
+      user=sessionUser;
+
+      const result=await db
+        .from("profiles")
+        .update({
+          username:name,
+          bio:safeBio
+        })
+        .eq("id",sessionUser.id);
+
+      if(result.error){
+        const msg=result.error.message || "Unknown Supabase error";
+
+        if(result.error.code === "PGRST204" || /bio.*column|column.*bio/i.test(msg)){
+          notify("The bio field is missing from your profiles table. Run the VEXO bio SQL below.");
+        }else if(result.error.code === "42501" || /row-level security|permission denied/i.test(msg)){
+          notify("Profile saving is blocked by your Supabase RLS policy.");
+        }else{
+          notify("Could not save your profile: "+msg);
+        }
+        return;
+      }
+
+      const previous=avatarCache[sessionUser.id] || {};
+      avatarCache[sessionUser.id]={
+        ...previous,
+        id:sessionUser.id,
+        username:name,
+        bio:safeBio
+      };
+
+      refreshPfpPreview();
+      refreshProfileEditor();
+
+      if(typeof refreshChatAvatars === "function") refreshChatAvatars();
+      notify("Profile saved.");
+    }catch(err){
+      notify("Could not save your profile: "+(err?.message || "Supabase connection failed."));
+    }finally{
+      if(button){
+        button.disabled=false;
+        button.textContent=oldText;
+      }
+    }
+  }
   function refreshPfpPreview(){
     const el=document.getElementById("vexoPfpPreview");
     if(!el) return;
