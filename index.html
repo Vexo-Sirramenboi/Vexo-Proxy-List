@@ -3073,7 +3073,7 @@ async function runVirusTotalChecker(){
     if(!box||!input)return false;
     ensureInputMentionBox();
     if(!state.hooked){
-      state.hooked=true;
+    state.hooked = true;
       document.addEventListener("contextmenu",e=>{
         const row=e.target.closest("#chatMessages .chat-msg");if(!row)return;
         e.preventDefault();addMessageDataset(row);openMenu(e.clientX,e.clientY,row);
